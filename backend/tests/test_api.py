@@ -138,8 +138,11 @@ def test_research_mocked(client, mocked):
     assert c.post(f"/api/companies/{cid}/inside-out", json={"documents": [dict(doc, slot=99)]}).status_code == 400
     # anonymity guardrail: no inside-out view until three people have answered the self-assessment
     r = c.post(f"/api/companies/{cid}/inside-out", json={"mode": "director_request", "documents": [doc]})
-    assert r.status_code == 409 and "0 of 3" in r.json()["error"]
-    st = c.post(f"/api/companies/{cid}/survey/invite", json={"emails": ["a@example.org", "b@example.org", "c@example.org", "a@example.org"]}).json()
+    assert r.status_code == 200, r.json()  # zero responses is allowed: the run uses the board documents alone
+    assert wait_job(c, r.json()["job_id"])["status"] == "done" and not any(calls["io"][1].values())
+    repo.delete_run(cid, "inside_out")
+    r = c.post(f"/api/companies/{cid}/inside-out", json={"documents": []}); assert r.status_code == 409 and "add board documents" in r.json()["error"]
+    st =c.post(f"/api/companies/{cid}/survey/invite", json={"emails": ["a@example.org", "b@example.org", "c@example.org", "a@example.org"]}).json()
     assert len(st["invites"]) == 3 and st["responses"] == 0 and all("?take=" in i["link"] for i in st["invites"])
     assert c.post(f"/api/companies/{cid}/survey/invite", json={"emails": ["not-an-email"]}).status_code == 400
     tok = [i["token"] for i in st["invites"]]
@@ -159,7 +162,9 @@ def test_research_mocked(client, mocked):
     d = calls["io"][0][0]; assert d["slot"] == 1 and "buyback" in d["text"] and d["pdf_b64"] is None
     a1 = calls["io"][1]["1"]; assert "Customer item 0" in a1 and "Customer item 1" in a1 and a1.count("Response ") == 2 and re.fullmatch(r"Response [123]: Paper return", calls["io"][1]["2"])
     v = c.get(f"/api/companies/{cid}/view").json()
-    assert "Customer item" in v["io"]["sa"][0] and "io_docx" in v["files"] and "pack" not in v["files"]
+    # anonymity: the answers reach the research step but are never stored in the run or exposed in the view
+    assert "Customer item" not in json.dumps(v["io"]) and "self_assessment_answers" not in json.dumps(repo.read_run(cid, "inside_out"))
+    assert "io_docx" in v["files"] and "pack" not in v["files"]
     assert c.delete(f"/api/companies/{cid}").status_code == 200
 
 
@@ -361,3 +366,22 @@ def test_the_dimension_rating_takes_the_whole_five_point_scale(client):
     assert r == {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5}
     _, r = sv.clean_response({"answers": {}, "ratings": {"1": 0, "2": 6, "3": True, "4": 2.0, "5": 4}}, paper=True)
     assert r == {"5": 4}, "out of range, bool and float are ignored"
+
+
+def test_action_edit_add_delete(client):
+    oi = renamed(load("outside_in_run.json"))
+    r = client.post("/api/companies/import", json={"outside_in": oi}); assert r.status_code == 200, r.json()
+    cid = r.json()["id"]; wait_job(client, r.json()["job_id"])
+    u = f"/api/companies/{cid}/actions"
+    n0 = len(client.get(f"/api/companies/{cid}/view").json()["actions"])
+    assert client.put(u + "/1", json={"heading": "  New heading "}).status_code == 200
+    assert client.get(f"/api/companies/{cid}/view").json()["actions"][0]["heading"] == "New heading"
+    assert repo.read_run(cid, "outside_in")["actions"][0]["edited"] is True and "edited" not in repo.read_run(cid, "outside_in")["actions"][1]
+    assert client.put(u + "/1", json={"heading": " "}).status_code == 400 and client.put(u + "/99", json={"heading": "x"}).status_code == 404
+    assert client.delete(u + "/1").json()["count"] == n0 - 1
+    r = client.post(u, json={"heading": "Added", "description": "d", "measures": ["m"], "target": "2027-Q2"}); assert r.status_code == 200
+    assert client.post(u, json={"description": "no heading"}).status_code == 400
+    assert repo.read_run(cid, "outside_in")["actions"][-1]["edited"] is True
+    while len(repo.read_run(cid, "outside_in")["actions"]) < 5: assert client.post(u, json={"heading": "x"}).status_code == 200
+    assert client.post(u, json={"heading": "sixth"}).status_code == 409
+    assert client.put("/api/companies/nope/actions/1", json={"heading": "x"}).status_code == 404

@@ -1,10 +1,9 @@
 import { Fragment } from 'react';
-import * as Tabs from '@radix-ui/react-tabs';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 import type { View } from '../api/viewTypes';
-import { useReportUi, type ReportTab, type Stage } from '../store/reportUi';
-import { ActionPlan, Dashboard, DimensionDetail, MethodAppendix, PeersAppendix, SourcesAppendix } from './AppendixViews';
+import { useReportUi, type Stage } from '../store/reportUi';
+import { CoverageAccordion, DimensionDetail, MethodAppendix, ThemesAndGuardrails, PeersAppendix, SourcesAppendix } from './AppendixViews';
 import { IndicatorHeatmap } from './charts';
 import { DIMS, DIMN, DRAFT, RUN_CIRC, ReportProvider, firstSentence, typo, useReport } from './context';
 import { ReportDialogs } from './dialogs';
@@ -55,6 +54,16 @@ function Cover() {
   );
 }
 
+/** numeric movement of an average, e.g. " (▲ 0.40)"; empty when either side is missing or equal */
+function avgMove(a: number | null | undefined, b: number | null | undefined) {
+  if (a == null || b == null || a === b) return '';
+  return ` (${b > a ? '▲' : '▼'} ${Math.abs(b - a).toFixed(2)})`;
+}
+/** score movement beside the current score; nothing when unchanged */
+function scMove(a: number | null | undefined, b: number | null | undefined) {
+  return a == null || b == null || a === b ? null : <span className={`ml-1 text-[0.85rem] font-bold ${b > a ? 'text-[#29702A]' : 'text-[#A6192E]'}`}>{b > a ? '▲' : '▼'} {Math.abs(b - a)}</span>;
+}
+
 function ExecutiveSummary() {
   const { view, io, co, model, O, last, headline, actions } = useReport();
   const gr = (o: { grade: string | null; label: string }) => (o.grade ? `${o.grade} (${o.label})` : 'no overall grade');
@@ -64,17 +73,20 @@ function ExecutiveSummary() {
       <Eb>Executive summary</Eb>
       <H2>{typo(headline)}</H2>
       <div className="mb-4 flex flex-wrap gap-4">
-        <GradeTile
-          label="Outside-in"
-          grade={O.overall.grade}
-          sub={`${O.overall.n} of 6 dimensions reported`}
-          note={last ? (
-            <>
-              <Arrow now={O.overall.grade} prev={last.overall.grade} /> ({last.period})
-            </>
-          ) : undefined}
-        />
-        {io ? <GradeTile label="After inside-out" grade={ioO.grade} sub={`${ioO.n} of 6 dimensions reported`} note={<><Arrow now={ioO.grade} prev={O.overall.grade} /> vs outside-in</>} /> : null}
+        {io ? (
+          <GradeTile label="Overall grade, after inside-out" grade={ioO.grade} sub={`${ioO.n} of 6 dimensions reported`} note={<><Arrow now={ioO.grade} prev={O.overall.grade} /> vs outside-in{avgMove(O.overall.avg, ioO.avg)}</>} />
+        ) : (
+          <GradeTile
+            label="Outside-in"
+            grade={O.overall.grade}
+            sub={`${O.overall.n} of 6 dimensions reported`}
+            note={last ? (
+              <>
+                <Arrow now={O.overall.grade} prev={last.overall.grade} /> ({last.period})
+              </>
+            ) : undefined}
+          />
+        )}
       </div>
       <p className="mb-3 text-[1.05rem]">
         {io ? (
@@ -95,7 +107,7 @@ function ExecutiveSummary() {
             <div>
               <b>Better than the public record</b>
               <ul className="ml-5 list-disc">
-                {(view.io.better || []).map((x, k) => (
+                {(view.io.better || []).slice(0, 2).map((x, k) => (
                   <li key={k}>
                     <Codes text={x} />
                   </li>
@@ -105,7 +117,7 @@ function ExecutiveSummary() {
             <div>
               <b>Worse than the public record</b>
               <ul className="ml-5 list-disc">
-                {(view.io.worse || []).map((x, k) => (
+                {(view.io.worse || []).slice(0, 2).map((x, k) => (
                   <li key={k}>
                     <Codes text={x} />
                   </li>
@@ -121,27 +133,6 @@ function ExecutiveSummary() {
           <span className="text-[#0085CA]">▸</span> <b>{typo(a.heading)}.</b> <Codes text={a.description} />
         </p>
       ))}
-      <Eb>Metrics worth tracking</Eb>
-      <DTable caption="Metrics worth tracking">
-        <thead>
-          <tr>
-            <th className={th}>Metric</th>
-            <th className={th}>Why it matters</th>
-            <th className={th}>Now</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(view.metrics || []).map((r, k) => (
-            <tr key={k}>
-              <td className={td}>
-                <b>{typo(r[0])}</b>
-              </td>
-              <td className={td}><Codes text={r[1]} /></td>
-              <td className={td}><Codes text={r[2]} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </DTable>
       <Eb>Position relative to peers</Eb>
       <p className="mb-3"><Codes text={view.position} /></p>
       {(view.position_lines || []).map((x, k) => (
@@ -184,8 +175,7 @@ function Scorecard() {
                 {x.period}
               </th>
             ))}
-            <th className={th}>{io ? 'Outside-in' : view.meta.period}</th>
-            {io ? <th className={th}>After inside-out</th> : null}
+            <th className={th}>{io ? 'After inside-out, vs outside-in' : view.meta.period}</th>
             {last ? <th className={th}>Change</th> : null}
             <th className={th}>Evidence in this run</th>
           </tr>
@@ -207,8 +197,14 @@ function Scorecard() {
                   {history.map((x) => (
                     <GradeCell key={x.period} grade={x.dims[d]?.grade} />
                   ))}
-                  <GradeCell grade={O.dims[d].grade} />
-                  {io ? <GradeCell grade={model.io.dims[d].grade} /> : null}
+                  {io ? (
+                    <td className={td}>
+                      <GradeChip grade={model.io.dims[d].grade} /> <Arrow now={model.io.dims[d].grade} prev={O.dims[d].grade} />
+                      {avgMove(O.dims[d].avg, model.io.dims[d].avg)}
+                    </td>
+                  ) : (
+                    <GradeCell grade={O.dims[d].grade} />
+                  )}
                   {last ? (
                     <td className={td}>
                       <Arrow now={L.dims[d].grade} prev={last.dims[d]?.grade} />
@@ -230,8 +226,14 @@ function Scorecard() {
                         {history.map((x) => (
                           <ScoreCell key={x.period} score={x.ind[i]} />
                         ))}
-                        <ScoreCell score={model.oiSc[i]} />
-                        {io ? <ScoreCell score={model.ioSc[i]} /> : null}
+                        {io ? (
+                          <td className={`${td} whitespace-nowrap`}>
+                            <ScoreChip score={model.ioSc[i]} />
+                            {scMove(model.oiSc[i], model.ioSc[i])}
+                          </td>
+                        ) : (
+                          <ScoreCell score={model.oiSc[i]} />
+                        )}
                         {last ? <DeltaCell a={last.ind[i]} b={now[i]} /> : null}
                         <td className={td}>{c && !c.carried ? <EvText text={firstSentence(c.rat)} ev={c.ev} /> : <EvText text={indLine(i)} ev={view.ind[i].ev} />}</td>
                       </tr>
@@ -245,8 +247,14 @@ function Scorecard() {
             {history.map((x) => (
               <GradeCell key={x.period} grade={x.overall.grade} />
             ))}
-            <GradeCell grade={O.overall.grade} />
-            {io ? <GradeCell grade={model.io.overall.grade} /> : null}
+            {io ? (
+              <td className={td}>
+                <GradeChip grade={model.io.overall.grade} /> <Arrow now={model.io.overall.grade} prev={O.overall.grade} />
+                {avgMove(O.overall.avg, model.io.overall.avg)}
+              </td>
+            ) : (
+              <GradeCell grade={O.overall.grade} />
+            )}
             {last ? (
               <td className={td}>
                 <Arrow now={L.overall.grade} prev={last.overall.grade} />
@@ -258,11 +266,6 @@ function Scorecard() {
           </tr>
         </tbody>
       </DTable>
-      {io ? null : (
-        <Muted>
-          <i>{typo(view.coverage_note)}</i>
-        </Muted>
-      )}
     </Section>
   );
 }
@@ -322,7 +325,7 @@ function EvidenceBehind() {
         <thead>
           <tr>
             <th className={th}>Indicator</th>
-            <th className={th}>Score{io ? ' (OI → IO)' : ''}</th>
+            <th className={th}>Score{io ? ' (after inside-out)' : ''}</th>
             <th className={th}>Summary of the evidence</th>
           </tr>
         </thead>
@@ -334,13 +337,7 @@ function EvidenceBehind() {
                   <b>
                     {d}. {typo(dimLabel(d))}
                   </b>{' '}
-                  &nbsp;Outside-in <GradeChip grade={O.dims[d].grade} />
-                  {io ? (
-                    <>
-                      {' '}
-                      &nbsp;After inside-out <GradeChip grade={model.io.dims[d].grade} />
-                    </>
-                  ) : null}
+                  &nbsp;{io ? <><GradeChip grade={model.io.dims[d].grade} /> <Arrow now={model.io.dims[d].grade} prev={O.dims[d].grade} />{avgMove(O.dims[d].avg, model.io.dims[d].avg)}</> : <>Outside-in <GradeChip grade={O.dims[d].grade} /></>}
                 </td>
               </tr>
               {ids
@@ -354,9 +351,8 @@ function EvidenceBehind() {
                       </td>
                       {c ? (
                         <td className={`${td} whitespace-nowrap`}>
-                          <ScoreChip score={view.ind[i].score} />
-                          {c.score !== view.ind[i].score ? ' → ' : ' = '}
                           <ScoreChip score={c.score} />
+                          {scMove(view.ind[i].score, c.score)}
                         </td>
                       ) : (
                         <ScoreCell score={view.ind[i].score} />
@@ -557,43 +553,31 @@ function Additional() {
   );
 }
 
-/** the Report tab: the full board report, or (executive lens) the executive summary and scorecard only */
-function ReportTabBody() {
-  const lens = useReportUi((s) => s.lens);
-  if (lens === 'exec')
-    return (
-      <>
-        <ExecutiveSummary />
-        <Scorecard />
-      </>
-    );
+/** the whole report as one continuous read, in the order of the Word report, appendices last */
+function ReportBody() {
   return (
     <>
       <Cover />
       <ExecutiveSummary />
       <AtAGlance />
       <Scorecard />
+      <CoverageAccordion />
       <WhatChanged />
       <EvidenceBehind />
       <PeerComparison />
       <Reconciliation />
       <ActionsSection />
       <Additional />
+      <DimensionDetail />
+      <PeersAppendix />
+      <SourcesAppendix />
+      <MethodAppendix />
+      <ThemesAndGuardrails />
     </>
   );
 }
 
 /* ------------------------------------------------------------------ shell */
-
-const TABS: [ReportTab, string][] = [
-  ['dashboard', 'Dashboard'],
-  ['report', 'Report'],
-  ['detail', 'Dimension detail'],
-  ['peers', 'Peers'],
-  ['sources', 'Sources'],
-  ['method', 'Method'],
-  ['plan', 'Action plan'],
-];
 
 function Toggle<T extends string>({ value, onChange, options, label }: { value: T; onChange: (v: T) => void; options: [T, string][]; label: string }) {
   return (
@@ -616,10 +600,6 @@ function Toggle<T extends string>({ value, onChange, options, label }: { value: 
 
 function Shell({ mode }: { mode: ReportMode }) {
   const { view, io, stage, fileUrl } = useReport();
-  const tab = useReportUi((s) => s.tab);
-  const setTab = useReportUi((s) => s.setTab);
-  const lens = useReportUi((s) => s.lens);
-  const setLens = useReportUi((s) => s.setLens);
   const setStage = useReportUi((s) => s.setStage);
   const html = fileUrl(io ? 'io_html' : 'oi_html');
   const docx = fileUrl(io ? 'io_docx' : 'oi_docx');
@@ -630,7 +610,6 @@ function Shell({ mode }: { mode: ReportMode }) {
           {mode === 'combined' && view.io ? (
             <Toggle<Stage> label="Reading stage" value={stage} onChange={setStage} options={[['oi', 'Outside-in'], ['io', 'After inside-out']]} />
           ) : null}
-          <Toggle label="Report lens" value={lens} onChange={setLens} options={[['board', 'Board report'], ['exec', 'Executive view']]} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {html ? (
@@ -648,32 +627,9 @@ function Shell({ mode }: { mode: ReportMode }) {
           </button>
         </div>
       </div>
-      <Tabs.Root value={tab} onValueChange={(v) => setTab(v as ReportTab)}>
-        <Tabs.List aria-label="Report sections" className="mb-5 flex gap-1 overflow-x-auto border-b border-[#ECECEC] print:hidden">
-          {TABS.map(([k, l]) => (
-            <Tabs.Trigger
-              key={k}
-              value={k}
-              className="whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-[0.95rem] font-bold text-[#646464] outline-none focus-visible:ring-2 focus-visible:ring-[#0085CA] data-[state=active]:border-[#002B49] data-[state=active]:text-[#002B49]"
-            >
-              {l}
-            </Tabs.Trigger>
-          ))}
-        </Tabs.List>
-        {TABS.map(([k]) => (
-          <Tabs.Content key={k} value={k} className="outline-none">
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-              {k === 'dashboard' ? <Dashboard /> : null}
-              {k === 'report' ? <ReportTabBody /> : null}
-              {k === 'detail' ? <DimensionDetail /> : null}
-              {k === 'peers' ? <PeersAppendix /> : null}
-              {k === 'sources' ? <SourcesAppendix /> : null}
-              {k === 'method' ? <MethodAppendix /> : null}
-              {k === 'plan' ? <ActionPlan /> : null}
-            </motion.div>
-          </Tabs.Content>
-        ))}
-      </Tabs.Root>
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+        <ReportBody />
+      </motion.div>
       <div className="mt-6 border-t border-[#ECECEC] pt-3 text-[0.78rem] italic text-[#646464]">{DRAFT}</div>
       <ReportDialogs />
     </div>
@@ -685,7 +641,7 @@ export default function ReportView({ view, mode = 'combined' }: { view: View; mo
   const requested: Stage = mode === 'outside_in' ? 'oi' : mode === 'inside_out' ? 'io' : storeStage;
   return (
     <Tooltip.Provider>
-      <ReportProvider view={view} stage={requested}>
+      <ReportProvider view={view} stage={requested} strict={mode === 'outside_in'}>
         <Shell mode={mode} />
       </ReportProvider>
     </Tooltip.Provider>

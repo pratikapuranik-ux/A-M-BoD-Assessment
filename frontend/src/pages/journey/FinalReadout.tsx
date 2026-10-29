@@ -5,7 +5,7 @@ import { Button, Card, Collapsible, DlButton, PageHead } from '../../components/
 import { useJourney } from '../../lib/useJourney'
 import { fmtStatus, priorActionsList } from '../../lib/journey'
 import { useSession } from '../../store/session'
-import { ActionCard, Codes, useJourneyCtx } from './parts'
+import { ActionCard, AddAction, Codes, useJourneyCtx } from './parts'
 
 /** Stage 3: the five actions, refined by the inside-out assessment. */
 export default function FinalReadout() {
@@ -20,7 +20,8 @@ export default function FinalReadout() {
       <PageHead title="The board’s five actions" sub={`${j.meta.company} · ${j.meta.period} · refined by the inside-out assessment`} eyebrow="Stage 3 of 3 · summary"
         right={<><Button variant="sec" icon="dash" onClick={() => ctx.openDash('io')}>Dashboard</Button><DlButton files={j.files} k="io_docx" label="Report (Word)" icon="doc" /></>} />
       <Card className="acc"><p className="m0">The outside-in assessment proposed five actions from public information. The inside-out assessment tested them against the board’s own documents and the directors’ anonymous self-assessment. These are the five that stand, in priority order, each tied to its evidence and with measures to track progress.</p></Card>
-      {acts.map((a) => <ActionCard key={a.n} a={a} />)}
+      {acts.map((a) => <ActionCard key={a.n} a={a} cid={session.companyId || undefined} />)}
+      {session.companyId && <AddAction cid={session.companyId} count={acts.length} />}
       {pal.length > 0 && (
         <>
           <h2 className="sech">Last quarter’s actions</h2>

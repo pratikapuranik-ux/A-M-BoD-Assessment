@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import db
-from app.api import assessments, errors, reference, survey
+from app.api import actions, assessments, errors, reference, survey
 from app.api.errors import ApiError
 from app.config import get_settings
 from app.log import configure_logging, get_logger
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     errors.register(app)
     app.include_router(reference.router)
     app.include_router(survey.router)
+    app.include_router(actions.router)
     app.include_router(assessments.router)
 
     @app.api_route("/api/{rest:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])

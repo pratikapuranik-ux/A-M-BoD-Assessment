@@ -11,7 +11,10 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
   const { j, raw, session } = useJourney()
   if (!j || !raw) return <p className="muted">Loading…</p>
   const files = j.files
-  const report = <ReportView view={withPriors(raw, session.priorSel)} mode={stage === 'io' ? 'inside_out' : 'outside_in'} />
+  const pv = withPriors(raw, session.priorSel)
+  // The outside-in readout shows the outside-in state only: drop the inside-out run from the view.
+  const oiView = stage === 'oi' ? (() => { const { io: _io, ...rest } = pv as unknown as Record<string, unknown>; return rest as unknown as typeof pv })() : pv
+  const report = <ReportView view={oiView} mode={stage === 'io' ? 'inside_out' : 'outside_in'} />
 
   if (stage === 'oi') {
     return (
@@ -20,6 +23,7 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
           right={<><PlanButton stage="oi" j={j} /><DlButton files={files} k="oi_docx" label="Report (Word)" icon="doc" /></>} eyebrow="Stage 1 of 3 · complete" />
         <DeliveryCard stage="oi" j={j} />
         <PriorCard j={j} fresh={false} />
+        <div className="row" style={{ marginBottom: 12 }}><Link className="btn sec sm" to={PATHS.setup}>View what was submitted (inputs)</Link></div>
         <h2 className="sech">What the board could do next</h2>
         <p className="muted">Five actions from the outside-in assessment. The inside-out stage tests them against the board’s own material and refines them into the final five.</p>
         {j.actions.map((a) => <ActionCard key={a.n} a={a} />)}
@@ -52,6 +56,7 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
       {report}
       <NextCard title="Next: the board’s five actions" text="The outside-in actions, refined by what the board’s own material and the directors’ self-assessment showed." to={PATHS.actions} label="See the board’s five actions" />
       <div className="row" style={{ marginBottom: 20 }}><Link className="btn sec" to={PATHS.ioInput}><Icon name="upload" size={16} />Add more material and run again</Link></div>
+      <p className="ks">Inputs: board documents and self-assessment responses are on the inside-out input page. This browser holds the files only until a run starts; the server keeps the response count and the report’s source list.</p>
       <StickyNext text="Next: the board’s five actions" to={PATHS.actions} label="See the board’s five actions" />
     </>
   )

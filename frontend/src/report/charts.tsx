@@ -9,11 +9,6 @@ import {
   Legend,
   Line,
   LineChart,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
   ResponsiveContainer,
   Tooltip as RTooltip,
   XAxis,
@@ -133,45 +128,17 @@ export function IndicatorHeatmap({ scores }: { scores: Record<string, Score> }) 
   );
 }
 
-/* ------------------------------------------------------------------ dimension radar (Recharts) */
+/* ------------------------------------------------------------------ peer comparison bars (Recharts) */
+
+function shortDim(d: string, label: string): string {
+  return label.length > 15 ? `${d}. ${label.slice(0, 14).trim()}…` : `${d}. ${label}`;
+}
 
 interface Series {
   name: string;
   /** grade per dimension */
   grades: (string | null)[];
   color: string;
-}
-
-export function DimensionRadar({ series }: { series: Series[] }) {
-  const { dimLabel } = useReport();
-  const data = DIMS.map((d, k) => {
-    const row: Record<string, string | number> = { dim: `${d}. ${dimLabel(d)}` };
-    series.forEach((s) => (row[s.name] = gval(s.grades[k])));
-    return row;
-  });
-  return (
-    <Figure label={`Radar chart of dimension grades for ${series.map((s) => s.name).join(', ')} (A at the outer ring, F at the centre).`} className="h-[340px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} outerRadius="68%">
-          <PolarGrid />
-          <PolarAngleAxis dataKey="dim" tick={{ fontSize: 11, fill: NAVY }} />
-          <PolarRadiusAxis angle={90} domain={[0, 5]} tickCount={6} tickFormatter={letterTick} tick={{ fontSize: 10 }} />
-          {series.map((s) => (
-            <Radar key={s.name} name={s.name} dataKey={s.name} stroke={s.color} fill={s.color} fillOpacity={0.12} isAnimationActive={false} />
-          ))}
-          <RTooltip formatter={(v) => letterTick(Number(v)) || 'n/a'} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-        </RadarChart>
-      </ResponsiveContainer>
-      <SrTable caption="Dimension grades" head={['Dimension', ...series.map((s) => s.name)]} rows={DIMS.map((d, k) => [`${d}. ${dimLabel(d)}`, ...series.map((s) => s.grades[k] ?? null)])} />
-    </Figure>
-  );
-}
-
-/* ------------------------------------------------------------------ peer comparison bars (Recharts) */
-
-function shortDim(d: string, label: string): string {
-  return label.length > 15 ? `${d}. ${label.slice(0, 14).trim()}…` : `${d}. ${label}`;
 }
 
 export function PeerBars({ series }: { series: Series[] }) {

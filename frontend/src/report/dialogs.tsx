@@ -117,7 +117,8 @@ function EvidenceDialog({ code }: { code: string }) {
           <b>Question:</b> {typo(e.question)}
         </p>
       ) : null}
-      <p className="mb-2">“{typo(e.excerpt || '')}”</p>
+      {/* self-assessment items hold director free text: never shown, only the question */}
+      {code.startsWith('SA') ? <p className="mb-2 text-[0.9rem] text-[#646464]">Director responses are synthesised, not quoted.</p> : <p className="mb-2">“{typo(e.excerpt || '')}”</p>}
       {e.url ? <p className="mb-2 break-all text-[0.9rem] text-[#646464]">{e.url}</p> : null}
       {e.used ? <p className="mb-2 text-[0.9rem] text-[#646464]">Used in: {typo(e.used)}</p> : null}
     </Shell>

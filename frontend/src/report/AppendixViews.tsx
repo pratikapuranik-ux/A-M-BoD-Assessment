@@ -3,7 +3,7 @@ import * as Accordion from '@radix-ui/react-accordion';
 import * as Tabs from '@radix-ui/react-tabs';
 import { motion } from 'framer-motion';
 import { useReportUi, type DashTab } from '../store/reportUi';
-import { DimensionRadar, PeerBars, PeerDotPlot, TrendLines, type Series, type TrendPoint } from './charts';
+import { PeerBars, PeerDotPlot, TrendLines, type Series, type TrendPoint } from './charts';
 import { DIMS, DIMN, NAVY, PEER_COLORS, PEER_RELATIVE, firstSentence, gradeColor, listJoin, typo, useReport } from './context';
 import { Arrow, Codes, DTable, DeltaCell, Eb, EvText, GradeCell, GradeChip, H2, H3, IndButton, Kpi, Muted, Notice, ScoreCell, Section, StatusText, btnCls, td, th } from './parts';
 
@@ -36,7 +36,7 @@ export function DimensionDetail() {
             <Muted>
               <b>Where this grade is limited:</b> <Codes text={(t?.limit || '').replace(/^Where this grade is limited:\s*/, '')} />
             </Muted>
-            <DTable caption={`Indicators of dimension ${d}`}>
+            <DTable caption={`Indicators of dimension ${d}, ${dimLabel(d)}`}>
               <thead>
                 <tr>
                   <th className={th}>Indicator</th>
@@ -166,7 +166,7 @@ export function SourcesAppendix() {
   const needle = q.trim().toLowerCase();
   const keys = Object.keys(all)
     .filter((k) => f === 'all' || (f === 'io' && isIO(k)) || (!isIO(k) && k[0] === f))
-    .filter((k) => !needle || `${k} ${all[k].doc} ${all[k].excerpt || ''} ${all[k].used || ''}`.toLowerCase().includes(needle))
+    .filter((k) => !needle || `${k} ${all[k].doc} ${k.startsWith('SA') ? '' : all[k].excerpt || ''} ${all[k].used || ''}`.toLowerCase().includes(needle))
     .sort((a, b) => order(a) - order(b));
   return (
     <Section id="sources">
@@ -214,7 +214,7 @@ export function SourcesAppendix() {
                   </>
                 ) : null}
               </div>
-              <div>“{typo(e.excerpt || '')}”</div>
+              {k.startsWith('SA') ? <div className="text-[#646464]">Director responses are synthesised, not quoted.</div> : <div>“{typo(e.excerpt || '')}”</div>}
               {e.question ? <div className="text-[#646464]">Question: {typo(e.question)}</div> : null}
               {e.url ? <div className="break-all text-[#646464]">{e.url}</div> : null}
               {e.used ? <div className="text-[#646464]">Used in: {typo(e.used)}</div> : null}
@@ -329,6 +329,85 @@ export function MethodAppendix() {
   );
 }
 
+/* ------------------------------------------------------------------ coverage, themes, guardrails (accordions) */
+
+function Acc({ items }: { items: { k: string; title: ReactNode; body: ReactNode }[] }) {
+  return (
+    <Accordion.Root type="multiple" className="space-y-2">
+      {items.map((x) => (
+        <Accordion.Item key={x.k} value={x.k} className="rounded-lg border border-[#ECECEC] bg-white">
+          <Accordion.Header className="m-0">
+            <Accordion.Trigger className="group flex w-full items-center justify-between px-4 py-2 text-left font-bold text-[#002B49] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0085CA]">
+              <span>{x.title}</span>
+              <span aria-hidden="true" className="text-[#0085CA] transition-transform group-data-[state=open]:rotate-90">
+                ▸
+              </span>
+            </Accordion.Trigger>
+          </Accordion.Header>
+          <Accordion.Content className="px-4 pb-3 print:block">{x.body}</Accordion.Content>
+        </Accordion.Item>
+      ))}
+    </Accordion.Root>
+  );
+}
+
+/** coverage note and the documents the run had / lacked; both stages, never inside-out content in outside-in */
+export function CoverageAccordion() {
+  const { view } = useReport();
+  const cv = (view as unknown as { coverage?: { docs_available?: string[]; docs_unavailable?: string[] } }).coverage || {}; // the backend nests them under coverage
+  const have = cv.docs_available || view.docs_available || [];
+  const lack = cv.docs_unavailable || view.docs_unavailable || [];
+  if (!view.coverage_note && !have.length && !lack.length) return null;
+  const list = (t: string, a: string[]) => (a.length ? (
+    <>
+      <b>{t}</b>
+      <ul className="mb-2 ml-5 list-disc">
+        {a.map((x, k) => (
+          <li key={k}>{typo(x)}</li>
+        ))}
+      </ul>
+    </>
+  ) : null);
+  return (
+    <Section id="coverage">
+      <Acc items={[{ k: 'cov', title: 'Coverage and limitations', body: (
+        <>
+          {view.coverage_note ? <p className="mb-2"><i>{typo(view.coverage_note)}</i></p> : null}
+          {list('Documents available', have)}
+          {list('Documents not available', lack)}
+        </>
+      ) }]} />
+    </Section>
+  );
+}
+
+/** synthesised self-assessment themes (inside-out only) and guardrails; nothing when absent */
+export function ThemesAndGuardrails() {
+  const { view, io, dimLabel } = useReport();
+  const th_ = io ? view.self_assessment_themes || [] : [];
+  const gr = view.guardrails || [];
+  if (!th_.length && !gr.length) return null;
+  return (
+    <Section id="themes-guardrails">
+      {th_.length ? (
+        <>
+          <Eb>Appendix 7</Eb>
+          <H2>Director self-assessment themes</H2>
+          <Muted>Director responses are synthesised, not quoted.</Muted>
+          <Acc items={th_.map((t, k) => ({ k: 'th' + k, title: `${t.dimension}${DIMN[t.dimension] ? '. ' + typo(dimLabel(t.dimension)) : ''}: ${typo(t.theme)}`, body: <p>{typo(t.summary)}</p> }))} />
+        </>
+      ) : null}
+      {gr.length ? (
+        <>
+          <Eb>Appendix 8</Eb>
+          <H2>Guardrails</H2>
+          <Acc items={gr.map((g, k) => ({ k: 'gr' + k, title: typo(g.group), body: <ul className="ml-5 list-disc">{(g.items || []).map((x, j) => <li key={j}>{typo(x)}</li>)}</ul> }))} />
+        </>
+      ) : null}
+    </Section>
+  );
+}
+
 /* ------------------------------------------------------------------ dashboard */
 
 function Card({ title, children, tone }: { title?: string; children: ReactNode; tone?: 'pos' | 'neg' }) {
@@ -352,7 +431,6 @@ function useSeries(): { oi: Series; io: Series | null; peers: Series[] } {
 
 function DashOverview() {
   const { view, io, L, O, last, model, stage, dimLabel } = useReport();
-  const s = useSeries();
   const findings = (stage === 'io' ? view.findings_io : view.findings_oi) || [];
   const g = L.overall.grade;
   return (
@@ -397,7 +475,6 @@ function DashOverview() {
       </Card>
       <Card title="Grades by dimension">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          <DimensionRadar series={[s.oi, ...(s.io ? [s.io] : [])]} />
           <DTable caption="Grades by dimension">
             <thead>
               <tr>
@@ -767,7 +844,7 @@ function DashTrend() {
 }
 
 function DashActions() {
-  const { view, io, actions, priorActions } = useReport();
+  const { io, actions, priorActions } = useReport();
   const pal = io ? priorActions : [];
   return (
     <>
@@ -815,30 +892,6 @@ function DashActions() {
           </DTable>
         </Card>
       ) : null}
-      {(view.metrics || []).length ? (
-        <Card title="Metrics worth tracking">
-          <DTable caption="Metrics worth tracking">
-            <thead>
-              <tr>
-                <th className={th}>Metric</th>
-                <th className={th}>Why it matters</th>
-                <th className={th}>Current</th>
-              </tr>
-            </thead>
-            <tbody>
-              {view.metrics.map((r, k) => (
-                <tr key={k}>
-                  <td className={td}>
-                    <b>{typo(r[0])}</b>
-                  </td>
-                  <td className={td}><Codes text={r[1]} /></td>
-                  <td className={td}><Codes text={r[2]} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </DTable>
-        </Card>
-      ) : null}
     </>
   );
 }
@@ -847,7 +900,6 @@ export function Dashboard() {
   const { io, cofull, tk, view, peers, fileUrl } = useReport();
   const dashTab = useReportUi((s) => s.dashTab);
   const setDashTab = useReportUi((s) => s.setDashTab);
-  const setTab = useReportUi((s) => s.setTab);
   const tabs: [DashTab, string][] = [['overview', 'Overview'], ['indicators', 'Indicators'], ...(io ? ([['inside', 'Inside-out changes']] as [DashTab, string][]) : []), ['peers', 'Peers'], ['trend', 'Trend'], ['actions', 'Actions']];
   const active: DashTab = tabs.some((t) => t[0] === dashTab) ? dashTab : 'overview';
   const html = fileUrl(io ? 'io_html' : 'oi_html');
@@ -867,9 +919,6 @@ export function Dashboard() {
               Download
             </a>
           ) : null}
-          <button type="button" className={`${btnCls} !bg-transparent !text-white`} onClick={() => setTab('report')}>
-            Full report
-          </button>
         </div>
       </div>
       <Tabs.Root value={active} onValueChange={(v) => setDashTab(v as DashTab)}>

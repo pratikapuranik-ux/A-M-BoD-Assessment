@@ -348,8 +348,13 @@ export function makeReportCtx(view: View, requested: Stage): ReportCtx {
   };
 }
 
-export function ReportProvider({ view, stage, children }: { view: View; stage: Stage; children: ReactNode }) {
-  const value = useMemo(() => makeReportCtx(view, stage), [view, stage]);
+/** `strict` = outside-in only: the inside-out result is dropped here so nothing downstream can render it, whatever the store holds */
+export function ReportProvider({ view, stage, strict, children }: { view: View; stage: Stage; strict?: boolean; children: ReactNode }) {
+  const value = useMemo(() => {
+    if (!strict) return makeReportCtx(view, stage);
+    const v: View = { ...view, io: null, overall: view.overall ? { oi: view.overall.oi } : view.overall };
+    return makeReportCtx(v, 'oi');
+  }, [view, stage, strict]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

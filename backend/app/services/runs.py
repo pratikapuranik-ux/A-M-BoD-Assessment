@@ -174,7 +174,9 @@ def inside_out_work(cid: str, mode: str, extracted: list[dict], answers: dict, r
         except research_errors(mod) as e: raise job_error(e) from e
         if not isinstance(io, dict) or not isinstance(io.get("subjects"), list): raise jobs.JobError("research returned no inside-out run")
         r = io.setdefault("run", {}); r["stage"] = "inside_out"; r["mode"] = mode; r.setdefault("period", oi["run"].get("period"))
-        io.setdefault("self_assessment_answers", answers); io.setdefault("self_ratings", {str(k): v for k, v in ratings.items()})
+        # Anonymity: the answers themselves are never written to the run file, only how many responses informed it
+        io.pop("self_assessment_answers", None); io["self_assessment_responses"] = int(n or 0)
+        io.setdefault("self_ratings", {str(k): v for k, v in ratings.items()})
         with repo.lock(cid):
             repo.write_run(cid, "inside_out", io, keep_prev=True); repo.set_used(cid, n)
             repo.set_problems(cid, None)

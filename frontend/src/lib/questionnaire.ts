@@ -39,9 +39,10 @@ export async function parseQuestionnaire(file: File, questions: readonly (readon
     if (cells.length === 1 && qi < questions.length) {
       let txt = cellText(cells[0]); if (txt.indexOf('Your answer:') === 0) txt = ''
       answers.push(txt); qi++
-    } else if (cells.length === 4 && qi > 0) {
+    } else if ((cells.length === 6 || cells.length === 4) && qi > 0) {
       const d = questions[qi - 1][0]
-      ;([[1, 1], [2, 3], [3, 5]] as const).forEach(([ci, v]) => { if (cellText(cells[ci]).indexOf('\u2612') >= 0) ratings[d] = v })
+      const map: readonly (readonly [number, number])[] = cells.length === 6 ? [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]] : [[1, 1], [2, 3], [3, 5]]
+      map.forEach(([ci, v]) => { if (cellText(cells[ci]).indexOf('\u2612') >= 0) ratings[d] = v })
     }
   })
   if (answers.length < questions.length) throw new Error(`expected ${questions.length} questions, found ${answers.length}`)

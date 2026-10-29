@@ -23,14 +23,18 @@ export default function InsideOutInput() {
 
   const canRun = apiOn && research.enabled
   const provided = j.docs.filter((_, i) => (docs[i + 1] || []).length > 0).length
-  const base = apiOn && research.enabled && n >= v.min
+  /* Documents alone are enough (no responses); otherwise the anonymity minimum applies, and 1 to min-1 responses is refused
+     because they could identify respondents. */
+  const hasDocs = provided > 0 || other.length > 0
+  const okCount = n >= v.min || (n === 0 && hasDocs)
+  const base = apiOn && research.enabled && okCount
   /* The server says whether the inside-out view can be prepared (can_generate, with its reason). Returned questionnaires are
      uploaded when the run starts, so a shortfall in the count alone is made up by those waiting here. */
-  const canGenerate = ioBusy ? false : !loaded || typeof v.can_generate !== 'boolean' ? base : v.can_generate || (qFiles.length > 0 && count < v.min && base)
-  const why = canGenerate || ioBusy ? '' : (loaded && v.reason) || ''
+  const canGenerate = ioBusy ? false : !okCount ? false : !loaded || typeof v.can_generate !== 'boolean' ? base : v.can_generate || (qFiles.length > 0 && count < v.min && base)
+  const why = canGenerate || ioBusy ? '' : n > 0 && n < v.min ? `${n} of ${v.min} self-assessment responses so far. To keep responses anonymous, either wait for ${v.min - n} more or remove them and run from board documents alone.` : n === 0 ? 'Add board documents, or collect self-assessment responses, to generate the inside-out assessment.' : (loaded && v.reason) || ''
 
   const start = () => {
-    if (n < v.min) return setMsg(`At least ${v.min} self-assessment responses are needed; ${n} so far.`)
+    if (!okCount) return setMsg(n === 0 ? 'Add board documents or collect self-assessment responses first.' : `At least ${v.min} self-assessment responses are needed, or none at all; ${n} so far.`)
     setMsg('')
     void startInsideOutRun(cid, j.meta.company, session.mode)
     nav(PATHS.ioRun)
@@ -80,6 +84,7 @@ export default function InsideOutInput() {
 
       <SurveyCard cid={cid} j={j} apiOn={apiOn} />
 
+      {n === 0 && hasDocs && <Notice><b>No self-assessment responses yet.</b> The inside-out assessment will run from the board documents alone; the directors’ view will be missing from it. You can run it again once at least {v.min} responses are in.</Notice>}
       <div className="row sb">
         <Link className="btn sec" to={PATHS.oi}>Back to outside-in readout</Link>
         <div className="row"><span className="muted err" role="alert">{msg}</span><NextButton size="lg" disabled={!canGenerate} onClick={start}>Generate inside-out assessment</NextButton></div>

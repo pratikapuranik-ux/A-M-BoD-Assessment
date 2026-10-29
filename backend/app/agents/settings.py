@@ -69,4 +69,14 @@ PERIOD_RE = re.compile(r"^\d{4}-Q[1-4]$"); DATE_RE = re.compile(r"^\d{4}(-\d{2}(
 CODE_RE = re.compile(r"^(?:[EXBKLN]\d{2,3}|IO\d{2}|SA\d{2})$")
 BLOCK_RE = re.compile(r"^\s*BLOCK \[(.*?)\] (.*?): (.*)$", re.M)
 AM_RE = re.compile(r"\bA&M\b|Alvarez", re.I)
+# Backstop for the Writing rules in system.md (the prompt is the primary control): the mechanical tells of a figurative
+# register. Deliberately narrow - every alternative is an idiom or a personification with no literal use in a board
+# report, so a hit is a rewrite and not a judgement call. A new metaphor is the prompt's job, not this pattern's.
+STYLE_RE = re.compile(
+    r"\bteeth\b(?!\s*whitening)|\bpunch(?:es|ed|ing)?\s+above\b|\bmov(?:e|es|ed|ing)\s+the\s+needle\b"
+    r"|\blow[- ]hanging\s+fruit\b|\bboil(?:ing)?\s+the\s+ocean\b|\bkick(?:s|ed|ing)?\s+the\s+can\b"
+    r"|\bcanary\s+in\s+the\s+coal\b|\belephant\s+in\s+the\s+room\b|\bfiring\s+on\s+all\s+cylinders\b"
+    r"|\bdouble[- ]edged\s+sword\b|\bsacred\s+cow|\bnorth\s+star\b|\blean(?:s|ed|ing)?\s+into?\b"
+    r"|\btells?\s+a\s+story\b|\btip\s+of\s+the\s+iceberg\b|\bgreen\s+shoots\b|\bskin\s+in\s+the\s+game\b"
+    r"|\bsea\s+change\b", re.I)
 CTRL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")

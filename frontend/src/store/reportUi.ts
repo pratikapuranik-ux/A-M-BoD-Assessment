@@ -1,17 +1,13 @@
 import { create } from 'zustand';
 
-export type ReportTab = 'dashboard' | 'report' | 'detail' | 'peers' | 'sources' | 'method' | 'plan';
-export type Lens = 'board' | 'exec';
 export type Stage = 'oi' | 'io';
 export type DashTab = 'overview' | 'indicators' | 'inside' | 'peers' | 'trend' | 'actions';
 export type Dialog = { kind: 'ev'; id: string } | { kind: 'ind'; id: string } | null;
 
 interface ReportUi {
-  tab: ReportTab;
-  /** board = the full report; exec = executive summary and scorecard only */
-  lens: Lens;
   /** the reading stage when the view has an inside-out result (combined mode) */
   stage: Stage;
+  /** sub-tab of the dashboard, which is still shown in its own dialog */
   dashTab: DashTab;
   /** sources filter: 'all', an evidence prefix, or 'io' */
   srcFilter: string;
@@ -19,8 +15,6 @@ interface ReportUi {
   /** scorecard dimensions that are expanded to their indicators */
   openDims: string[];
   dialog: Dialog;
-  setTab: (t: ReportTab) => void;
-  setLens: (l: Lens) => void;
   setStage: (s: Stage) => void;
   setDashTab: (t: DashTab) => void;
   setSrcFilter: (f: string) => void;
@@ -33,8 +27,6 @@ interface ReportUi {
 }
 
 const initial = {
-  tab: 'report' as ReportTab,
-  lens: 'board' as Lens,
   stage: 'io' as Stage,
   dashTab: 'overview' as DashTab,
   srcFilter: 'all',
@@ -43,11 +35,9 @@ const initial = {
   dialog: null as Dialog,
 };
 
-/** UI state of the report: lens, tab, filters and the open dialog. Holds no assessment data. */
+/** UI state of the report: reading stage, filters and the open dialog. Holds no assessment data. */
 export const useReportUi = create<ReportUi>((set) => ({
   ...initial,
-  setTab: (tab) => set({ tab }),
-  setLens: (lens) => set({ lens }),
   setStage: (stage) => set({ stage }),
   setDashTab: (dashTab) => set({ dashTab }),
   setSrcFilter: (srcFilter) => set({ srcFilter }),

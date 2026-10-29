@@ -46,6 +46,51 @@ def test_docx(run, tmp_path):
     assert Document(out).sections[0].footer.paragraphs[0].text.startswith("▲ DRAFT ONLY")
 
 
+def test_removed_and_added_sections(run, tmp_path):
+    txt = doc_text(D.build_docx(run, str(tmp_path / "s.docx"))); io = run["run"]["stage"] == "inside_out"
+    for gone in ("Metrics worth tracking", "Data sources: public", "Simulated?", "Consistency run"): assert gone not in txt
+    assert "Coverage and limitations" in txt and "Documents available" in txt and "Documents unavailable" in txt
+    assert "Guardrails" in txt  # TODO: assert the authoritative guardrail text once it is supplied
+    assert "Indicator-level comparison" in txt and "Evidence behind each indicator" in txt
+    d = Document(str(tmp_path / "s.docx")); heads = [p.text for p in d.paragraphs]
+    assert heads.index("Evidence behind each indicator") > heads.index("Appendix 1")
+    assert ("Outside-in to post inside-out: indicators that moved" in heads) == io
+    if io: assert heads.index("Outside-in to post inside-out: indicators that moved") > heads.index("Appendix 1")
+    order = [heads.index(h) for h in ("Executive summary", "Peer comparison", "Coverage and limitations", "Guardrails", "Appendix 1")]
+    assert order == sorted(order)
+
+
+def test_no_verbatim_self_assessment(tmp_path):
+    r = load("inside_out"); sa = {k: v for k, v in r["evidence"].items() if v.get("evidence_class") == "self_assessment"}
+    assert sa
+    for v in sa.values(): v["excerpt"] = "ZQXJ-secret-director-answer " + v["excerpt"]
+    r["self_assessment_themes"] = [{"dimension": "1", "theme": "Customer signals reach the board late", "summary": "Directors describe customer input arriving mostly through management."}]
+    txt = doc_text(D.build_docx(r, str(tmp_path / "sa.docx")))
+    assert "ZQXJ-secret-director-answer" not in txt
+    for v in sa.values(): assert v["excerpt"][:40] not in txt
+    assert "Director self-assessment: themes" in txt and "Customer signals reach the board late" in txt
+    assert "Responses are synthesised" in txt and "Verbatim excerpts from public and board documents" in txt
+    r.pop("self_assessment_themes"); txt = doc_text(D.build_docx(r, str(tmp_path / "sa2.docx")))
+    assert "Director self-assessment: themes" in txt and "No synthesised themes" in txt
+    for k in list(r["evidence"]):
+        if k in sa: del r["evidence"][k]
+    r["self_assessment_answers"] = {}
+    assert "board documents only, without a director self-assessment" in doc_text(D.build_docx(r, str(tmp_path / "sa3.docx")))
+
+
+def test_questionnaire_names_every_dimension(tmp_path):
+    import re
+    txt = doc_text(D.build_questionnaire("Acme Corp", str(tmp_path / "q.docx")))
+    assert not re.search(r"Dimension \d(?!:)", txt) and "Customer Obsession rating (optional)" in txt
+
+
+def test_inside_out_body_shows_arrow_not_pair(tmp_path):
+    d = Document(D.build_docx(load("inside_out"), str(tmp_path / "m.docx")))
+    t = next(t for t in d.tables if t.rows[0].cells[0].text == "Dimension")
+    assert not any(c.text.endswith(("Outside-in", "Inside-out")) or "OI→IO" in c.text for c in t.rows[0].cells)
+    assert any(("▲" in c.text or "▼" in c.text) for r_ in t.rows[1:] for c in r_.cells)
+
+
 def test_outside_in_without_prior_quarter_has_no_trend_furniture(tmp_path):
     """First-quarter outside-in report: no Trend row on the cover, 'SCORECARD' (not 'and trend'), no Change column, a Coverage line."""
     r = load("outside_in"); r["history"] = []

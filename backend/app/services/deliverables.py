@@ -245,6 +245,25 @@ def first_sentence(text):
     text = (text or "").strip(); f, _, _ = text.partition(". "); return (f.rstrip(".") + ".") if f else ""
 
 
+IND_NAME = {i["id"]: i["name"] for i in IND}
+
+
+def is_sa(e): return e.get("evidence_class") == "self_assessment" or e.get("source_origin") == "self_assessment"
+
+
+def mv(dl):
+    """Movement as the arrow plus the number of steps (the body shows this instead of an outside-in / inside-out pair)."""
+    return "–" if dl is None else "=" if not dl else ("▲ " if dl > 0 else "▼ ") + str(abs(dl))
+
+
+def mv_color(dl): return TEAL if (dl or 0) > 0 else "A6192E" if (dl or 0) < 0 else GREY
+
+
+def two_lines(text):
+    """First two sentences of existing run prose; nothing is composed here."""
+    return " ".join(re.split(r"(?<=[.!?])\s+", (text or "").strip())[:2]) if text else ""
+
+
 def hist_grade(h, d=None):
     """A history entry's dimension (or overall) grade: board_io for an inside-out quarter, as the dashboard does."""
     x = h["dimensions"][d] if d else h["overall"]
@@ -293,18 +312,21 @@ def build_docx(run: dict, out_path: str) -> str:
 
     # ================= EXECUTIVE SUMMARY =================
     section(doc, "Executive summary", run.get("headline") or f"{comp['name']}: the board's Day 1 / Day 2 grade", 14)
-    tiles = doc.add_table(rows=2, cols=len(lenses)); borders(tiles, "none"); fix_widths(tiles, [17.4 / len(lenses)] * len(lenses))
-    for k, l in enumerate(lenses):
+    shown = lenses[-1:] if io else lenses  # inside-out: one current grade with its movement, not the outside-in / inside-out pair
+    tiles = doc.add_table(rows=2, cols=len(shown)); borders(tiles, "none"); fix_widths(tiles, [17.4 / len(shown)] * len(shown))
+    for k, l in enumerate(shown):
         o = C["overall"][l]; cell = tiles.rows[0].cells[k]; shade(cell, TINT); cell_margins(cell, 140, 140, 200, 200); cell.text = ""
-        run_fmt(cell.paragraphs[0].add_run(labels[l].upper()), 7.5, bold=True, color=GREY, spacing=30)
+        run_fmt(cell.paragraphs[0].add_run((labels[l] if not io else "Board grade").upper()), 7.5, bold=True, color=GREY, spacing=30)
         p = cell.add_paragraph(); run_fmt(p.add_run(o.get("grade") or "—"), 30, bold=True, color=GRADE_FILL.get(o.get("grade"))); p.paragraph_format.space_after = Pt(0)
         run_fmt(p.add_run("   " + o.get("label", "")), 9.5, bold=True, color=NAVY)
+        if io:
+            odl = grade_delta(o.get("grade"), C["overall"]["board"].get("grade")); run_fmt(p.add_run("   " + mv(odl)), 14, bold=True, color=mv_color(odl))
         if o.get("provisional"): run_fmt(p.add_run("   PROVISIONAL"), 7.5, bold=True, color=AMBER)
         prev = next((h for h in reversed(hist) if l in h.get("overall", {}) or l == "board"), None)
         pv = prev["overall"].get(l if l in prev["overall"] else "board", {}).get("grade") if prev else None
         dl = grade_delta(o.get("grade"), pv)
         para(cell, f"{o['dimensions_reported']} of {len(DIMS)} dimensions reported" + (f"  ·  prior quarter {pv} ({'+' if dl > 0 else ''}{dl} step{'s' if abs(dl) != 1 else ''})" if pv and dl is not None else ""), size=7.5, color=GREY, after=0)
-        c2 = tiles.rows[1].cells[k]; c2.text = ""; cell_margins(c2, 60, 60, 200, 200); rich(c2.paragraphs[0], (run.get("overall_summary") or {}).get(l, ""), 8.5)
+        c2 = tiles.rows[1].cells[k]; c2.text = ""; cell_margins(c2, 60, 60, 200, 200); rich(c2.paragraphs[0], two_lines(run.get("what_moved")) if io else (run.get("overall_summary") or {}).get(l, ""), 8.5)  # inside-out: only what changed, from the run's own text
     kicker(doc, "What moved the rating" if (hist or io) else "What drives the rating"); para(doc, run.get("what_moved") or " ".join(run.get("headline_findings", [])), size=9)
     if io and run.get("inside_vs_outside"):
         ivo = run["inside_vs_outside"]; kicker(doc, "Inside view against the public record")
@@ -317,10 +339,6 @@ def build_docx(run: dict, out_path: str) -> str:
     kicker(doc, "Key actions"); 
     for a in run.get("actions", [])[:5]:
         p = doc.add_paragraph(); rich(p, "▸ " + a["heading"] + ". ", 8.5, bold=True, color=NAVY); rich(p, first_sentence(a["description"]), 8.5); p.paragraph_format.space_after = Pt(1)
-    if run.get("key_metrics"):
-        kicker(doc, "Metrics worth tracking"); t3 = table(doc, ["Metric", "Why it matters", "Now"], [5.2, 9.2, 3.0])
-        for m in run["key_metrics"][:6]:
-            row = new_row(t3); set_cell(row[0], m.get("metric"), bold=True, color=NAVY); set_cell(row[1], m.get("why")); set_cell(row[2], m.get("current", "") or "")
     kicker(doc, "Position relative to peers"); para(doc, run.get("peer_position", ""), size=9)
     for ln in run.get("peer_summary_lines", [])[:5]:
         p = doc.add_paragraph(); rich(p, "• " + ln, 8.5); p.paragraph_format.space_after = Pt(1)
@@ -330,28 +348,30 @@ def build_docx(run: dict, out_path: str) -> str:
     chg = bool(hist) or io  # the Change column and the trend wording only appear when there is something to compare with
     section(doc, "Scorecard and trend" if chg else "Scorecard", "Grades by dimension" + (f", {len(hist)} prior quarter(s)" if hist else ""))
     hcols = [h["period"] for h in hist]
-    hdr = ["Dimension"] + [f"{h['period']}{' (sim)' if h['simulated'] else ''}" for h in hist] + [f"{period} {labels[l]}" if io else period for l in lenses] + (["Change"] if chg else []) + ["Evidence in this run"]
-    wfix = 3.6 + 1.1 * len(hist) + 1.3 * len(lenses) + (1.2 if chg else 0); widths = [3.6] + [1.1] * len(hist) + [1.3] * len(lenses) + ([1.2] if chg else []) + [17.4 - wfix]
+    hdr = ["Dimension"] + [f"{h['period']}{' (sim)' if h['simulated'] else ''}" for h in hist] + [period] + (["Change"] if chg else []) + ["Evidence in this run"]
+    wfix = 3.6 + 1.1 * len(hist) + 1.3 + (1.2 if chg else 0); widths = [3.6] + [1.1] * len(hist) + [1.3] + ([1.2] if chg else []) + [17.4 - wfix]
     tt = table(doc, hdr, widths)
     for d in DIMS:
         row = new_row(tt); set_cell(row[0], f"{d}. {FW['dimensions'][d]}", bold=True, color=NAVY); k = 1
         for h in hist:
             grade_cell(row[k], hist_grade(h, d), 8.5); k += 1
-        for l in lenses: grade_cell(row[k], C["dimensions"][d][l]["grade"], 9.5); k += 1
-        cur = C["dimensions"][d][lenses[-1]]["grade"]; prevg = hist_grade(hist[-1], d) if hist else None  # an inside-out prior counts at its board_io grade
-        dl = grade_delta(cur, prevg)
-        if chg:
-            set_cell(row[k], ("▲" if dl > 0 else "▼" if dl < 0 else "=") + (f" {abs(dl)}" if dl else "") if dl is not None else ("OI→IO " + ("▲" if grade_delta(C["dimensions"][d]["board_io"]["grade"], C["dimensions"][d]["board"]["grade"]) > 0 else "▼" if grade_delta(C["dimensions"][d]["board_io"]["grade"], C["dimensions"][d]["board"]["grade"]) < 0 else "=") if io and C["dimensions"][d]["board_io"]["grade"] and C["dimensions"][d]["board"]["grade"] else "–"), size=8, align="center", color=(TEAL if (dl or 0) > 0 else "A6192E" if (dl or 0) < 0 else GREY)); k += 1
+        cur = C["dimensions"][d][lenses[-1]]["grade"]; grade_cell(row[k], cur, 9.5); k += 1  # one current grade; the per-lens pair is in the appendix
+        dl = grade_delta(cur, hist_grade(hist[-1], d) if hist else None)  # an inside-out prior counts at its board_io grade
+        if dl is None and io: dl = grade_delta(cur, C["dimensions"][d]["board"]["grade"])  # no prior quarter: movement from the outside-in grade
+        if chg: set_cell(row[k], mv(dl), size=8, align="center", color=mv_color(dl)); k += 1
         set_cell(row[k], (run.get("scorecard_headline") or {}).get(d, ""), size=7.5)
     row = new_row(tt); set_cell(row[0], "Overall", bold=True, color="FFFFFF"); shade(row[0], NAVY); k = 1
     for h in hist: grade_cell(row[k], hist_grade(h), 8.5); k += 1
-    for l in lenses: grade_cell(row[k], C["overall"][l].get("grade"), 9.5); k += 1
-    if chg: set_cell(row[k], "", size=8); k += 1
-    set_cell(row[k], "Rounded average of dimension letters (midpoints round down)." + (" * provisional" if any(C["overall"][l].get("provisional") for l in lenses) else ""), size=7, italic=True)
-    cv = C["coverage"][lenses[-1]]; na_cells = [f"{i} ({((comp['indicators'].get(i) or {}).get(lenses[-1]) or {}).get('na_cause','')})" for i in IND_IDS if ((comp["indicators"].get(i) or {}).get(lenses[-1]) or {}).get("score") is None]
+    grade_cell(row[k], C["overall"][lenses[-1]].get("grade"), 9.5); k += 1
+    if chg:
+        odl = grade_delta(C["overall"][lenses[-1]].get("grade"), hist_grade(hist[-1]) if hist else None)
+        if odl is None and io: odl = grade_delta(C["overall"][lenses[-1]].get("grade"), C["overall"]["board"].get("grade"))
+        set_cell(row[k], mv(odl), size=8, align="center", color=mv_color(odl)); k += 1
+    set_cell(row[k], "Rounded average of dimension letters (midpoints round down)." + (" * provisional" if C["overall"][lenses[-1]].get("provisional") else ""), size=7, italic=True)
+    cv = C["coverage"][lenses[-1]]
     split = ", ".join(f"{n} {c}" for c, n in (cv.get("not_assessable") or {}).items() if n)
     cov = f"Coverage: {cv['assessed']} of {cv['of']} indicators assessed" + (f" (not assessable: {split})" if split else "") + ". "
-    para(doc, cov + ("Grades rest on outside-in information; where an indicator is not assessable or scored on thin public evidence, board documents can arrive at a more accurate grade." if not io else "Post inside-out grades use the board documents and self-assessment supplied; outside-in grades are shown unchanged for comparison."), size=7.5, italic=True, color=GREY, before=2)
+    para(doc, cov + ("Grades rest on outside-in information; where an indicator is not assessable or scored on thin public evidence, board documents can arrive at a more accurate grade." if not io else "Grades use the board documents and self-assessment supplied. Change is the movement in steps from the prior quarter, or from the outside-in grade where there is none; both lens grades are in the appendix."), size=7.5, italic=True, color=GREY, before=2)
     # what changed table
     changes = []
     if hist:
@@ -367,24 +387,6 @@ def build_docx(run: dict, out_path: str) -> str:
             ind = next(x for x in IND if x["id"] == i); row = new_row(tc); set_cell(row[0], f"{i} {ind['name']}", bold=True, color=NAVY)
             score_cell(row[1], pv, 8); score_cell(row[2], cur, 8); set_cell(row[3], f"{'+' if cur > pv else ''}{cur - pv}", align="center", bold=True, color=TEAL if cur > pv else "A6192E")
             p = row[4].paragraphs[0]; text_with_links(p, notes.get(i) or first_sentence(((comp["indicators"][i].get("board") or {}).get("rationale"))), size=7.5)
-    if io:
-        kicker(doc, "Outside-in to post inside-out: indicators that moved")
-        tc = table(doc, ["Indicator", "OI", "IO", "Δ", "Outside-in evidence, then what the board documents added"], [4.6, 1.0, 1.0, 0.9, 9.9])
-        for i in IND_IDS:
-            a = ((comp["indicators"].get(i) or {}).get("board") or {}).get("score"); b = ((comp["indicators"].get(i) or {}).get("board_io") or {}).get("score")
-            if b is None or a == b: continue
-            ind = next(x for x in IND if x["id"] == i); row = new_row(tc); set_cell(row[0], f"{i} {ind['name']}", bold=True, color=NAVY)
-            score_cell(row[1], a, 8); score_cell(row[2], b, 8); set_cell(row[3], ("+" if a is None else ("+" if b > a else "")) + (str(b) if a is None else str(b - a)), align="center", bold=True, color=TEAL if a is None or b > a else "A6192E")
-            p = row[4].paragraphs[0]; text_with_links(p, (run.get("io_change_notes") or {}).get(i) or first_sentence(((comp["indicators"][i].get("board_io") or {}).get("rationale"))), size=7.5)
-
-    # ================= EVIDENCE BY INDICATOR =================
-    section(doc, "Evidence behind each indicator", "One line per indicator; the detailed view is in the appendix")
-    hdr = ["Indicator"] + ([labels[l] for l in lenses] if io else ["Score"]) + ["Summary of the evidence"]; widths = [4.4] + [1.2] * len(lenses) + [17.4 - 4.4 - 1.2 * len(lenses)]
-    te = table(doc, hdr, widths); summ = run.get("indicator_summary") or {}
-    for i in IND:
-        ind = comp["indicators"].get(i["id"], {}); row = new_row(te); set_cell(row[0], f"{i['id']} {i['name']}", bold=True, color=NAVY); k = 1
-        for l in lenses: score_cell(row[k], (ind.get(l) or {}).get("score"), 8); k += 1
-        p = row[k].paragraphs[0]; text_with_links(p, summ.get(i["id"]) or first_sentence((ind.get(lenses[-1]) or {}).get("rationale")) or "Not assessable.", size=7.5)
 
     # ================= PEER COMPARISON =================
     section(doc, "Peer comparison", "Dimension grades against the peer set" + (" (outside-in grades only)" if io else ""))
@@ -462,25 +464,57 @@ def build_docx(run: dict, out_path: str) -> str:
         section(doc, "Additional information that would sharpen the assessment", "Only where it would change a grade or an action")
         for b in ain:
             p = doc.add_paragraph(); rich(p, "• " + b, 8.5); p.paragraph_format.space_after = Pt(1)
+
+    # ================= COVERAGE AND LIMITATIONS =================
+    section(doc, "Coverage and limitations", "What this assessment could and could not see")
+    cvl = C["coverage"][lenses[-1]]; nac = cvl.get("not_assessable") or {}; cells = {i: (comp["indicators"].get(i) or {}).get(lenses[-1]) or {} for i in IND_IDS}
+    confs = [c.get("confidence") for c in cells.values() if c.get("score") is not None]
+    para(doc, f"{cvl['assessed']} of {cvl['of']} indicators assessed. Not assessable: " + " · ".join(f"{nac.get(k, 0)} {k}" for k in ("disclosure-limited", "retrieval-limited", "rule-limited")) + (f" · {nac['unspecified']} unspecified" if nac.get("unspecified") else "") + ".", size=8.5)
+    para(doc, "Confidence of the assessed indicators: " + " · ".join(f"{sum(1 for c in confs if c == lv)} {lv}" for lv in ("High", "Medium", "Low")) + ".", size=8.5)
+    nas = [f"{i} {IND_NAME[i]} ({c.get('na_cause') or 'cause not recorded'})" for i, c in cells.items() if c.get("score") is None]
+    if nas: para(doc, "Not assessable, with cause: " + "; ".join(nas) + ".", size=8, after=3)
+    cited = {x for c in comp["indicators"].values() for l in lenses for x in ((c.get(l) or {}).get("evidence") or [])}
+    docs_ = {}  # the company's distinct cited documents, grouped by origin (peer sources are in Sources consulted); self-assessment items are excluded
+    for k, e in run["evidence"].items():
+        if k in cited and not is_sa(e) and e.get("document"): docs_.setdefault("Board documents (inside-out)" if e.get("evidence_class") == "inside_out" or e.get("source_origin") == "inside_out" else "Public record", set()).add(e["document"])
+    kicker(doc, "Documents available")
+    for g, ds in sorted(docs_.items(), reverse=True):
+        para(doc, f"{g}: {len(ds)} document(s)", size=8, bold=True, color=NAVY, after=1, keep=True)
+        for x in sorted(ds): para(doc, "• " + x, size=7.5, after=0)
+    kicker(doc, "Documents unavailable"); un = (run.get("coverage") or {}).get("documents_unavailable") or []
+    for x in un: para(doc, "• " + x, size=7.5, after=0)
+    if not un: para(doc, "None recorded.", size=8, italic=True, color=GREY)
+    if (run.get("coverage") or {}).get("notes"): kicker(doc, "Notes"); para(doc, run["coverage"]["notes"], size=8)
+
+    # ================= GUARDRAILS =================
+    section(doc, "Guardrails", "Guardrails")
+    from app.domain.view import _guardrails  # one source with the dashboard and the React report
+    groups, intro = _guardrails()
+    if intro: para(doc, intro, size=8.5, after=4)
+    for g in groups:
+        kicker(doc, g["group"])
+        for x in g["items"]: para(doc, "• " + x, size=8, after=2)
     doc.add_page_break()
 
     # ================= APPENDICES =================
     appn = 0
     def app_title(t): 
         nonlocal appn; appn += 1; section(doc, f"Appendix {appn}", t, 13)
-    def data_sources_appendix():
-        app_title("Data sources: public, inside-out and simulated")
-        para(doc, "Every source used in this report, in one line each, with its origin (public record, inside-out board document, or director self-assessment) and whether it was simulated for prototype testing.", size=7.5, italic=True, color=GREY)
-        ta = table(doc, ["Source (one line)", "Origin", "Simulated?", "Used for"], [8.0, 2.4, 2.0, 5.0])
-        used = {}
-        for iid, ind in comp["indicators"].items():
-            for l in lenses:
-                for e in ((ind.get(l) or {}).get("evidence") or []): used.setdefault(e, set()).add(iid)
-        for eid in sorted(run["evidence"], key=lambda x: (x[:2], len(x), x)):
-            e = run["evidence"][eid]; row = new_row(ta); set_cell(row[0], f"{eid}  {e.get('document','')}", size=7.5)
-            orig = e.get("source_origin") or ("inside_out" if e.get("evidence_class") == "inside_out" else "self_assessment" if e.get("evidence_class") == "self_assessment" else "public")
-            set_cell(row[1], orig.replace("_", " "), size=7.5, align="center"); set_cell(row[2], "Yes" if e.get("simulated") else "No", size=7.5, align="center", bold=bool(e.get("simulated")), color=AMBER if e.get("simulated") else None)
-            set_cell(row[3], ", ".join(sorted(used.get(eid, []))) or "context", size=7)
+    def sa_themes_appendix():
+        # Anonymity: only synthesised themes are ever printed, never an answer or a per-respondent structure.
+        app_title("Director self-assessment: themes")
+        n = run.get("self_assessment_responses"); themes = run.get("self_assessment_themes") or []
+        had = n or any(is_sa(e) for e in run["evidence"].values()) or any((run.get("self_assessment_answers") or {}).values())
+        if not had: para(doc, "The inside-out view was prepared from board documents only, without a director self-assessment.", size=8.5); return
+        para(doc, (f"{n} director response(s) were received. " if n else "Director responses were received; the number of respondents is not recorded in this run. ") + "Responses are synthesised into themes: no answer is quoted and nothing is attributed to an individual.", size=8, italic=True, color=GREY)
+        if not themes: para(doc, "No synthesised themes were produced for this run.", size=8.5)
+        for d in DIMS:
+            ts = [t_ for t_ in themes if str(t_.get("dimension")) == d]
+            if not ts: continue
+            kicker(doc, f"{d}. {FW['dimensions'][d]}")
+            for t_ in ts:
+                p = doc.add_paragraph(); rich(p, t_.get("theme", ""), 8.5, bold=True, color=NAVY); p.paragraph_format.space_after = Pt(0); p.paragraph_format.keep_with_next = True
+                para(doc, t_.get("summary", ""), size=8, after=3)
     app_title("Detailed indicator view")
     for d in DIMS:
         kicker(doc, f"{d}. {FW['dimensions'][d]}  ·  " + "  ·  ".join(f"{labels[l]} {C['dimensions'][d][l]['grade'] or 'n/a'}" for l in lenses))
@@ -500,6 +534,24 @@ def build_docx(run: dict, out_path: str) -> str:
             set_cell(row[k + 1], " / ".join((ind.get(l) or {}).get("confidence") or "–" for l in lenses), size=7.5, align="center")
         lim = (comp.get("limitations") or {}).get(d)
         if lim: para(doc, "Where this grade is limited: " + lim, size=7.5, italic=True, color=GREY)
+    # indicator-level comparison: moved here from the body, which keeps to the narrative
+    app_title("Indicator-level comparison")
+    if io:
+        kicker(doc, "Outside-in to post inside-out: indicators that moved")
+        tc = table(doc, ["Indicator", "OI", "IO", "Δ", "Outside-in evidence, then what the board documents added"], [4.6, 1.0, 1.0, 0.9, 9.9])
+        for i in IND_IDS:
+            a = ((comp["indicators"].get(i) or {}).get("board") or {}).get("score"); b = ((comp["indicators"].get(i) or {}).get("board_io") or {}).get("score")
+            if b is None or a == b: continue
+            ind = next(x for x in IND if x["id"] == i); row = new_row(tc); set_cell(row[0], f"{i} {ind['name']}", bold=True, color=NAVY)
+            score_cell(row[1], a, 8); score_cell(row[2], b, 8); set_cell(row[3], ("+" if a is None else ("+" if b > a else "")) + (str(b) if a is None else str(b - a)), align="center", bold=True, color=TEAL if a is None or b > a else "A6192E")
+            p = row[4].paragraphs[0]; text_with_links(p, (run.get("io_change_notes") or {}).get(i) or first_sentence(((comp["indicators"][i].get("board_io") or {}).get("rationale"))), size=7.5)
+    kicker(doc, "Evidence behind each indicator")
+    hdr = ["Indicator"] + ([labels[l] for l in lenses] if io else ["Score"]) + ["Summary of the evidence"]; widths = [4.4] + [1.2] * len(lenses) + [17.4 - 4.4 - 1.2 * len(lenses)]
+    te = table(doc, hdr, widths); summ = run.get("indicator_summary") or {}
+    for i in IND:
+        ind = comp["indicators"].get(i["id"], {}); row = new_row(te); set_cell(row[0], f"{i['id']} {i['name']}", bold=True, color=NAVY); k = 1
+        for l in lenses: score_cell(row[k], (ind.get(l) or {}).get("score"), 8); k += 1
+        p = row[k].paragraphs[0]; text_with_links(p, summ.get(i["id"]) or first_sentence((ind.get(lenses[-1]) or {}).get("rationale")) or "Not assessable.", size=7.5)
     # peer one-pagers
     appn += 1
     for n, p_ in enumerate(peers):
@@ -516,8 +568,7 @@ def build_docx(run: dict, out_path: str) -> str:
             p = row[2].paragraphs[0]
             if cl.get("score") is None: rich(p, cl.get("rationale") or "Not assessable.", 7, italic=True, color=GREY)
             else: text_with_links(p, cl.get("rationale") or "", cl.get("evidence") or [], 7)
-    if io:
-        data_sources_appendix()
+    if io: sa_themes_appendix()
     # how to read
     app_title("How to read this report")
     para(doc, "This assessment applies Jeff Bezos's Day 1 / Day 2 lens to a listed company's board, using " + ("public information only." if not io else "public information plus board documents and a director self-assessment supplied by the board.") + " Day 1 boards stay obsessed with the customer, make high-velocity decisions, resist proxies and process, embrace external trends, build rather than protect, and manage to cash. Day 2 is what creeps in afterwards.", size=8.5)
@@ -530,12 +581,12 @@ def build_docx(run: dict, out_path: str) -> str:
     for k, rt in enumerate(rules, 1):
         p = doc.add_paragraph(); run_fmt(p.add_run(f"{k:02d}  "), 8, bold=True, color=BLUE); run_fmt(p.add_run(rt), 8); p.paragraph_format.space_after = Pt(2)
     # sources with bookmarks
-    app_title("Sources consulted"); para(doc, "Each entry is referenced from the tables by its code. Verbatim excerpts are kept under 15 words.", size=7.5, italic=True, color=GREY)
+    app_title("Sources consulted"); para(doc, "Each entry is referenced from the tables by its code. Verbatim excerpts from public and board documents are kept under 15 words; director self-assessment answers are never reproduced, because that would defeat their anonymity.", size=7.5, italic=True, color=GREY)
     used = {}
     for s in run["subjects"]:
         for iid, ind in (s.get("indicators") or {}).items():
             for l in ("board", "board_io"):
-                for e in ((ind.get(l) or {}).get("evidence") or []): used.setdefault(e, set()).add(iid + ("" if s["role"] == "company" else f" ({s['name']})"))
+                for e in ((ind.get(l) or {}).get("evidence") or []): used.setdefault(e, set()).add(f"{iid} {IND_NAME.get(iid, '')}".strip() + ("" if s["role"] == "company" else f" ({s['name']})"))
     bid = 100
     for eid in sorted(run["evidence"], key=lambda x: (x[:2], len(x), x)):
         e = run["evidence"][eid]; p = doc.add_paragraph(); add_bookmark(p, f"EV_{eid}", bid); bid += 1
@@ -545,7 +596,8 @@ def build_docx(run: dict, out_path: str) -> str:
         run_fmt(p.add_run(f"   {e.get('date','')}   ·   {e.get('evidence_class','direct')}" + (f"   ·   {e.get('source_origin')}" if e.get("source_origin") else "") + ("   ·   SIMULATED" if e.get("simulated") else "") + ("   ·   RECENT" if e.get("recent") else "")), 7.5, color=GREY)
         p.paragraph_format.space_after = Pt(0); p.paragraph_format.keep_with_next = True
         if e.get("question"): para(doc, "Q: " + e["question"], size=7.5, italic=True, color=GREY, after=0)
-        if e.get("excerpt"): para(doc, e["excerpt"], size=8, italic=True, after=0)
+        if is_sa(e): para(doc, "Responses are synthesised across directors; no individual answer is quoted (see the themes appendix).", size=7.5, color=GREY, after=0)
+        elif e.get("excerpt"): para(doc, e["excerpt"], size=8, italic=True, after=0)
         if e.get("search_log"): para(doc, "Search: " + e["search_log"], size=7.5, color=GREY, after=0)
         p2 = doc.add_paragraph(); p2.paragraph_format.space_after = Pt(0)
         if e.get("url"): add_external_link(p2, e["url"], doc.part, 7)
@@ -570,6 +622,9 @@ def build_docx(run: dict, out_path: str) -> str:
 def build_dashboard(run: dict, out_path: str) -> str:
     """Self-contained HTML dashboard (inline CSS/JS, no external assets); returns out_path."""
     run = _prep(run); comp = company_of(run)
+    for e in (run.get("evidence") or {}).values():  # the page source must not carry a director's own words
+        if isinstance(e, dict) and e.get("evidence_class") == "self_assessment": e["excerpt"] = ""
+    run.pop("self_assessment_answers", None)
     tpl = (_HERE / "templates" / "dashboard.html").read_text(encoding="utf-8")
     page = (tpl.replace("__TITLE__", html.escape(f"{comp['name']} - Day 1 / Day 2 Board Assessment"))
             .replace("__RUN__", json.dumps(run).replace("</", "<\\/")).replace("__FW__", json.dumps(FW).replace("</", "<\\/")))
@@ -636,7 +691,7 @@ def build_questionnaire(company: str, out_path: str, simulate: bool = False) -> 
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
         if n % 2 == 0:
             rt = doc.add_table(rows=1, cols=len(RATING_LABELS) + 1); _light_borders(rt)
-            rt.rows[0].cells[0].text = f"Dimension {d} rating (optional): mark one"
+            rt.rows[0].cells[0].text = f"{dname} rating (optional): mark one"
             _qshade(rt.rows[0].cells[0], TINT)
             pick = rnd.choice([2, 3, 3, 4])  # one rating per dimension (legacy drew once per cell)
             for k, lab in enumerate(RATING_LABELS, 1):

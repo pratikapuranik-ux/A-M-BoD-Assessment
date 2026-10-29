@@ -49,5 +49,15 @@ q.click(); out.defModal = d.getElementById("modalBox").textContent.includes("Day
 // peer detail row
 const prow = d.querySelector("#peers tr.row");
 prow.click(); out.peerDetailOpen = !!d.querySelector("#peers .detail.open");
+// visible text (scripts excluded) and the self-assessment evidence modal, for the anonymity / heading checks
+const clone2 = d.body.cloneNode(true); clone2.querySelectorAll("script").forEach((s) => s.remove());
+out.pageText = clone2.textContent;
+const saId = w.eval("Object.keys(RUN.evidence)").find((k) => /^SA\d+$/.test(k));
+if (saId) { w.showEv([saId], "t"); out.saModal = d.getElementById("modalBox").textContent; }
+out.sectionTitles = [...d.querySelectorAll("details > summary")].map((s) => s.textContent.trim());
+out.coverageText = d.getElementById("coverage").textContent;
+out.appendixText = d.getElementById("appx").textContent;
+out.guardText = d.getElementById("guard").textContent;
+out.scorecardText = d.getElementById("scorecard").textContent;
 console.log(JSON.stringify(out));
 process.exit(0);

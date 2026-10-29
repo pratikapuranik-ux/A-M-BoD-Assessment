@@ -10,6 +10,7 @@ For each of the 22 indicators submit a cell for the post inside-out score:
 
 Also submit:
 - documents: for each IO code, the document's date (YYYY-MM-DD, YYYY-MM or YYYY as stated in it, else $today) and a verbatim excerpt under 15 words that best shows what it adds.
+- self_assessment_themes: the director self-assessment synthesised for the appendix, which prints these entries and nothing else from the answers. One entry per theme: dimension ("1" to "6"), a short theme label, and a summary of two or three sentences covering what several directors raised, where views diverged, and how that reads against the public record. Three to eight entries across the answered dimensions. Themes only: never quote an answer, reproduce its distinctive phrasing or a recounted incident, and never write "one director said" or "Response 2". Attribute to the group ("most answers", "two of the responses", "views divided on"). Empty if there are no answers.
 - headline, overall_summary (one sentence on the post inside-out grade against the outside-in grade), what_moved (what the documents changed across dimensions).
 - better / worse: where the inside view is better and worse than the public record, one line each with codes.
 - headline_findings: exactly three, with codes.
@@ -18,6 +19,10 @@ Also submit:
 - prior_actions_status: one entry per prior action listed below (same id), status from the documents (completed, cancelled, on_track, behind, not_started, no_public_evidence), evidence_note with codes, metrics_note. Empty if there are no prior actions.
 - back_on_track: one entry per prior action that is behind or not_started (what happened, impact, root cause, mechanism to prevent, measures to track).
 - additional_information_needed: only where a specific document would still change a grade or action.
+
+Writing and anonymity
+- Register as set out under Writing in the system prompt: declarative and literal, figures and dates, no metaphor, idiom or personification, no journalistic opener. Name the dimension ("Building over Protecting"), never "Dimension 5".
+- The self-assessment is anonymous, and the answers below are shuffled question by question, so "Response 2" is a different director from one question to the next. Wherever self-assessment material is used - rationales, better / worse, findings, io_change_notes, actions and the themes - write it as the view of the group, not of a person, and leave out the phrasing, the recounted incident, the date or the role detail that would let a reader work out who wrote it. Cite the SA code for traceability: it stands for the question, not for the respondent.
 
 Input data:
 $digest

@@ -239,6 +239,17 @@ export interface Reconciliation {
   rows: ReconciliationRow[];
 }
 
+/** a synthesised theme across the director self-assessment; never a per-respondent answer */
+export interface SaTheme {
+  dimension: string;
+  theme: string;
+  summary: string;
+}
+export interface GuardrailGroup {
+  group: string;
+  items: string[];
+}
+
 export interface View {
   reconciliation?: Reconciliation;
   meta: Meta;
@@ -268,6 +279,11 @@ export interface View {
   prior: Prior | null;
   priors?: Prior[];
   docs: [string, string][] | string[][];
+  /** documents the run actually had / still lacks; absent on older servers, derived from `docs` then */
+  docs_available?: string[];
+  docs_unavailable?: string[];
+  self_assessment_themes?: SaTheme[];
+  guardrails?: GuardrailGroup[];
   q: [string, string, string][] | string[][];
   modes: Record<string, string>;
   scale: ScaleBand[];

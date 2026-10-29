@@ -16,7 +16,7 @@ Grades apply to the board as a body. Factual, filing-based statements about name
 
 ## Language and claims
 
-Evidence-based and non-accusatory. No legal conclusions (e.g. 'breach of duty'), no share-price predictions, no investment advice. Each grade states where public information limits it. No hedging to C to avoid committing.
+Evidence-based and non-accusatory. No legal conclusions (e.g. 'breach of duty'), no share-price predictions, no investment advice. Each grade states where public information limits it. No hedging to C to avoid committing. Literal register throughout: no metaphor, idiom or personification, and dimensions are named ('Customer Obsession'), never numbered alone.
 
 ## Authorisation and use (run modes)
 
@@ -61,3 +61,5 @@ All outputs are drafts requiring review by a qualified A&M professional. Attribu
 ## Inside-out and self-assessment material
 
 Documents and questionnaire answers supplied by the director are used only for this company's assessment, are cited by document and date (not by person), and are never used to assess a peer or another client. Simulated documents are labelled SIMULATED in every output and listed in the data-sources appendix.
+
+Self-assessment answers are never reproduced. Responses are collected anonymously; each question's answers are shuffled on their own before they are read, so a response number is a different director from one question to the next; the inside-out view is prepared only once the minimum number of directors has responded (three by default), and a refresh is held back until enough further responses arrive that a single new one cannot be singled out. What reaches any output is a synthesis across respondents - the themes raised, where views converged and where they diverged - never a quoted answer, its distinctive phrasing, a recounted incident or any other detail that would identify who wrote it; the run file itself keeps only the question behind each `SA` code, not the answer. This overrides the requirement in Rule 19 to quote each cited answer with its question in the sources appendix: the appendix carries the question and the code, and the themes section carries the substance.

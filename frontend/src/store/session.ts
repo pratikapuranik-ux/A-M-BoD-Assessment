@@ -54,7 +54,7 @@ export const useSession = create<SessionState>()(
     {
       name: 'am-board-session',
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (s) => ({ email: s.email, name: s.name, companyId: s.companyId, mode: s.mode }),
+      partialize: (s) => ({ email: s.email, name: s.name, companyId: s.companyId, mode: s.mode, oiDone: s.oiDone, seen3: s.seen3, priorSel: s.priorSel }),
     },
   ),
 )

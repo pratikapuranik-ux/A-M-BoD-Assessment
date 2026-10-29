@@ -354,6 +354,38 @@ def test_inside_out_documents_rule19_retry_and_grade(fake):
     assert_progress(events)
 
 
+IO_DOCS = [{"slot": 1, "name": "minutes.txt", "text": "Minutes: customer outcomes added as a standing item.", "pdf_b64": None},
+           {"slot": 4, "name": "governance.txt", "text": "Governance framework.", "pdf_b64": None},
+           {"slot": 0, "name": "chair notes.txt", "text": "Executive session notes.", "pdf_b64": None}]
+SA_ANSWERS = {"1": "A lost-contract debrief in Q2 changed our pricing posture.", "2": "Customer satisfaction sits at 10% of the bonus."}
+
+
+def test_inside_out_keeps_peers_unchanged_and_self_assessment_anonymous(fake):
+    """Rule 17: the inside-out run reports the same peer grades and the same peer narrative as the outside-in run it is built
+    on, whatever the model returns. Anonymity: no answer is written to the run; only synthesised themes carry the substance."""
+    def model(kw):
+        sub = io_submission()
+        sub["self_assessment_themes"] = [
+            {"dimension": "1", "theme": "Customer signals arrive through management",
+             "summary": "Most answers describe customer input reaching the board in management's summary. Views divided on whether that is close enough to the customer."},
+            {"dimension": "9", "theme": "dropped", "summary": "not a dimension"}]
+        return msg([tool_use("submit_inside_out", sub, "toolu_p1")])
+
+    fake(model)
+    run = G.run_inside_out(EX, IO_DOCS, SA_ANSWERS, {"1": 3}, lambda *a: None)
+    for src, out in zip(EX["subjects"][1:], run["subjects"][1:]):
+        assert out["name"] == src["name"] and out["role"] == "peer"
+        assert out["indicators"] == src["indicators"], "peer cells are the outside-in cells"
+        assert out.get("summary") == src.get("summary"), "the peer page summary is the outside-in one"
+        assert out["computed"] == src["computed"], "peer grades are identical in both stages"
+    for k in ("peer_position", "peer_summary_lines", "peer_row_summary"):
+        assert run[k] == EX[k], f"{k} must be the outside-in text"
+    body = json.dumps(run, ensure_ascii=False)
+    assert "lost-contract debrief" not in body and "10% of the bonus" not in body, "no verbatim answer is kept in the run"
+    assert run["evidence"]["SA01"]["excerpt"] == K.SA_NOTE and run["evidence"]["SA01"]["question"], "the question stays, the answer does not"
+    assert [t["dimension"] for t in run["self_assessment_themes"]] == ["1"] and run["self_assessment_responses"] == 0
+
+
 def test_rejected_submission_is_kept_as_draft_for_partial_corrections():
     # Claude is told empty fields keep what it sent before; a correction that resends only the fixed indicator
     # must still be checked against the evidence list from the rejected first submission (live Foundry run, 28 Oct 2026)

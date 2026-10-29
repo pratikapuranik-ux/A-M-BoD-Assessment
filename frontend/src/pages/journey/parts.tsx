@@ -1,4 +1,5 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
+import { useActionEdit } from '../../api/queries'
 import { Link } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { Button, Card, Chip, DlButton, GradeChip, GradeSquare, NextButton } from '../../components/ui'
@@ -18,17 +19,54 @@ export function Codes({ text }: { text: string }) {
 }
 
 /** One action, as on the action plan: heading, target, what to do (with its evidence) and how progress is measured. */
-export function ActionCard({ a }: { a: JourneyAction }) {
+export function ActionCard({ a, cid }: { a: JourneyAction & { edited?: boolean }; cid?: string }) {
+  const [editing, setEditing] = useState(false)
+  const [f, setF] = useState({ heading: '', description: '', target: '', measures: '' })
+  const m = useActionEdit(cid || '')
+  const open = () => { setF({ heading: a.heading, description: a.description, target: a.target || '', measures: (a.measures || []).join('\n') }); setEditing(true) }
+  const save = () => m.mutate({ n: a.n, body: { ...f, measures: f.measures.split('\n').map((x) => x.trim()).filter(Boolean) } }, { onSuccess: () => setEditing(false) })
+  const del = () => { if (window.confirm(`Delete action ${a.n}, “${a.heading}”?`)) m.mutate({ n: a.n, del: true }) }
+  if (editing) return <ActionForm f={f} setF={setF} onSave={save} onCancel={() => setEditing(false)} busy={m.isPending} err={m.error?.message} />
   return (
     <div className="pact">
       <div className="pnum">{a.n}</div>
       <div className="pbody">
         <div className="phead"><h3>{a.heading}</h3><span className="ptgt">Target {a.target || '–'}</span></div>
+        {cid && <div className="row" style={{ gap: 8, marginBottom: 6 }}>
+          {a.edited && <span className="chip">edited by you</span>}
+          <Button size="sm" variant="sec" onClick={open}>Edit</Button><Button size="sm" variant="sec" disabled={m.isPending} onClick={del}>Delete</Button>
+          {m.error && <span className="muted err" role="alert">{m.error.message}</span>}
+        </div>}
         <p><Codes text={a.description} /></p>
         {(a.measures || []).length > 0 && <><div className="kl">How progress is measured</div><ul className="pmeas">{a.measures!.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
       </div>
     </div>
   )
+}
+
+type ActionFormState = { heading: string; description: string; target: string; measures: string }
+function ActionForm({ f, setF, onSave, onCancel, busy, err }: { f: ActionFormState; setF: (v: ActionFormState) => void; onSave: () => void; onCancel: () => void; busy: boolean; err?: string }) {
+  const set = (k: keyof ActionFormState) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value })
+  return (
+    <div className="pact"><div className="pbody">
+      <label className="kl" htmlFor="af-h">Heading</label><input id="af-h" className="input" value={f.heading} onChange={set('heading')} maxLength={300} />
+      <label className="kl" htmlFor="af-d">What to do</label><textarea id="af-d" className="input" rows={4} value={f.description} onChange={set('description')} />
+      <label className="kl" htmlFor="af-t">Target (for example 2027-Q2)</label><input id="af-t" className="input" value={f.target} onChange={set('target')} maxLength={200} />
+      <label className="kl" htmlFor="af-m">How progress is measured (one per line)</label><textarea id="af-m" className="input" rows={3} value={f.measures} onChange={set('measures')} />
+      <div className="row" style={{ marginTop: 10 }}><Button size="sm" disabled={busy || !f.heading.trim()} onClick={onSave}>Save</Button><Button size="sm" variant="sec" onClick={onCancel}>Cancel</Button>{err && <span className="muted err" role="alert">{err}</span>}</div>
+    </div></div>
+  )
+}
+
+/** Adds one more action to the board's list (the server holds at most five). */
+export function AddAction({ cid, count }: { cid: string; count: number }) {
+  const [open, setOpen] = useState(false)
+  const [f, setF] = useState<ActionFormState>({ heading: '', description: '', target: '', measures: '' })
+  const m = useActionEdit(cid)
+  if (count >= 5) return null
+  if (!open) return <div className="row" style={{ marginBottom: 20 }}><Button variant="sec" onClick={() => setOpen(true)}>Add an action</Button></div>
+  return <ActionForm f={f} setF={setF} busy={m.isPending} err={m.error?.message} onCancel={() => setOpen(false)}
+    onSave={() => m.mutate({ body: { ...f, measures: f.measures.split('\n').map((x) => x.trim()).filter(Boolean) } }, { onSuccess: () => { setOpen(false); setF({ heading: '', description: '', target: '', measures: '' }) } })} />
 }
 
 export function PlanButton({ stage, j }: { stage: 'oi' | 'io'; j: JourneyView }) {

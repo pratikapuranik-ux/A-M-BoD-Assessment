@@ -160,6 +160,7 @@ async def inside_out(cid: str, request: Request):
     if probs: raise ApiError(400, "some documents could not be read", probs)
     ok, why = survey_api.can_generate(n, s.get("used"))
     if not ok: raise ApiError(409, why)
+    if n == 0 and not extracted: raise ApiError(409, "add board documents or collect self-assessment responses")
     st = runs.research_status()
     if not st["enabled"]: raise ApiError(503, "research is not available: " + st["reason"])
     return {"job_id": submit("inside_out", runs.inside_out_work(cid, mode, extracted, answers, ratings, n), cid).id}

@@ -126,6 +126,20 @@ export const useUninvite = (id: string) => {
   })
 }
 
+export interface ActionBody { heading?: string; description?: string; target?: string; measures?: string[] }
+
+/** Edit (n given, with body), add (no n) or delete (n, no body) one board action; the company view is refetched. */
+export const useActionEdit = (id: string) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ n, body, del }: { n?: string; body?: ActionBody; del?: boolean }) => {
+      const p = `/companies/${enc(id)}/actions` + (n ? '/' + Number(n) : '')
+      return del ? api(p, { method: 'DELETE' }) : n ? api(p, { method: 'PUT', body: JSON.stringify(body) }) : post(p, body)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['company', id, 'view'] }),
+  })
+}
+
 /** A returned Word questionnaire, stored as one more anonymous response. */
 export const postPaperResponse = (id: string, body: PaperResponseBody) =>
   post<SurveyStatus>(`/companies/${enc(id)}/survey/responses`, body)

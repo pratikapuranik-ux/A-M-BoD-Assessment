@@ -14,6 +14,7 @@ Task: research and score this subject's board on all 22 indicators, exactly as t
 3. Record comparables for the peer-relative calibration: capex to depreciation (latest year and five-year view), free cash flow to net income, leverage (net debt ratio or net debt to EBITDA), credit rating, cash returned to shareholders, and timing on the last two or three sector shocks, each with its evidence code.
 4. Per dimension 1-6 write assessment_text (first sentence is the headline, then about 60 to 80 words in total, codes inline) and limitations (one line on where public information limits the grade).
 5. Per indicator write summary: one line of at most 20 words with codes, for the evidence table. Each rationale is two or three sentences (about 50 words), naming the anchor parts met; do not narrate the research.
+6. Register for assessment_text, limitations, summaries and rationales, as set out under Writing in the system prompt: declarative and literal, figures and dates, no metaphor, idiom or personification, no journalistic opener. Name the dimension ("Customer Obsession"), never "Dimension 1".
 
 Submission encoding for submit_subject_assessment:
 - score 1-5 with confidence High, Medium or Low and na_cause "none"; or score 0 for not assessable, with confidence "None", na_cause rule-limited, disclosure-limited or retrieval-limited, and a rationale listing what was searched (Rule 15). Never use 3 for "don't know".

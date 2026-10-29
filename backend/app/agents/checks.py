@@ -7,7 +7,10 @@ import json
 import re
 from pathlib import Path
 
-from .settings import FW, IND_IDS, DIMS, PEER_RELATIVE, PERIOD_RE, DATE_RE, CODE_RE, AM_RE
+from .settings import FW, IND_IDS, DIMS, PEER_RELATIVE, PERIOD_RE, DATE_RE, CODE_RE, AM_RE, STYLE_RE
+
+# What stands in the run file where a director's answer would otherwise sit (anonymity: the answers are never persisted)
+SA_NOTE = "Synthesised from director responses"
 
 def _merge(old, new, keys):
     if old is None: return copy.deepcopy(new)
@@ -101,7 +104,12 @@ def _check_actions(actions, period):
 
 def _check_text(fields, known):
     bad = sorted({c for t in fields for c in _cited(t) if c not in known})
-    return [f"narrative cites evidence codes that do not exist: {bad}"] if bad else []
+    p = [f"narrative cites evidence codes that do not exist: {bad}"] if bad else []
+    if hits := sorted({m.group(0).lower() for t in fields for m in STYLE_RE.finditer(t or "")}):
+        p.append(f"figurative language in the narrative: {hits}. Rewrite those sentences literally, as the Writing rules require: "
+                 "no metaphor, idiom or personification. Keep every figure and the finding itself and state the mechanism plainly; "
+                 "do not substitute another figure of speech, and paraphrase rather than quote a source's own idiom.")
+    return p
 
 
 def _recent(date, today):
@@ -253,7 +261,9 @@ def _io_inputs(run, documents, answers, today):
         n = int(re.sub(r"\D", "", str(k)) or 0)
         if 1 <= n <= len(qs) and (a or "").strip():
             dim, dname, q = qs[n - 1]
-            sa[f"SA{n:02d}"] = {"document": f"Director self-assessment, Q{n} (Dimension {dim}: {dname})", "doc_type": "self-assessment",
+            # `excerpt` carries the answers to the model (the digest reads it) and is replaced by SA_NOTE in _assemble_io,
+            # so no verbatim answer is written to the run file or reaches a renderer.
+            sa[f"SA{n:02d}"] = {"document": f"Director self-assessment, Q{n} ({dname})", "doc_type": "self-assessment",
                                 "date": today.isoformat(), "url": "", "excerpt": a.strip(), "evidence_class": "self_assessment",
                                 "source_origin": "self_assessment", "simulated": False, "recent": True, "question": q}
     return items, blocks, dict(sorted(sa.items()))
@@ -305,7 +315,10 @@ def _assemble_io(base, io, io_items, sa, prior, ratings, period):
     for code, item in io_items.items():
         d = docs.get(code) or {}
         run["evidence"][code] = {**item, "date": d.get("date") or item["date"], "excerpt": d.get("excerpt", "")}
-    run["evidence"].update(copy.deepcopy(sa))
+    # Anonymity: the run keeps the question and the SA code (so [SA01] citations resolve) but never the answer itself;
+    # what a reader sees of the self-assessment is the synthesised themes below.
+    for code, item in sa.items():
+        run["evidence"][code] = {**copy.deepcopy(item), "excerpt": SA_NOTE}
     heads = {a["id"]: a.get("heading", "") for a in prior}
     notes = [x for x in io.get("io_change_notes", []) if x.get("id") in IND_IDS]
     run.update(headline=io.get("headline", ""), what_moved=io.get("what_moved", ""), headline_findings=io.get("headline_findings", []),
@@ -315,7 +328,16 @@ def _assemble_io(base, io, io_items, sa, prior, ratings, period):
                prior_actions_status=[{"id": x.get("id"), "heading": heads.get(x.get("id"), ""), "status": x.get("status"), "evidence_note": x.get("evidence_note", ""),
                                       "metrics_note": x.get("metrics_note", "")} for x in io.get("prior_actions_status", [])],
                back_on_track=[{"id": b.get("id"), "heading": heads.get(b.get("id"), ""), **{k: v for k, v in b.items() if k != "id"}} for b in io.get("back_on_track", [])],
-               additional_information_needed=io.get("additional_information_needed", []), self_ratings=ratings)
+               additional_information_needed=io.get("additional_information_needed", []), self_ratings=ratings,
+               self_assessment_themes=[{"dimension": str(t.get("dimension")), "theme": t.get("theme", ""), "summary": t.get("summary", "")}
+                                       for t in io.get("self_assessment_themes", []) if str(t.get("dimension")) in DIMS],
+               self_assessment_responses=run.get("self_assessment_responses", 0))
     run.setdefault("overall_summary", {})["board_io"] = io.get("overall_summary", "")
+    # Peers are never re-scored or re-written inside-out (Rule 17): their cells, page summary and the peer narrative are the
+    # outside-in ones verbatim, whatever the model returns. Restoring them here keeps the two stages identical by construction.
+    for i, src in enumerate(base.get("subjects", [])):
+        if src.get("role") == "peer": run["subjects"][i] = copy.deepcopy(src)
+    for k in ("peer_position", "peer_summary_lines", "peer_row_summary"):
+        if k in base: run[k] = copy.deepcopy(base[k])
     return run
 

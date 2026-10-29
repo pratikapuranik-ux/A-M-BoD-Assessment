@@ -44,6 +44,7 @@ def combine(rs: list[dict]) -> tuple[dict, dict]:
 def can_generate(n: int, used: int | None) -> tuple[bool, str | None]:
     """Anonymity: at least MIN_RESPONSES, and a refresh only on the same responses or MIN_RESPONSES more (differencing)."""
     m = min_responses()
+    if n == 0: return True, None  # documents only: no respondent can be singled out (the run route requires documents)
     if n < m:
         return False, f"{n} of {m} self-assessment responses received. To keep responses anonymous, the inside-out view is prepared only once at least {m} people have responded."
     if used is None or n == used or n - used >= m: return True, None

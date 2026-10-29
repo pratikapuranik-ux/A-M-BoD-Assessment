@@ -19,6 +19,7 @@ Fields for submit_synthesis:
 - additional_information_needed: only where a specific document would change a grade or an action; otherwise empty.
 
 Length and style (the report must read like the reference report, so keep to these limits):
+- Register as set out under Writing in the system prompt: declarative and literal, no metaphor, idiom or personification, no journalistic opener. A headline or finding is a fact with its figures, never a turn of phrase. Name the dimension ("Customer Obsession"), never "Dimension 1", in what_moved, scorecard_headline, peer_row_summary, peer_summaries and every `improves` line.
 - headline at most 25 words; overall_summary one sentence of about 35 words; what_moved about 90 words in total; each headline_finding one line.
 - References throughout: cite the evidence code inline ([E07], or a peer's code) wherever a figure or finding rests on a source: in overall_summary, what_moved, every headline_finding, the "current" value of each key_metric, peer_position, each peer line, peer_row_summary, peer_summaries, scorecard_headline and in the finding behind each action. Keep it to one or two codes per sentence, only codes shown in the run data. The headline itself carries no code.
 - Name grades as letters ("Chevron (C)"); do not quote numeric averages such as 2.75.

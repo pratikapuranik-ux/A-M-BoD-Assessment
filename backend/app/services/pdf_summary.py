@@ -112,13 +112,6 @@ def build_pdf_summary(run: dict, out_path: str) -> str:
         story.append(KeepTogether([Paragraph(f"<b>{k:02d}  {_t(a.get('heading', ''))}.</b> {_t(first_sentence(a.get('description')))}", bullet)]
                                   + ([Paragraph(_t(("Measures: " + "; ".join(a.get("measures", [])) if a.get("measures") else "") + (f"  Target: {a['target_by']}" if a.get("target_by") else "")), ParagraphStyle("m", parent=small, leftIndent=10))]
                                      if a.get("measures") or a.get("target_by") else [])))
-    km = run.get("key_metrics") or []
-    if km:
-        story.append(Paragraph("METRICS WORTH TRACKING", kick))
-        mt = Table([[Paragraph("<b>Metric</b>", cell), Paragraph("<b>Why it matters</b>", cell), Paragraph("<b>Now</b>", cell)]]
-                   + [[Paragraph(_t(m.get("metric")), cell), Paragraph(_t(m.get("why")), cell), Paragraph(_t(m.get("current", "")), cell)] for m in km[:5]],
-                   colWidths=[4.5 * cm, 9.2 * cm, A4[0] - 3.2 * cm - 13.7 * cm], repeatRows=1)
-        mt.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), _hex("DCEBF7")), ("GRID", (0, 0), (-1, -1), 0.4, _hex("D9DEE5")), ("VALIGN", (0, 0), (-1, -1), "TOP")])); story.append(mt)
     story += [Spacer(1, 8), Paragraph(_t("Grades apply to the board as a body; no individual is assessed. " + DRAFT), ParagraphStyle("d", parent=small, textColor=_hex(AMBER)))]
 
     doc = SimpleDocTemplate(out_path, pagesize=A4, leftMargin=1.6 * cm, rightMargin=1.6 * cm, topMargin=1.7 * cm, bottomMargin=1.6 * cm,

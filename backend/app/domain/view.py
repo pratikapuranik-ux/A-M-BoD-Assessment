@@ -4,7 +4,9 @@ Faithful port of server/convert.py: same signatures and output keys."""
 from __future__ import annotations
 
 import hashlib
+import json
 import re
+from pathlib import Path
 from typing import Any
 
 from .skill import (DIM_OF, DIMS, FW, FW_KEYS, IND, IND_IDS, LV, METHOD, READ, company_of, defs as _defs, framework, peers_of)
@@ -65,6 +67,7 @@ def _overall(s: dict, lens: str = "board") -> dict:
 def _action(k: int, a: dict) -> dict:
     out = {"n": f"{k:02d}", "heading": a.get("heading", ""), "description": a.get("description", ""), "measures": a.get("measures", []) or [], "target": a.get("target_by", "")}
     if a.get("improves"): out["improves"] = a["improves"]  # which indicators the action should raise (new runs only)
+    if a.get("edited"): out["edited"] = True  # changed by the user after the run
     return out
 
 
@@ -89,9 +92,14 @@ def _used(run: dict) -> dict[str, list[str]]:
     return {k: sorted(v) for k, v in used.items()}
 
 
+def _excerpt(e: dict) -> str:
+    """Anonymity: a director's free-text self-assessment answer never leaves the backend verbatim."""
+    return "" if e.get("evidence_class") == "self_assessment" else e.get("excerpt", "")
+
+
 def _ev(e: dict, used: list[str] | None = None) -> dict:
     out = {"doc": e.get("document", ""), "date": e.get("date", ""), "cls": e.get("evidence_class", "direct"), "origin": e.get("source_origin", "public"),
-           "recent": bool(e.get("recent")), "excerpt": e.get("excerpt", ""), "url": e.get("url", "")}
+           "recent": bool(e.get("recent")), "excerpt": _excerpt(e), "url": e.get("url", "")}
     if e.get("search_log"): out["search"] = e["search_log"]
     if e.get("question"): out["question"] = e["question"]
     if used is not None: out["used"] = ", ".join(used) or "context"
@@ -104,17 +112,30 @@ def _io_ev(code: str, e: dict) -> dict:
     m = re.fullmatch(r"SA(\d+)", code)
     if not q and m and 0 < int(m.group(1)) <= len(FW["questionnaire"]): q = FW["questionnaire"][int(m.group(1)) - 1][2]
     if q: out["question"] = q
-    out["excerpt"] = e.get("excerpt", "")
+    out["excerpt"] = _excerpt(e)
     return out
 
 
-def _sa_answers(io_run: dict) -> list[str]:
-    n = len(FW["questionnaire"])
-    ans = io_run.get("self_assessment_answers")
-    if isinstance(ans, dict): return [str(ans.get(str(k), "") or "") for k in range(1, n + 1)]
-    if isinstance(ans, list): return [str(a or "") for a in ans][:n] + [""] * max(0, n - len(ans))
-    ev =io_run.get("evidence", {})
-    return [(ev.get(f"SA{k:02d}") or {}).get("excerpt", "") for k in range(1, n + 1)]
+_DASH = Path(__file__).resolve().parents[1] / "services" / "templates" / "dashboard.html"
+
+
+def _guardrails() -> tuple[list[dict], str]:
+    """Guardrails text: one source, the JSON block in the dashboard template, so the dashboard and the React report cannot drift."""
+    m = re.search(r'<script type="application/json" id="guardrails-data">(.*?)</script>', _DASH.read_text(encoding="utf-8"), re.S)
+    g = json.loads(m.group(1).replace("<\\/", "</")) if m else {}
+    return g.get("groups", []), g.get("intro", "")
+
+
+def _coverage(run: dict, lens: str = "board") -> dict:
+    """Coverage and limitations for the report. docs_available = distinct documents the company's grades cite (director
+    self-assessment answers are not documents); docs_unavailable = what the run could not obtain. The run's
+    consistency_result is deliberately not passed on (the two-run test is off)."""
+    comp = company_of(run); ev = run.get("evidence") or {}; cov = run.get("coverage") or {}
+    cited = {e for i in IND_IDS for l in ("board", "board_io") for e in _cell(comp, i, l).get("evidence") or []}
+    docs = list(dict.fromkeys(d for k in sorted(cited) if (e := ev.get(k)) and e.get("evidence_class") != "self_assessment" and (d := e.get("document"))))
+    c = ((comp.get("computed") or {}).get("coverage") or {}).get(lens) or {}
+    return {"assessed": c.get("assessed"), "of": c.get("of"), "not_assessable": c.get("not_assessable") or {},
+            "docs_available": docs, "docs_unavailable": list(cov.get("documents_unavailable") or []), "notes": cov.get("notes", "")}
 
 
 def _io(io_run: dict) -> dict:
@@ -134,7 +155,8 @@ def _io(io_run: dict) -> dict:
                           for p in io_run.get("prior_actions_status", [])],
         "back": [{"id": b.get("id"), "heading": b.get("heading", ""), "what": b.get("what_happened", ""), "impact": b.get("impact", ""), "cause": b.get("root_cause", ""),
                   "prevent": b.get("prevention", ""), "measures": b.get("measures", [])} for b in io_run.get("back_on_track", [])],
-        "sa": _sa_answers(io_run), "ratings": {str(k): v for k, v in (io_run.get("self_ratings") or {}).items()},
+        "sa": [],  # kept for the TypeScript contract; director answers are never exposed verbatim
+        "coverage": _coverage(io_run, "board_io"), "ratings": {str(k): v for k, v in (io_run.get("self_ratings") or {}).items()},
         "overall": _overall(comp, "board_io"),
     }
 
@@ -173,6 +195,7 @@ def base_view() -> dict:
         "peers": [], "read": READ, "method": METHOD, "ev": {}, "defs": _defs(), "io": None, "prior": None, "priors": [],
         "docs": [list(x) for x in FW["inside_out_priority_docs"]], "q": [list(x) for x in FW["questionnaire"]],
         "modes": FW["run_modes"], "scale": FW["grade_scale"], "findings_oi": [], "findings_io": [], "overall": {}, "files": {},
+        "coverage": {}, "self_assessment_themes": [], "self_assessment_responses": None, "guardrails": [], "guardrails_intro": "",
     }
 
 
@@ -193,7 +216,7 @@ def to_view(oi_run: dict, io_run: dict | None = None, prior_run: dict | None = N
         "overall_line": (oi_run.get("overall_summary") or {}).get("board", ""),
         "drives": oi_run.get("what_moved") or " ".join(oi_run.get("headline_findings", [])),
         "actions": [_action(k, a) for k, a in enumerate(oi_run.get("actions", [])[:5], 1)],
-        "metrics": [[m.get("metric", ""), m.get("why", ""), m.get("current", "") or ""] for m in oi_run.get("key_metrics", [])[:6]],
+        "metrics": [],  # "metrics worth tracking" dropped from the reports; key kept for the TypeScript contract (run file keeps key_metrics)
         "position": oi_run.get("peer_position", ""),
         "position_lines": ["• " + x for x in oi_run.get("peer_summary_lines", [])[:5]],
         "scorecard": [{"dim": f"{d}. {FW['dimensions'][d]}", "grade": _dim(comp, d).get("grade"), "line": sch.get(d, "")} for d in DIMS]
@@ -236,5 +259,10 @@ def to_view(oi_run: dict, io_run: dict | None = None, prior_run: dict | None = N
         D["overall"]["io"] = D["io"].pop("overall")
     D["prior"] = _prior(oi_run, prior_run)
     D["priors"] = _priors(oi_run, prior_runs if prior_runs is not None else ([prior_run] if prior_run else []))
+    D["coverage"] = _coverage(oi_run)
+    # synthesised director themes [{dimension, theme, summary}]; present only once the synthesis step has run
+    D["self_assessment_themes"] = list((io_run or {}).get("self_assessment_themes") or [])
+    D["self_assessment_responses"] = (io_run or {}).get("self_assessment_responses")  # director response count; None = unknown, 0 = documents-only run
+    D["guardrails"], D["guardrails_intro"] = _guardrails()
     if oi_run.get("reconciliation"): D["reconciliation"] = oi_run["reconciliation"]  # Run A / Run B reconciliation, shown in the reports
     return D

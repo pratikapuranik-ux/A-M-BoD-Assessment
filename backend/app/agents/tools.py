@@ -43,6 +43,8 @@ IO_TOOL = _tool("submit_inside_out",
     "Submit the post inside-out cells and narrative for the company. Call it once with all 22 cells; when asked to "
     "revise, resubmit with what changes (empty strings and lists keep what was submitted before).",
     _obj(cells=_arr(_obj(**CELL, carried_forward=BOOL)), documents=_arr(_obj(code=S, date=S, excerpt=S)),
+         # the only self-assessment material that reaches the appendix: themes across respondents, never a quoted answer
+         self_assessment_themes=_arr(_obj(dimension=_enum(*DIMS), theme=S, summary=S)),
          headline=S, overall_summary=S, what_moved=S, better=_arr(S), worse=_arr(S), headline_findings=_arr(S),
          io_change_notes=_arr(_obj(id=_enum(*IND_IDS), note=S)), actions=_arr(ACTION),
          prior_actions_status=_arr(_obj(id=S, status=_enum(*FW["action_statuses"]), evidence_note=S, metrics_note=S)),
