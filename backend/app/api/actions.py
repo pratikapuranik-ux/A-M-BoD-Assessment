@@ -1,11 +1,13 @@
-"""Edit, add and delete the board actions of a company's current stage run (inside-out when it exists, else outside-in)."""
+﻿"""Edit, add and delete the board actions of a company's current stage run (inside-out when it exists, else outside-in)."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
 from app.api.errors import ApiError, read_body
-from app.services import repo
+from app.log import get_logger
+from app.services import jobs, repo, runs
 
+log = get_logger(__name__)
 router = APIRouter()
 MAX_ACTIONS = 5  # the view shows the first five
 
@@ -32,6 +34,16 @@ def _clean(b: dict, partial: bool) -> dict:
     return out
 
 
+def _save(cid: str, stage: str, run: dict) -> bool:
+    """Stores the run and re-renders the Word and HTML files so downloads match the screen; False if the files could not be rebuilt."""
+    repo.write_run(cid, stage, run)
+    if jobs.active(cid): return False  # a job is writing the same files; the next build picks the edit up
+    try: runs.prepare(cid, lambda *_: None); runs.build_all(cid, {"oi", "io"})
+    except Exception as e:  # noqa: BLE001 - the edit is saved; only the downloads are stale
+        log.warning("actions_rebuild_failed", company=cid, error=f"{type(e).__name__}: {e}"); return False
+    return True
+
+
 def _idx(run: dict, n: int) -> int:
     acts = run.setdefault("actions", [])
     if not 1 <= n <= min(len(acts), MAX_ACTIONS): raise ApiError(404, f"no action {n}")
@@ -44,21 +56,19 @@ async def add_action(cid: str, request: Request):
     acts = run.setdefault("actions", [])
     if len(acts) >= MAX_ACTIONS: raise ApiError(409, f"a board has at most {MAX_ACTIONS} actions; delete one first")
     acts.append({"measures": [], "description": "", "target_by": "", **a, "edited": True})
-    repo.write_run(cid, stage, run)
-    return {"ok": True, "stage": stage, "count": len(acts)}
+    return {"ok": True, "stage": stage, "count": len(acts), "rebuilt": _save(cid, stage, run)}
 
 
 @router.put("/api/companies/{cid}/actions/{n}")
 async def edit_action(cid: str, n: int, request: Request):
     stage, run = _load(cid); a = _clean(await read_body(request), True); i = _idx(run, n)
     run["actions"][i] = {**run["actions"][i], **a, "edited": True}
-    repo.write_run(cid, stage, run)
-    return {"ok": True, "stage": stage, "count": len(run["actions"])}
+    return {"ok": True, "stage": stage, "count": len(run["actions"]), "rebuilt": _save(cid, stage, run)}
 
 
 @router.delete("/api/companies/{cid}/actions/{n}")
 def delete_action(cid: str, n: int):
     stage, run = _load(cid); i = _idx(run, n)
     del run["actions"][i]
-    repo.write_run(cid, stage, run)
-    return {"ok": True, "stage": stage, "count": len(run["actions"])}
+    return {"ok": True, "stage": stage, "count": len(run["actions"]), "rebuilt": _save(cid, stage, run)}
+

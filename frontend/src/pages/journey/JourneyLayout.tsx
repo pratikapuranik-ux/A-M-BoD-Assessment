@@ -57,12 +57,12 @@ export default function JourneyLayout() {
   const done = (n: Stage) => (n === 1 && oiDone) || (n === 2 && ioDone) || (n === 3 && session.seen3)
   const canGo = (n: Stage) => done(n) || n === stage || (n === 2 && oiDone) || (n === 3 && ioDone)
   const go = (n: Stage) => nav(n === 1 ? (oiDone ? PATHS.oi : PATHS.setup) : n === 3 ? PATHS.actions : ioBusy ? PATHS.ioRun : ioDone ? PATHS.ioRead : PATHS.ioInput)
-  const dashStage = ioDone ? 'io' : oiDone ? 'oi' : null
+  const dashStage = stage === 1 ? (oiDone ? 'oi' : null) : ioDone ? 'io' : oiDone ? 'oi' : null  // the bar shortcut follows the stage on screen
   const back: [string, string] = stage === 3 ? [PATHS.ioRead, 'Back to the inside-out readout'] : stage === 2 ? [PATHS.oi, 'Back to the outside-in readout'] : ['/home', 'Back to Home']
 
   /* the backend-generated HTML dashboard: inside-out once that stage is done, otherwise outside-in */
   const dashTitle = dash === 'io' ? 'Dashboard · after inside-out' : 'Dashboard · outside-in'
-  const dashUrl = (ioDone ? raw?.files?.io_html : raw?.files?.oi_html) || null
+  const dashUrl = (dash === 'io' ? raw?.files?.io_html : raw?.files?.oi_html) || null  // the one that was asked for, never the other stage's
   const ctx: JourneyCtx ={ openDash: setDash, openPlan: setPlan }
   const planActions = j ? (plan === 'io' ? j.io?.actions : j.actions) || [] : []
 

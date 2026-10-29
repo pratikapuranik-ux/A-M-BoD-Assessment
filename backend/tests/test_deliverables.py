@@ -56,7 +56,7 @@ def test_removed_and_added_sections(run, tmp_path):
     assert heads.index("Evidence behind each indicator") > heads.index("Appendix 1")
     assert ("Outside-in to post inside-out: indicators that moved" in heads) == io
     if io: assert heads.index("Outside-in to post inside-out: indicators that moved") > heads.index("Appendix 1")
-    order = [heads.index(h) for h in ("Executive summary", "Peer comparison", "Coverage and limitations", "Guardrails", "Appendix 1")]
+    order = [heads.index(h) for h in ("Executive summary", "Peer comparison", "Coverage and limitations", "Appendix 1", "Guardrails")]  # Guardrails is an appendix, after the body
     assert order == sorted(order)
 
 

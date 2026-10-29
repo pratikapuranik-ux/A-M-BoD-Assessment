@@ -6,7 +6,7 @@ import { sizeOk, startInsideOutRun } from '../../lib/actions'
 import { FILE_ACCEPT } from '../../lib/constants'
 import { PATHS } from '../../lib/journey'
 import { useInsideOut } from '../../store/insideOut'
-import { FileChips } from './parts'
+import { FileChips, SubmittedDocs } from './parts'
 import SurveyCard, { useSurveyNow } from './SurveyCard'
 
 /** Stage 2 input: board documents, other information and the anonymous self-assessment, with live readiness. */
@@ -54,6 +54,7 @@ export default function InsideOutInput() {
 
       <Card className="acc">
         <h3>1. Board documents</h3>
+        <SubmittedDocs stage="io" />
         <div id="meter"><Meter pct={(provided / (j.docs.length || 1)) * 100} /><div className="muted">{provided} of {j.docs.length} documents provided</div></div>
         <p className="ks">PDF, Word or text files, up to 25 MB each.</p>
         <div className="scroll"><table className="tbl"><thead><tr><th style={{ width: 70 }}>Provided</th><th>Document</th><th>Indicators it informs</th><th>File</th></tr></thead><tbody>

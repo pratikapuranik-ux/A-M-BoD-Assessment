@@ -191,7 +191,7 @@ function showInd(id){const i=INDBY[id]; const ov=(FW.outside_in_overrides||{})[i
 
 // ---- guardrails: text is the JSON block in #guardrails-data (also parsed by app/domain/view.py, so one source); rendered as written, never paraphrased
 (function(){const G=JSON.parse(document.getElementById('guardrails-data').textContent);
- document.getElementById('guard').innerHTML=`<div class="kicker">Guardrails</div><details class="exec"><summary><span class="hl">How this assessment was bounded <span class="more">· open to read</span></span></summary><div class="xbody"><p>${esc(G.intro)}</p>${G.groups.map(x=>`<h4>${esc(x.group)}</h4>${x.items.map(i=>`<p>• ${esc(i)}</p>`).join('')}`).join('')}</div></details>`;})();
+ APP.push({t:'Guardrails',h:`<p>${esc(G.intro)}</p>${G.groups.map(x=>`<h4>${esc(x.group)}</h4>${x.items.map(i=>`<p>• ${esc(i)}</p>`).join('')}`).join('')}`});})();
 
 // ---- appendix (collapsed): director self-assessment themes, then any sections other blocks queued in APP
 (function(){if(!io) return; const th=RUN.self_assessment_themes||[]; const n=RUN.self_assessment_responses; if(!th.length&&n==null&&!Object.values(RUN.evidence).some(isSA)) return;

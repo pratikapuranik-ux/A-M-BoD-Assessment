@@ -76,7 +76,7 @@ Board documents (minutes, agendas, packs, governance framework, strategy and cap
 
 ## Rule 19: Self-assessment evidence
 
-Questionnaire answers are `self_assessment` evidence, self-reported. Alone they support at most Medium confidence and cannot lift a score above 3 unless corroborated by an inside-out or public item; they can lower a score on their own. Each cited answer is quoted with its question in the sources appendix. Self-ratings (1 / 3 / 5 per dimension) are shown as context in the sources appendix and are not scored.
+Questionnaire answers are `self_assessment` evidence, self-reported. Alone they support at most Medium confidence and cannot lift a score above 3 unless corroborated by an inside-out or public item; they can lower a score on their own. An answer is cited by its question and code only and is never quoted: the substance appears solely as themes grouped across respondents, so no individual can be identified. Self-ratings (1 / 3 / 5 per dimension) are shown as context in the sources appendix and are not scored.
 
 ## Rule 20: Coverage threshold and gaps in the inside-out stage
 

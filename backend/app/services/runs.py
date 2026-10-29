@@ -136,6 +136,7 @@ def research_work(company: str, ticker: str, peers: list[dict], period: str, mod
         except research_errors(mod) as e: raise job_error(e) from e
         if not isinstance(run, dict) or not isinstance(run.get("subjects"), list): raise jobs.JobError("research returned no run file")
         run.setdefault("run", {}).setdefault("mode", mode); run["run"].setdefault("period", period); run["run"].setdefault("stage", "outside_in")
+        run["run"]["documents_provided"] = [{"name": d.get("name", ""), "slot": 0} for d in provided]  # names only, so the inputs can be shown again later
         comp = convert.company_of(run); backup = None
         try:
             # Every research run is a fresh, standalone assessment: nothing saved for the same company (earlier quarters, inside-out
@@ -176,6 +177,7 @@ def inside_out_work(cid: str, mode: str, extracted: list[dict], answers: dict, r
         r = io.setdefault("run", {}); r["stage"] = "inside_out"; r["mode"] = mode; r.setdefault("period", oi["run"].get("period"))
         # Anonymity: the answers themselves are never written to the run file, only how many responses informed it
         io.pop("self_assessment_answers", None); io["self_assessment_responses"] = int(n or 0)
+        r["documents_provided"] = [{"name": d.get("name", ""), "slot": int(d.get("slot") or 0)} for d in extracted]
         io.setdefault("self_ratings", {str(k): v for k, v in ratings.items()})
         with repo.lock(cid):
             repo.write_run(cid, "inside_out", io, keep_prev=True); repo.set_used(cid, n)

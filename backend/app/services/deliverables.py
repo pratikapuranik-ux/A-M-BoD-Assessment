@@ -478,6 +478,10 @@ def build_docx(run: dict, out_path: str) -> str:
     for k, e in run["evidence"].items():
         if k in cited and not is_sa(e) and e.get("document"): docs_.setdefault("Board documents (inside-out)" if e.get("evidence_class") == "inside_out" or e.get("source_origin") == "inside_out" else "Public record", set()).add(e["document"])
     kicker(doc, "Documents available")
+    sup = [d["name"] for d in (run.get("run") or {}).get("documents_provided") or [] if d.get("name")]
+    if sup:
+        para(doc, f"Supplied by the user: {len(sup)} document(s)", size=8, bold=True, color=NAVY, after=1, keep=True)
+        for x in sup: para(doc, "• " + x, size=7.5, after=0)
     for g, ds in sorted(docs_.items(), reverse=True):
         para(doc, f"{g}: {len(ds)} document(s)", size=8, bold=True, color=NAVY, after=1, keep=True)
         for x in sorted(ds): para(doc, "• " + x, size=7.5, after=0)
@@ -486,14 +490,6 @@ def build_docx(run: dict, out_path: str) -> str:
     if not un: para(doc, "None recorded.", size=8, italic=True, color=GREY)
     if (run.get("coverage") or {}).get("notes"): kicker(doc, "Notes"); para(doc, run["coverage"]["notes"], size=8)
 
-    # ================= GUARDRAILS =================
-    section(doc, "Guardrails", "Guardrails")
-    from app.domain.view import _guardrails  # one source with the dashboard and the React report
-    groups, intro = _guardrails()
-    if intro: para(doc, intro, size=8.5, after=4)
-    for g in groups:
-        kicker(doc, g["group"])
-        for x in g["items"]: para(doc, "• " + x, size=8, after=2)
     doc.add_page_break()
 
     # ================= APPENDICES =================
@@ -577,9 +573,16 @@ def build_docx(run: dict, out_path: str) -> str:
     for b in FW["grade_scale"]: row = new_row(tg); set_cell(row[0], FW["grade_scale_ranges"][b["grade"]]); grade_cell(row[1], b["grade"], 9); set_cell(row[2], b["label"])
     para(doc, "Overall grades are the rounded average of the dimension letters (A=5 … F=1; midpoints round down, so 2.5 is a D); provisional where only three dimensions are reported. Where evidence falls below the minimum, an indicator is marked not assessable and excluded rather than scored as Mixed, with the cause recorded (disclosure-limited, retrieval-limited, rule-limited). Peers are assessed on public information only.", size=8.5, before=4)
     app_title(f"Methodology and scoring rules (v{FW['rule_version']})")
-    rules = ["Every indicator is scored once, for the board; a cell with nothing to assess is marked not applicable.", "Scores are 1, 3 or 5; 2 and 4 only where evidence meets parts of both adjacent anchors.", "A 1 or 5 requires two independent items from two documents, or one strong direct item (regulator or court record, formal board act, audited figure, or a board document); a 3 requires one.", "Confidence is assigned on the evidence: High = two direct sources or one strong source; Medium = one direct or two indirect; Low = a single indirect source, an inference, a silence-based score, or self-assessment alone.", "Below the minimum an indicator is not assessable and excluded, never defaulted to 3; silence is scorable in full on 1.4, 5.2, 5.3 and capped at 3 on 2.3, 2.4, 4.3; an empty register search supports up to 3 on 1.3.", "A dimension grade is reported only if at least half (outside-in) or two-thirds (post inside-out) of its indicators are assessed.", "Overall grade is the rounded average of dimension letters, with midpoints rounding down (for example, an average of 2.5 is a D); provisional at three dimensions; none below three.", "Behaviour indicators use 24 months (36 for 2.1 and 4.3); trend indicators five years of filings.", "3.2, 5.1, 6.1 and 6.2 are scored relative to the named peer set.", "Within scoped pairs an evidence item is primary for one indicator only.", "Approved news and trade press (for event facts) are direct evidence; formal board acts are strong direct evidence.", "Inside-out: board documents outrank public sources; the post inside-out score must cite at least one inside-out or self-assessment item; self-assessment alone is at most Medium confidence; peers are never re-scored.", "Each company is run twice on the same rule version; indicator scores within one point and unchanged dimension letters are required for the result to stand."]
+    rules = ["Every indicator is scored once, for the board; a cell with nothing to assess is marked not applicable.", "Scores are 1, 3 or 5; 2 and 4 only where evidence meets parts of both adjacent anchors.", "A 1 or 5 requires two independent items from two documents, or one strong direct item (regulator or court record, formal board act, audited figure, or a board document); a 3 requires one.", "Confidence is assigned on the evidence: High = two direct sources or one strong source; Medium = one direct or two indirect; Low = a single indirect source, an inference, a silence-based score, or self-assessment alone.", "Below the minimum an indicator is not assessable and excluded, never defaulted to 3; silence is scorable in full on 1.4, 5.2, 5.3 and capped at 3 on 2.3, 2.4, 4.3; an empty register search supports up to 3 on 1.3.", "A dimension grade is reported only if at least half (outside-in) or two-thirds (post inside-out) of its indicators are assessed.", "Overall grade is the rounded average of dimension letters, with midpoints rounding down (for example, an average of 2.5 is a D); provisional at three dimensions; none below three.", "Behaviour indicators use 24 months (36 for 2.1 and 4.3); trend indicators five years of filings.", "3.2, 5.1, 6.1 and 6.2 are scored relative to the named peer set.", "Within scoped pairs an evidence item is primary for one indicator only.", "Approved news and trade press (for event facts) are direct evidence; formal board acts are strong direct evidence.", "Inside-out: board documents outrank public sources; the post inside-out score must cite at least one inside-out or self-assessment item; self-assessment alone is at most Medium confidence; peers are never re-scored.", "The consistency test (two runs on the same rule version, indicator scores within one point, dimension letters unchanged) applies only where a second run is made; the Guardrails appendix states whether it was applied to this report."]
     for k, rt in enumerate(rules, 1):
         p = doc.add_paragraph(); run_fmt(p.add_run(f"{k:02d}  "), 8, bold=True, color=BLUE); run_fmt(p.add_run(rt), 8); p.paragraph_format.space_after = Pt(2)
+    app_title("Guardrails")
+    from app.domain.view import _guardrails  # one source with the dashboard and the React report
+    groups, intro = _guardrails()
+    if intro: para(doc, intro, size=8.5, after=4)
+    for g in groups:
+        kicker(doc, g["group"])
+        for x in g["items"]: para(doc, "• " + x, size=8, after=2)
     # sources with bookmarks
     app_title("Sources consulted"); para(doc, "Each entry is referenced from the tables by its code. Verbatim excerpts from public and board documents are kept under 15 words; director self-assessment answers are never reproduced, because that would defeat their anonymity.", size=7.5, italic=True, color=GREY)
     used = {}

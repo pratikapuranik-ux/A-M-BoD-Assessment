@@ -353,9 +353,10 @@ function Acc({ items }: { items: { k: string; title: ReactNode; body: ReactNode 
 
 /** coverage note and the documents the run had / lacked; both stages, never inside-out content in outside-in */
 export function CoverageAccordion() {
-  const { view } = useReport();
+  const { view, io } = useReport();
   const cv = (view as unknown as { coverage?: { docs_available?: string[]; docs_unavailable?: string[] } }).coverage || {}; // the backend nests them under coverage
-  const have = cv.docs_available || view.docs_available || [];
+  const sup = (view.documents_provided?.[io ? 'io' : 'oi'] || []).map((d) => `Supplied by you: ${d.name}`);
+  const have = [...sup, ...(cv.docs_available || view.docs_available || [])];
   const lack = cv.docs_unavailable || view.docs_unavailable || [];
   if (!view.coverage_note && !have.length && !lack.length) return null;
   const list = (t: string, a: string[]) => (a.length ? (

@@ -4,7 +4,7 @@ import { DlButton, PageHead } from '../../components/ui'
 import { useJourney } from '../../lib/useJourney'
 import { listJoin, PATHS, withPriors } from '../../lib/journey'
 import ReportView from '../../report/ReportView'
-import { ActionCard, DeliveryCard, DownloadGroup, NextCard, PlanButton, PriorCard, StickyNext } from './parts'
+import { ActionCard, DeliveryCard, DownloadGroup, NextCard, PlanButton, PriorCard, StickyNext, SubmittedDocs } from './parts'
 
 /** The readout of one stage: grades, headline findings, actions, downloads and the full report. */
 export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
@@ -23,6 +23,7 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
           right={<><PlanButton stage="oi" j={j} /><DlButton files={files} k="oi_docx" label="Report (Word)" icon="doc" /></>} eyebrow="Stage 1 of 3 · complete" />
         <DeliveryCard stage="oi" j={j} />
         <PriorCard j={j} fresh={false} />
+        <SubmittedDocs stage="oi" />
         <div className="row" style={{ marginBottom: 12 }}><Link className="btn sec sm" to={PATHS.setup}>View what was submitted (inputs)</Link></div>
         <h2 className="sech">What the board could do next</h2>
         <p className="muted">Five actions from the outside-in assessment. The inside-out stage tests them against the board’s own material and refines them into the final five.</p>

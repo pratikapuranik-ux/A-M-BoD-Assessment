@@ -264,5 +264,6 @@ def to_view(oi_run: dict, io_run: dict | None = None, prior_run: dict | None = N
     D["self_assessment_themes"] = list((io_run or {}).get("self_assessment_themes") or [])
     D["self_assessment_responses"] = (io_run or {}).get("self_assessment_responses")  # director response count; None = unknown, 0 = documents-only run
     D["guardrails"], D["guardrails_intro"] = _guardrails()
+    D["documents_provided"] = {k: list((r.get("run") or {}).get("documents_provided") or []) for k, r in (("oi", oi_run), ("io", io_run or {}))}  # names the user supplied, per stage
     if oi_run.get("reconciliation"): D["reconciliation"] = oi_run["reconciliation"]  # Run A / Run B reconciliation, shown in the reports
     return D

@@ -6,6 +6,7 @@ import { Button, Card, Chip, DlButton, GradeChip, GradeSquare, NextButton } from
 import { DIMN, DIMS, DSHORT } from '../../lib/constants'
 import { dimGrades, fmtStatus, overallAvg, prevGradeArrow, priorActionsList, selectedPriors } from '../../lib/journey'
 import { useSession } from '../../store/session'
+import { useJourney } from '../../lib/useJourney'
 import type { JourneyAction, JourneyView } from '../../api/types'
 import { useOutletContext } from 'react-router-dom'
 
@@ -176,6 +177,19 @@ export function PriorCard({ j, fresh }: { j?: JourneyView; fresh: boolean }) {
         </>
       )}
     </Card>
+  )
+}
+
+/** The documents already supplied for this stage's assessment (names only; the files are not kept), shown again on the input page. */
+export function SubmittedDocs({ stage }: { stage: 'oi' | 'io' }) {
+  const { raw } = useJourney()
+  const docs = raw?.documents_provided?.[stage] || []
+  if (!docs.length) return null
+  return (
+    <div className="muted" style={{ marginBottom: 10 }}>
+      <b>Already supplied ({docs.length}):</b>
+      <ul style={{ margin: '4px 0 0 18px' }}>{docs.map((d, i) => <li key={i}>{d.name}</li>)}</ul>
+    </div>
   )
 }
 
