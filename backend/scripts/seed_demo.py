@@ -56,6 +56,8 @@ def call(base: str, method: str, path: str, body: dict | None = None) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true", help="say what would be added; change nothing")
+    ap.add_argument("--prior-only", action="store_true", help="add the earlier-quarter prior and rebuild the reports; skip the survey responses")
+    ap.add_argument("--rebuild", action="store_true", help="rebuild the reports from the priors already on file")
     ap.add_argument("--base", default="http://127.0.0.1:8000")
     a = ap.parse_args()
     tag = "[dry run] " if a.dry_run else ""
@@ -73,6 +75,11 @@ def main() -> None:
         print(f"{tag}prior {pp}: adding (simulated labelling kept)")
         if not a.dry_run:
             with session_scope() as s: s.add(PriorRun(company_id=CID, period=key, run=copy.deepcopy(prior)))
+    if not a.dry_run and (a.rebuild or pp not in have):  # load the priors into the stored runs as history and re-render the reports, so the trend shows in the Word report; no research is run
+        from app.services import runs
+        runs.prepare(CID); runs.build_all(CID, {"oi", "io"})
+        print(f"{tag}reports rebuilt with the trend")
+    if a.prior_only: return print(f"{tag}done (prior only).")
 
     n = call(a.base, "GET", f"/api/companies/{CID}/survey")["responses"]
     need = max(0, WANT - n)

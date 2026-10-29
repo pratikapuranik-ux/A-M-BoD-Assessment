@@ -69,6 +69,7 @@ export interface SurveyInvite {
 
 export interface SurveyStatus {
   invites: SurveyInvite[]
+  items?: { id: number; name: string }[]
   responses: number
   count?: number
   min: number

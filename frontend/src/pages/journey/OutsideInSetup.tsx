@@ -1,7 +1,8 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { Button, Card, Collapsible, JobProgress, Notice, NextButton, PageHead, SegTabs, fmtProblem, toast } from '../../components/ui'
-import { useJob, toJobView } from '../../api/queries'
+import { useCompanyView, useJob, toJobView } from '../../api/queries'
 import { useJourney } from '../../lib/useJourney'
+import { asJourney } from '../../lib/journey'
 import { openCompany, sizeOk, startImport, startResearch } from '../../lib/actions'
 import { coLabel, PATHS } from '../../lib/journey'
 import { FILE_ACCEPT, MAX_OI_DOCS, MAX_PEERS } from '../../lib/constants'
@@ -28,6 +29,11 @@ export default function OutsideInSetup() {
   const tab: AddTab = A.tab === 'file' && !companies.length ? 'research' : A.tab
   const tabs: [AddTab, string][] = [['research', 'New company'], ...(companies.length ? [['file', 'Company on file'] as [AddTab, string]] : []), ...(apiOn ? [['import', 'Import assessment files'] as [AddTab, string]] : [])]
   const busy = A.busy || !!addJob
+  // A company typed on the New company tab that is already on file (same ticker, or same name): offer its earlier assessments for the trend
+  const nm = A.company.trim().toLowerCase(), tk = A.ticker.trim().toLowerCase()
+  const matched = tab === 'research' ? companies.find((c) => (tk && c.ticker.toLowerCase() === tk) || (nm.length >= 3 && (c.name.toLowerCase() === nm || c.short.toLowerCase() === nm))) : undefined
+  const matchedQ = useCompanyView(matched?.id)
+  const matchedJ = matchedQ.data ? asJourney(matchedQ.data) : undefined
   const go = { research: ['Generate outside-in assessment', () => { if (!listed) return patch({ err: 'Please confirm the company and its peers are listed.' }); void startResearch(session.mode) }],
     file: ['Open outside-in assessment', () => { if (!listed) return patch({ err: 'Please confirm the company and its peers are listed.' }); patch({ err: '' }); useSession.getState().markOiDone(); nav(PATHS.oi) }],
     import: ['Import and open', () => { void startImport() }] }[tab] as [string, () => void]
@@ -114,7 +120,7 @@ export default function OutsideInSetup() {
           <FileChips files={A.files} onRemove={(i) => patch({ files: A.files.filter((_, n) => n !== i) })} />
         </Card>
       )}
-      {!busy && <PriorCard j={tab === 'file' && session.companyId ? j : undefined} fresh={tab !== 'file' || !session.companyId} />}
+      {!busy && <PriorCard j={tab === 'file' ? (session.companyId ? j : undefined) : tab === 'research' ? matchedJ : undefined} fresh={tab === 'file' ? !session.companyId : tab !== 'research' || !matchedJ} />}
 
       {!busy && (
         <div className="row sb">

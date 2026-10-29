@@ -59,6 +59,8 @@ test) and `cd frontend; npm run typecheck`.
 
 ### Configuration (environment variables, all optional)
 
+Copy `.env.example` to `.env` in the project root to configure the backend locally. Live research requires valid Anthropic or Microsoft Foundry credentials; without them, the application runs but live research is disabled.
+
 | Variable | Default | Purpose |
 |---|---|---|
 | `NEXUS_DATABASE_URL` | `sqlite:///./nexus.db` | SQLAlchemy URL. For Postgres, add a driver (e.g. `psycopg[binary]`) and use `postgresql+psycopg://…` |

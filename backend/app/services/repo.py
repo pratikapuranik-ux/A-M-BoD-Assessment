@@ -386,6 +386,24 @@ def add_response(cid: str, answers: dict, ratings: dict, token: str | None = Non
         s.add(SurveyResponse(company_id=cid, position=random.random(), answers=answers, ratings=ratings))
 
 
+def response_ids(cid: str) -> list[int]:
+    """Ids of the stored responses in their (random) stored order, so a list position says nothing about who answered when."""
+    with session_scope() as s:
+        return list(s.scalars(select(SurveyResponse.id).where(SurveyResponse.company_id == cid).order_by(SurveyResponse.position, SurveyResponse.id)))
+
+
+def remove_response(cid: str, rid: int) -> bool:
+    """Delete one anonymous response and its duplicate-check hash (so the same answers can be added again). The invitation
+    it came from is not touched: a response carries no link to one."""
+    with lock(cid), session_scope() as s:
+        r = s.scalar(select(SurveyResponse).where(SurveyResponse.id == rid, SurveyResponse.company_id == cid))
+        if r is None: return False
+        h = s.get(SurveyHash, (cid, response_hash(r.answers, r.ratings)))
+        if h is not None: s.delete(h)
+        s.delete(r)
+        return True
+
+
 def set_used(cid: str, n: int) -> None:
     """Record how many responses the inside-out run on file used."""
     with lock(cid), session_scope() as s:

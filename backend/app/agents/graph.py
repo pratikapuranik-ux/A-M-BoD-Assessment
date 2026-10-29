@@ -230,7 +230,7 @@ def _notes(subjects):
 
 def run_outside_in(company: str, ticker: str, peers: list[dict], period: str, mode: str, progress: Progress | None,
                    documents: list[dict] | None = None) -> dict:
-    """One run (BOARD_CONSISTENCY_RUNS=1), or Run A and Run B with reconciliation (the default; Rule 12)."""
+    """One run: cfg.CONSISTENCY_RUNS is fixed at 1. _run_two (Run A and Run B with reconciliation, Rule 12) is kept but not used."""
     if cfg.CONSISTENCY_RUNS <= 1: return _run_once(company, ticker, peers, period, mode, progress, documents)
     return _run_two(company, ticker, peers, period, mode, progress, documents)
 
