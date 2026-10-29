@@ -1,0 +1,14 @@
+[project]
+name = "nexus-backend"
+version = "0.1.0"
+description = "NEXUS board assessment backend (FastAPI + LangGraph + SQLAlchemy)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

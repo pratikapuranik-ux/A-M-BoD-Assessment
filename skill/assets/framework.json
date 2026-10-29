@@ -1,0 +1,680 @@
+{
+ "dimensions": {
+  "1": "Customer Obsession",
+  "2": "Resisting Proxies",
+  "3": "Embracing External Trends",
+  "4": "High-Velocity Decision-Making",
+  "5": "Building over Protecting",
+  "6": "Liquidity and Capital Management"
+ },
+ "indicators": [
+  {
+   "id": "1.1",
+   "dimension": "1",
+   "name": "Customer evidence in board and management attention",
+   "definition": "Whether customer outcomes, including unflattering evidence, get sustained attention from the board and senior management rather than appearing only inside financial results.",
+   "anchors": {
+    "1": "Customer appears only as revenue or market share inside financial reporting and messaging.",
+    "3": "Periodic customer reviews based on management-curated metrics (e.g., NPS, retention), selectively surfaced.",
+    "5": "Customer outcomes are a standing priority; unfiltered evidence (complaints, churn drivers, lost deals) is routinely examined and openly acknowledged."
+   },
+   "board_lens": "Does the board keep customer outcomes as a standing priority, ask for unfiltered evidence (complaints, churn drivers, lost deals), and hold management to leading with customer outcomes in its reporting and external messaging rather than curated financial summaries?",
+   "source_types": "Investor communications (earnings calls, shareholder letters, investor days); regulatory filings (annual report KPI disclosures); third-party data (analyst reports)",
+   "availability": "High"
+  },
+  {
+   "id": "1.2",
+   "dimension": "1",
+   "name": "Unmediated customer and frontline exposure",
+   "definition": "Whether directors and senior leaders have regular, structured contact with customers and frontline staff that management does not curate.",
+   "anchors": {
+    "1": "No director or senior leader has had unmediated customer or frontline contact in two or more years.",
+    "3": "Occasional site visits or customer events, staged and curated by management.",
+    "5": "Regular, structured, unmediated exposure of directors and senior leaders to customers and frontline staff, with findings brought back to the board."
+   },
+   "board_lens": "Do directors have structured, unmediated contact with customers and frontline staff, and has the board required senior leaders to do the same and to bring findings back to the boardroom rather than staging visits?",
+   "source_types": "Governance disclosures (director biographies, skills matrix, disclosed engagement programmes); investor communications (management field references); press and trade media",
+   "availability": "Low"
+  },
+  {
+   "id": "1.3",
+   "dimension": "1",
+   "name": "Customer-harm early warning",
+   "definition": "How early customer-harm signals, including key customers actively spreading negative views, reach the board, and whether the board acts on them.",
+   "anchors": {
+    "1": "Customer issues reach the board through press, regulators, litigation or a key customer going public.",
+    "3": "Issues reach the board after management has resolved them.",
+    "5": "Early-warning signals, including a watch list of key customer detractors, flow to the board routinely, and the board has acted on one in the last 12 months."
+   },
+   "board_lens": "Has the board asked for early-warning signals, including a key-customer detractor watch list, required management to escalate customer harm early, and acted on a signal in the last 12 months?",
+   "source_types": "Regulator, court and public records (enforcement actions, complaint databases, litigation); third-party data (review and complaint platforms, key customers' own public statements); press and trade media; investor communications (acknowledgement and remediation)",
+   "availability": "Medium"
+  },
+  {
+   "id": "1.4",
+   "dimension": "1",
+   "name": "Customer-linked accountability",
+   "definition": "Whether executive incentives carry a meaningful customer or quality metric with real downside when it is missed.",
+   "anchors": {
+    "1": "Executive incentives are entirely financial.",
+    "3": "Customer or quality metrics included at low weight or with easily met targets.",
+    "5": "Meaningful customer or quality metric in incentives, with demonstrated reduction in payout when missed."
+   },
+   "board_lens": "Has the compensation committee put a meaningful customer or quality metric into incentives, cascaded it below the C-suite, and enforced the downside when it was missed?",
+   "source_types": "Governance disclosures (remuneration report / proxy compensation discussion, incentive scorecards and payouts)",
+   "availability": "High"
+  },
+  {
+   "id": "2.1",
+   "dimension": "2",
+   "name": "Self-initiated assumption challenge",
+   "definition": "Whether the board and management revise core strategic assumptions on their own initiative in response to new evidence, rather than under external pressure.",
+   "anchors": {
+    "1": "No material revision of a core strategic assumption in recent years despite changing evidence.",
+    "3": "Revisions happen, but only after a miss, activist pressure or analyst challenge.",
+    "5": "A material revision of a core assumption was initiated internally within the last 18 months, based on new evidence, ahead of external pressure."
+   },
+   "board_lens": "Did the board initiate or demand revision of a core assumption on new evidence, ahead of a miss, activist or analyst, and did it require management to bring that evidence rather than wait for external pressure?",
+   "source_types": "Regulatory filings (strategy sections year on year); investor communications (investor days, guidance framework changes); capital markets records (activist letters, 13D filings); third-party data (analyst notes)",
+   "availability": "Medium"
+  },
+  {
+   "id": "2.2",
+   "dimension": "2",
+   "name": "Metric-versus-reality testing",
+   "definition": "Whether the board and management test that headline metrics still measure what matters, including against frontline and external reality.",
+   "anchors": {
+    "1": "Headline KPIs accepted at face value; definitions change without explanation.",
+    "3": "Occasional deep dives into specific metrics.",
+    "5": "Metrics are routinely tested against frontline and external reality and retired or redefined transparently when they stop measuring what matters."
+   },
+   "board_lens": "Does the board test whether its pack metrics still measure what matters, press for frontline and external reality checks, and require KPIs to be redefined or retired transparently rather than defended?",
+   "source_types": "Regulatory filings (KPI definitions, non-GAAP reconciliations); regulator records (SEC comment letters); third-party data (market share, traffic and pricing trackers, short-seller and analyst critiques)",
+   "availability": "Medium"
+  },
+  {
+   "id": "2.3",
+   "dimension": "2",
+   "name": "Unfiltered internal information",
+   "definition": "Whether the board hears from management below the C-suite and from independent advisors it appoints, rather than only through the CEO and CFO.",
+   "anchors": {
+    "1": "All board information arrives via the CEO and CFO.",
+    "3": "Some direct access to executives below the C-suite; independent advisors limited to statutory roles.",
+    "5": "Regular unfiltered access to management below the C-suite and to independent advisors appointed by the board."
+   },
+   "board_lens": "Has the board secured regular access to management below the C-suite, appointed its own independent advisors, and prevented the CEO and CFO from gatekeeping information flows?",
+   "source_types": "Governance disclosures (board leadership structure, committee charters, governance guidelines on access to management and advisors, disclosed advisor appointments)",
+   "availability": "Low"
+  },
+  {
+   "id": "2.4",
+   "dimension": "2",
+   "name": "Process sunset",
+   "definition": "Whether the board actively retires processes, reports and committees that no longer earn their place.",
+   "anchors": {
+    "1": "Committee structures, reporting packs and policies essentially unchanged for years.",
+    "3": "Periodic reviews with minor changes.",
+    "5": "Processes, reports and committees are actively retired or redesigned as the strategy changes."
+   },
+   "board_lens": "Does the board retire its own committees, standing reports and processes when they no longer earn their place, and require management to simplify the board pack and retire redundant forums?",
+   "source_types": "Governance disclosures (committee structure, charters and meeting counts over five years)",
+   "availability": "Medium"
+  },
+  {
+   "id": "3.1",
+   "dimension": "3",
+   "name": "Ownership of named structural shifts",
+   "definition": "Whether the board and management systematically track two or three named structural shifts with an explicit company position on each.",
+   "anchors": {
+    "1": "Trends discussed only when management raises them or after a peer moves; shifts appear only as risk factors.",
+    "3": "Covered at the annual strategy offsite or in narrative, without an explicit position or targets.",
+    "5": "Two or three named structural shifts tracked systematically, each with an explicit position, targets and clear oversight."
+   },
+   "board_lens": "Does the board own explicit positions on two or three named structural shifts, with targets and oversight, and require management to treat them as strategy rather than risk factors?",
+   "source_types": "Regulatory filings (strategy and risk factors); investor communications (investor days); governance disclosures (oversight of strategy, technology, sustainability)",
+   "availability": "Medium"
+  },
+  {
+   "id": "3.2",
+   "dimension": "3",
+   "name": "Relative timing on sector shocks",
+   "definition": "Whether the company moved ahead of, alongside or after peers on the most recent sector shocks.",
+   "anchors": {
+    "1": "Last mover or visibly reactive on the last two or three sector shocks.",
+    "3": "Broadly in line with peers.",
+    "5": "First or early mover, with public commitment ahead of peers."
+   },
+   "board_lens": "Did the board prompt or clear early moves on the last two or three sector shocks, and did the company under its oversight move ahead of, alongside or after peers?",
+   "source_types": "Capital markets records (announcement timelines versus peers); investor communications; press and trade media; third-party data (analyst reports)",
+   "availability": "High"
+  },
+  {
+   "id": "3.3",
+   "dimension": "3",
+   "name": "External expertise and perspective",
+   "definition": "Whether independent experts, customers and investors inform the board routinely, and whether board skills cover the domains of the named shifts.",
+   "anchors": {
+    "1": "No external input beyond management and auditors; board skills do not cover the named shifts.",
+    "3": "Occasional external speakers; one director with relevant expertise.",
+    "5": "Independent experts, customers and investors brought in routinely; board skills and recent appointments explicitly cover the named shifts."
+   },
+   "board_lens": "Do board skills and recent appointments cover the named shifts, and does the board bring outside experts, customers and investors into the room and into the company's planning?",
+   "source_types": "Governance disclosures (skills matrix, director biographies, appointment announcements, advisory boards); investor communications (investor day external speakers)",
+   "availability": "Medium"
+  },
+  {
+   "id": "3.4",
+   "dimension": "3",
+   "name": "Capital behind conviction",
+   "definition": "Whether capital (capex, R&D, M&A) visibly follows the company's stated positions on the named structural shifts. Scope: direction of capital relative to stated positions; the overall build-versus-defend mix is 5.1.",
+   "anchors": {
+    "1": "Stated positions on structural shifts with no visible capital behind them.",
+    "3": "Modest, incremental allocation to the stated positions.",
+    "5": "Capex, R&D and M&A visibly follow the stated positions, at a scale consistent with the conviction expressed."
+   },
+   "board_lens": "Did the board approve capex, R&D and M&A at a scale matching the conviction expressed on the named shifts, and challenge gaps between the stated positions and actual allocation?",
+   "source_types": "Regulatory filings (cash flow, segment capex, R&D); capital markets records (M&A announcements); investor communications (capital allocation framework)",
+   "availability": "High"
+  },
+  {
+   "id": "4.1",
+   "dimension": "4",
+   "name": "Reversible decisions: classified, delegated, fast",
+   "definition": "Whether reversible decisions are distinguished from irreversible ones, delegated to management, and taken at first presentation.",
+   "anchors": {
+    "1": "All decisions go through the same process regardless of reversibility; reversible decisions take multiple meetings or are deferred for more information.",
+    "3": "Distinction made informally and inconsistently; reversible decisions take one to two cycles.",
+    "5": "Reversible decisions explicitly distinguished and delegated or decided at first presentation; initiatives are scaled or stopped quickly without blame."
+   },
+   "board_lens": "Does the board explicitly distinguish reversible from irreversible decisions, delegate the reversible ones, and hold management to scaling or stopping initiatives quickly without blame?",
+   "source_types": "Governance disclosures (delegation of authority, matters reserved); investor communications and press (initiative timelines: announced, scaled, stopped)",
+   "availability": "Low-Medium"
+  },
+  {
+   "id": "4.2",
+   "dimension": "4",
+   "name": "Irreversible-decision rigor",
+   "definition": "Whether major irreversible decisions (large M&A, CEO selection, material leverage) get alternatives, independent views and the willingness to defer or decline.",
+   "anchors": {
+    "1": "Major irreversible decisions approved on management's timetable with limited challenge; poor outcomes (impairments, emergency succession) follow.",
+    "3": "Standard diligence and debate.",
+    "5": "The board slows down, demands alternatives, runs a pre-mortem or independent view, and has deferred or declined at least once."
+   },
+   "board_lens": "Does the board slow down on irreversible decisions, demand real alternatives, pre-mortems and independent views, and has it deferred or declined one rather than accepting management's timetable?",
+   "source_types": "Regulatory filings (goodwill impairments); capital markets records (merger documents, fairness opinions, terminated deals, CEO transition announcements); third-party data (rating agency commentary)",
+   "availability": "Medium"
+  },
+  {
+   "id": "4.3",
+   "dimension": "4",
+   "name": "Candor, dissent and commitment",
+   "definition": "Whether challenge happens openly in the full board, minority views are recorded, and the board then aligns behind decisions rather than relitigating them.",
+   "anchors": {
+    "1": "Unanimity is the norm and dissent is seen as disloyal, or decisions are relitigated after the fact.",
+    "3": "Dissent surfaces mainly in executive session or offline; occasional relitigation.",
+    "5": "Open challenge in the full board, minority views recorded and revisited, clear decision, and the board aligns behind it."
+   },
+   "board_lens": "Is there open challenge in the full board with minority views recorded, does the board align behind decisions afterwards, and does it require the same of the executive team?",
+   "source_types": "Governance disclosures and capital markets records (director resignations with disclosed disagreement, proxy contests); investor communications (consistency of strategy over time); press",
+   "availability": "Low"
+  },
+  {
+   "id": "5.1",
+   "dimension": "5",
+   "name": "Growth over defence capital posture",
+   "definition": "Whether deployable capital overall goes to building the future (growth capex, R&D, growth M&A) or to protecting the present (EPS-support buybacks, defensive M&A, cost as the only lever). Scope: overall mix; alignment to named shifts is 3.4.",
+   "anchors": {
+    "1": "Shareholder returns and defensive moves dominate; capex below depreciation; growth investment squeezed to protect near-term earnings.",
+    "3": "Balanced split; capex at or near depreciation.",
+    "5": "Majority of deployable capital goes to growth consistent with the strategy; buybacks are opportunistic rather than EPS support."
+   },
+   "board_lens": "Does the board set and enforce a capital allocation posture weighted to building rather than protecting near-term earnings, and protect growth investment when earnings come under pressure?",
+   "source_types": "Regulatory filings (cash flow: capex, D&A, buybacks, dividends, acquisitions over five years); investor communications (capital allocation framework)",
+   "availability": "High"
+  },
+  {
+   "id": "5.2",
+   "dimension": "5",
+   "name": "Board and leadership renewal",
+   "definition": "Whether the board refreshes itself and the leadership pipeline ahead of need, tied to the skills the strategy requires.",
+   "anchors": {
+    "1": "Long average tenure, no recent new directors, no succession pipeline; age or term limits absent or waived.",
+    "3": "Periodic refresh; succession planning exists but is reactive.",
+    "5": "Regular renewal tied to the skills matrix; visible succession pipeline for board and CEO; limits applied."
+   },
+   "board_lens": "Does the board refresh itself ahead of need against the skills matrix, apply its own limits, plan CEO succession early, and require a leadership pipeline below the CEO?",
+   "source_types": "Governance disclosures (tenure, age, appointment dates, refresh and retirement policies, succession disclosure); capital markets records (appointment and departure announcements)",
+   "availability": "High"
+  },
+  {
+   "id": "5.3",
+   "dimension": "5",
+   "name": "Self-scrutiny and accountability to owners",
+   "definition": "Whether the board evaluates itself rigorously, acts on the findings, and stays open to challenge from owners rather than insulating itself.",
+   "anchors": {
+    "1": "Evaluation is a compliance exercise; protective provisions or structures insulate the board; owner feedback is ignored.",
+    "3": "Regular internal questionnaire-based evaluation; some protective provisions, but the board responds to owner votes.",
+    "5": "Periodic externally facilitated evaluation with actions tracked to completion; the board is openly accountable to owners and demonstrably responds to their feedback."
+   },
+   "board_lens": "Does the board evaluate itself rigorously, act on the findings, stay openly accountable to owners rather than insulating itself, and require management to engage owners openly?",
+   "source_types": "Governance disclosures (evaluation disclosure, charter and bylaw provisions, vote results, responses to shareholder proposals); third-party data (proxy advisor reports)",
+   "availability": "Medium"
+  },
+  {
+   "id": "5.4",
+   "dimension": "5",
+   "name": "Response to pressure: build or retrench",
+   "definition": "Which lever the board and management reach for first when revenue or margin comes under pressure. Scope: which lever; timing relative to stress is 6.3.",
+   "anchors": {
+    "1": "Cost cutting, portfolio retreat and guidance management are the primary response.",
+    "3": "Mixed response: cost actions alongside limited reinvestment.",
+    "5": "Reinvestment, pricing and innovation lead the response, with cost discipline as an enabler rather than the strategy."
+   },
+   "board_lens": "When pressure hit, did the board push for reinvestment alternatives rather than default to approving cuts and guidance management, and which lever did the company pull first under its oversight?",
+   "source_types": "Investor communications (calls around guidance cuts); capital markets records (restructuring announcements); regulatory filings",
+   "availability": "Medium"
+  },
+  {
+   "id": "6.1",
+   "dimension": "6",
+   "name": "Cash over earnings orientation",
+   "definition": "Whether the board and management manage to cash generation rather than reported earnings, including in incentives and messaging. Scope: cash metrics in incentives; customer metrics are 1.4.",
+   "anchors": {
+    "1": "Attention and incentives centred on EPS or adjusted earnings; cash conversion weak and not discussed.",
+    "3": "Cash flow discussed; cash metrics carry low weight in incentives.",
+    "5": "Free cash flow and cash conversion are central to decisions, incentives and messaging, and consistently strong relative to peers."
+   },
+   "board_lens": "Does the board govern to cash: cash metrics in incentives, standing cash review, decisions tested against cash generation, and management held to managing and messaging on cash conversion?",
+   "source_types": "Regulatory filings (cash flow versus net income over five years); governance disclosures (incentive metrics); investor communications",
+   "availability": "High"
+  },
+  {
+   "id": "6.2",
+   "dimension": "6",
+   "name": "Balance sheet and cash discipline",
+   "definition": "Whether leverage, maturities, liquidity headroom and working capital are managed to preserve options through the cycle.",
+   "anchors": {
+    "1": "Concentrated near-term maturities, tight covenant headroom, leverage above peers, deteriorating working capital.",
+    "3": "Maturity profile, leverage and working capital in line with peers.",
+    "5": "Laddered maturities, ample committed liquidity, leverage below peer median through the cycle, improving working capital."
+   },
+   "board_lens": "Has the board set and enforced a leverage and liquidity policy, required regular stress tests, and held management to laddered maturities, committed liquidity and improving working capital?",
+   "source_types": "Regulatory filings (debt notes, MD&A liquidity, working capital); capital markets records (credit agreements, rating agency reports); third-party data (peer comparables)",
+   "availability": "High"
+  },
+  {
+   "id": "6.3",
+   "dimension": "6",
+   "name": "Acting ahead of stress",
+   "definition": "Whether financing, portfolio and cost actions are taken while options are still open rather than after a downgrade, miss or covenant pressure. Scope: timing; which lever is 5.4.",
+   "anchors": {
+    "1": "Refinancing, divestments or cost actions taken only after visible stress.",
+    "3": "Actions timely but reactive to early stress signals.",
+    "5": "Proactive refinancing and portfolio moves well ahead of stress, under a stated policy; options ('altitude') preserved."
+   },
+   "board_lens": "Has the board set early-warning triggers for liquidity and acted while the numbers still looked fine, requiring refinancing, divestment or portfolio action ahead of visible stress?",
+   "source_types": "Capital markets records (refinancing and divestment announcements versus rating actions and guidance changes); investor communications",
+   "availability": "Medium"
+  }
+ ],
+ "scoped_pairs": [
+  [
+   "3.4",
+   "5.1"
+  ],
+  [
+   "5.4",
+   "6.3"
+  ],
+  [
+   "1.4",
+   "6.1"
+  ],
+  [
+   "2.3",
+   "3.3"
+  ]
+ ],
+ "peer_relative": [
+  "3.2",
+  "5.1",
+  "6.1",
+  "6.2"
+ ],
+ "behaviour_window_months": 24,
+ "trend_window_years": 5,
+ "grade_scale": [
+  {
+   "min": 4.25,
+   "grade": "A",
+   "label": "Day 1"
+  },
+  {
+   "min": 3.5,
+   "grade": "B",
+   "label": "Day 1 early drift"
+  },
+  {
+   "min": 2.75,
+   "grade": "C",
+   "label": "Day 2 creeping in"
+  },
+  {
+   "min": 2.0,
+   "grade": "D",
+   "label": "Day 2 established"
+  },
+  {
+   "min": 0,
+   "grade": "F",
+   "label": "Day 2 entrenched"
+  }
+ ],
+ "letter_values": {
+  "A": 5,
+  "B": 4,
+  "C": 3,
+  "D": 2,
+  "F": 1
+ },
+ "approved_news": [
+  "Bloomberg",
+  "Reuters",
+  "The Wall Street Journal",
+  "Financial Times",
+  "Forbes",
+  "AP",
+  "The New York Times",
+  "Barron's",
+  "The Economist",
+  "CNBC",
+  "Nikkei",
+  "Handelsblatt",
+  "Les Echos",
+  "The Economic Times",
+  "Mint"
+ ],
+ "rule_version": "1.2",
+ "grade_scale_ranges": {
+  "A": "4.25 - 5.00",
+  "B": "3.50 - 4.24",
+  "C": "2.75 - 3.49",
+  "D": "2.00 - 2.74",
+  "F": "below 2.00"
+ },
+ "windows": {
+  "behaviour_24m": [
+   "3.2",
+   "4.1",
+   "4.2",
+   "5.4",
+   "6.3"
+  ],
+  "behaviour_36m": [
+   "2.1",
+   "4.3"
+  ],
+  "trend_5y": [
+   "3.4",
+   "5.1",
+   "5.2",
+   "6.1",
+   "6.2"
+  ]
+ },
+ "silence_full": [
+  "1.4",
+  "5.2",
+  "5.3"
+ ],
+ "silence_capped": {
+  "2.3": 3,
+  "2.4": 3,
+  "4.3": 3
+ },
+ "searched_record_capped": {
+  "1.3": 3
+ },
+ "strong_classes": [
+  "strong_direct",
+  "board_act"
+ ],
+ "evidence_classes": [
+  "direct",
+  "strong_direct",
+  "indirect",
+  "searched_record",
+  "board_act",
+  "silence",
+  "inside_out",
+  "self_assessment"
+ ],
+ "na_causes": [
+  "rule-limited",
+  "disclosure-limited",
+  "retrieval-limited"
+ ],
+ "run_modes": {
+  "director_request": "Prepared at the request of a director",
+  "internal_dry_run": "Internal dry run - not for distribution",
+  "methodology_pilot": "Pilot - methodology test"
+ },
+ "board_acts": {
+  "Dividend declarations, increases, cuts": [
+   "5.1",
+   "5.4",
+   "6.3"
+  ],
+  "Buyback authorisations": [
+   "5.1",
+   "6.2"
+  ],
+  "M&A and divestiture approvals (incl. 'unanimously approved')": [
+   "3.4",
+   "4.2"
+  ],
+  "Guidance-framework or long-term algorithm changes": [
+   "2.1"
+  ],
+  "CEO appointments, separations and succession announcements": [
+   "5.2",
+   "4.2"
+  ],
+  "Committee creation, renaming or dissolution": [
+   "2.4"
+  ]
+ },
+ "outside_in_overrides": {
+  "1.2": {
+   "availability": "Low-Medium",
+   "anchors": {
+    "1": "No disclosure of director or senior-leader customer or frontline engagement, and no customer-side experience on the board.",
+    "3": "Disclosed site visits, customer events or a director with recent customer-facing executive experience, without evidence of findings returning to the board.",
+    "5": "Disclosed structured programme (e.g. customer advisory board reporting to the board, regular director market visits) with findings reported to the board."
+   }
+  },
+  "4.1": {
+   "availability": "Low-Medium",
+   "anchors": {
+    "1": "No delegation-of-authority disclosure; announced initiatives persist for years without visible scale-up or stop.",
+    "3": "Delegation disclosed in general terms; some initiatives visibly scaled or stopped within 12-18 months.",
+    "5": "Matters reserved and delegations disclosed; repeated public examples of pilots scaled or stopped within 12 months, without restructuring charges or blame."
+   },
+   "sources": "Governance guidelines; transcripts tracked quarter to quarter; press releases"
+  }
+ },
+ "retrieval_set": [
+  "Latest 10-K / annual report, plus five years of cash-flow statements.",
+  "Five years of proxy statements, read in full, including the pay discussion and governance guidelines.",
+  "Four to eight earnings call transcripts with analyst Q&A (CapIQ or AlphaSense preferred), including any call held on the day of a major transaction announcement.",
+  "A 24-month sweep of 8-Ks / exchange announcements, and a 36-month sweep for Item 5.02.",
+  "A merger proxy or registration statement for any pending transaction.",
+  "Sector regulator registers relevant to indicator 1.3 (e.g. FDA recalls for food, CFPB complaints for consumer finance).",
+  "Investor day materials and sector conference presentations (e.g. CAGNY for consumer staples).",
+  "Where accessible: ISS / Glass Lewis reports and Moody's / S&P / Fitch reports."
+ ],
+ "mode": "board_only",
+ "lenses": [
+  "board"
+ ],
+ "lens_labels": {
+  "board": "Board"
+ },
+ "stages": {
+  "outside_in": {
+   "lenses": [
+    "board"
+   ],
+   "labels": {
+    "board": "Outside-in"
+   }
+  },
+  "inside_out": {
+   "lenses": [
+    "board",
+    "board_io"
+   ],
+   "labels": {
+    "board": "Outside-in",
+    "board_io": "Post inside-out"
+   }
+  }
+ },
+ "source_origins": [
+  "public",
+  "user_public",
+  "inside_out",
+  "self_assessment"
+ ],
+ "coverage_threshold": {
+  "outside_in": 0.5,
+  "inside_out": 0.67
+ },
+ "coverage_threshold_note": "Share of a dimension's indicators that must be assessed for its grade to be reported: one half outside-in, two-thirds post inside-out. 0.67 means exactly 2/3: grade.py reads each value as the nearest simple fraction and compares assessed * 3 >= of * 2, so 2 of 3 indicators qualifies. Read it the same way wherever it is used.",
+ "action_statuses": [
+  "completed",
+  "cancelled",
+  "on_track",
+  "behind",
+  "not_started",
+  "no_public_evidence"
+ ],
+ "max_peers": 5,
+ "max_history_quarters": 4,
+ "inside_out_priority_docs": [
+  [
+   "Board and committee minutes (12 months)",
+   "1.1 1.3 2.1 2.3 3.2 4.1 4.2 4.3 5.4 6.3"
+  ],
+  [
+   "Board agendas and annual calendar",
+   "1.1 1.2 2.3 3.1 3.3"
+  ],
+  [
+   "Board and committee packs (routine pre-reads)",
+   "1.1 2.2 2.4 3.1 6.1"
+  ],
+  [
+   "Governance framework: delegation of authority, committee terms, capital and treasury policies, incentive scorecards",
+   "1.4 2.4 4.1 5.1 5.3 6.1 6.2"
+  ],
+  [
+   "Strategy papers and plan versions",
+   "2.1 3.1"
+  ],
+  [
+   "Capital and investment papers with post-investment reviews",
+   "3.4 4.2 5.1"
+  ],
+  [
+   "Treasury and liquidity reports (stress tests, covenant headroom)",
+   "6.1 6.2 6.3"
+  ],
+  [
+   "Board evaluation report and action log",
+   "5.3"
+  ],
+  [
+   "Skills matrix and board/CEO succession plans",
+   "3.3 5.2"
+  ],
+  [
+   "CEO reports to the board",
+   "1.1 3.1 6.1"
+  ],
+  [
+   "Customer insight and key-account reports",
+   "1.1 1.3"
+  ],
+  [
+   "Internal audit and risk reports",
+   "1.3 2.2 6.3"
+  ],
+  [
+   "Chair / lead independent director notes from executive sessions",
+   "2.3 4.3"
+  ]
+ ],
+ "questionnaire": [
+  [
+   "1",
+   "Customer Obsession",
+   "In the last 12 months, when did something a customer said or did change a decision in the boardroom? How did it reach you: through management's summary, or directly (complaints, churn data, a conversation without management present)?"
+  ],
+  [
+   "1",
+   "Customer Obsession",
+   "Which customer or quality measure sits in executive pay, at what weight, and has it ever reduced a payout?"
+  ],
+  [
+   "2",
+   "Resisting Proxies",
+   "When did the board last change a core strategic assumption, and what prompted it: internal evidence the board asked for, or outside pressure (a miss, an activist, an analyst)?"
+  ],
+  [
+   "2",
+   "Resisting Proxies",
+   "Which number in the board pack do you trust least, and what has the board retired or redefined in the last two years (a metric, a report, a committee) because it no longer earned its place?"
+  ],
+  [
+   "3",
+   "Embracing External Trends",
+   "Name the two or three structural shifts that matter most to the company. For each, does the board hold an explicit position with targets, and who outside the company has addressed the board on it in the past year?"
+  ],
+  [
+   "3",
+   "Embracing External Trends",
+   "On the last two or three sector shocks, did the company move ahead of peers, with them, or after them, and did the board or management initiate the move?"
+  ],
+  [
+   "4",
+   "High-Velocity Decision-Making",
+   "Does the board distinguish reversible from irreversible decisions in practice? Give one example of each from the last year, how many meetings each took, and whether anything was reversed, deferred or declined."
+  ],
+  [
+   "4",
+   "High-Velocity Decision-Making",
+   "When did a director last change their mind because of an argument made in the room, how are minority views recorded, and does a contested decision stay settled afterwards?"
+  ],
+  [
+   "5",
+   "Building over Protecting",
+   "When earnings last came under pressure, which lever did the board reach for first (cost, buybacks, guidance, reinvestment), and how was the alternative debated?"
+  ],
+  [
+   "5",
+   "Building over Protecting",
+   "What did the last board evaluation and the last board appointment change, and what would owners say about the board that the board would not say about itself?"
+  ],
+  [
+   "6",
+   "Liquidity and Capital Management",
+   "Does the board spend more time on earnings or on cash? What liquidity trigger would make the board act, and has it ever acted while the numbers still looked fine?"
+  ],
+  [
+   "6",
+   "Liquidity and Capital Management",
+   "What is the stated leverage and liquidity policy, how often is it stress-tested in front of the board, and who on the board owns working capital?"
+  ]
+ ]
+}

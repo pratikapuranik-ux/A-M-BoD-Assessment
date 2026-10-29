@@ -1,0 +1,23 @@
+{
+  "name": "am-board-assessment-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Clickable prototype of the A&M Day 1 / Day 2 board assessment (static, no build step).",
+  "scripts": {
+    "start": "npx --yes serve . -l 5173",
+    "test": "node tests/engine.test.js",
+    "build:single": "node tools/build-single-file.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

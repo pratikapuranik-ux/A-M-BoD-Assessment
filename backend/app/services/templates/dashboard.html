@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>__TITLE__</title>
+<style>
+:root{--navy:#002B49;--blue:#0085CA;--amber:#CF7F00;--teal:#00677F;--slate:#5E8AB4;--grey:#646464;--bg:#FFFFFF;--card:#FFFFFF;--ink:#1A1F2B;--muted:#646464;--line:#D9D9D9;--tint:#F3F8FC;--tint2:#DAF2FF;--label:#5B6B7B;
+ --gA:#00677F;--gB:#0085CA;--gC:#5E8AB4;--gD:#CF7F00;--gF:#8B2F0B;--gNA:#969696;--s1:#8B2F0B;--s2:#CF7F00;--s3:#5E8AB4;--s4:#0085CA;--s5:#00677F;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 Arial,Helvetica,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+header.top{padding:28px 0 8px}.brand{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--slate);margin-bottom:10px;font-weight:700}
+h1{font-size:1.7rem;margin:0 0 8px;line-height:1.2;color:var(--navy)}
+.meta{font-size:.83rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 26px}
+.mode{margin-top:14px;padding:9px 14px;border-left:4px solid var(--amber);background:var(--tint);font-size:.8rem}
+main{padding:4px 0 60px}.kicker{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin:34px 0 4px;font-weight:700}h2{font-size:1.2rem;margin:0 0 12px;color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-top:3px solid #002B49;padding:16px 18px}.card.flush{padding:0}
+.sub{margin:10px 0 0;font-size:.78rem;color:var(--muted)}
+.g{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:32px;padding:0 8px;color:#fff;font-weight:700}.g.big{min-width:46px;height:46px;font-size:1.5rem;flex:none}
+.gA{background:var(--gA)}.gB{background:var(--gB)}.gC{background:var(--gC)}.gD{background:var(--gD)}.gF{background:var(--gF)}.gNA{background:var(--gNA)}
+.s{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;color:#fff;font-weight:700;font-size:.9rem}.s1{background:var(--s1)}.s2{background:var(--s2)}.s3{background:var(--s3)}.s4{background:var(--s4)}.s5{background:var(--s5)}.sNA{background:var(--gNA);font-size:.7rem}
+.prov{font-size:.68rem;color:var(--amber);font-weight:700}.up{color:var(--teal);font-weight:700}.down{color:var(--s1);font-weight:700}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.88rem}
+th{font-size:.68rem;color:var(--label);font-weight:700;text-transform:uppercase;letter-spacing:.14em;background:#fff;border-bottom:1px solid #B8C2CC}
+.scroll{overflow-x:auto}.center{text-align:center}.small{font-size:.8rem;color:var(--muted)}.row{cursor:pointer}.row:hover{background:var(--tint)}.vm{vertical-align:middle}
+.tg{border:0;background:none;color:var(--blue);font:inherit;font-size:.78rem;cursor:pointer;white-space:nowrap;padding:0}
+td.pcell{padding:0;border:0}
+.detail{display:none;background:var(--tint);padding:14px 16px;margin:0 0 6px;border-left:3px solid var(--blue)}.detail.open{display:block}.detail table th{background:transparent}.detail table td{border-bottom:1px solid #E1E8EE}
+.detail p{margin:0 0 10px}.lim{margin:10px 0 0;font-size:.82rem}
+.info{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--blue);color:#fff;font-size:.65rem;font-weight:700;margin:0 2px;cursor:pointer;border:0;vertical-align:middle;padding:0}.info.ind{background:var(--grey)}
+.ec{display:inline-block;background:var(--tint2);color:var(--navy);border:0;padding:0 6px;font:inherit;font-size:.7rem;font-weight:700;margin:0 1px;cursor:pointer;vertical-align:baseline;line-height:1.5}.ec:hover{background:var(--blue);color:#fff}
+.ev{border-left:3px solid var(--blue);padding:8px 12px;margin:8px 0;background:var(--card)}.ev .src{font-weight:700;color:var(--navy)}.ev .exc{font-style:italic;margin:3px 0}.ev a{color:var(--blue);word-break:break-all}
+.chip{display:inline-block;background:var(--tint2);padding:1px 7px;font-size:.7rem;margin:2px 3px 0 0}.recent{color:var(--amber);font-size:.68rem;font-weight:700}.sim{color:var(--amber);font-size:.68rem;font-weight:700;border:1px solid var(--amber);padding:0 4px}
+/* executive summary */
+details.exec{background:var(--card);border:1px solid var(--line);border-top:3px solid #002B49}
+details.exec>summary{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;list-style:none}details.exec>summary::-webkit-details-marker{display:none}
+details.exec>summary .hl{flex:1;font-weight:700;color:var(--navy);font-size:1.02rem;line-height:1.35}details.exec>summary .hl .more{color:var(--muted);font-weight:400;font-size:.85rem}
+details.exec>summary::after{content:"\25B8";color:var(--blue);font-size:1.2rem;flex:none}details.exec[open]>summary::after{content:"\25BE"}
+.tiles{display:flex;gap:8px;flex:none}.tiles .lb{font-size:.58rem;color:var(--muted);text-align:center;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.xbody{padding:2px 18px 18px;border-top:1px solid var(--line)}.xbody h4{margin:16px 0 4px;font-size:.7rem;color:var(--label);text-transform:uppercase;letter-spacing:.14em}.xbody p{margin:4px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:720px){.two{grid-template-columns:1fr}}.two>div{background:var(--tint);padding:10px 14px}
+/* actions */
+.action{padding:12px 0;border-bottom:1px solid var(--line)}.action:last-child{border:0}.action:first-child{padding-top:0}.action h3{margin:0 0 4px;font-size:1rem;color:var(--navy)}.action p{margin:0 0 4px}.action .m{font-size:.8rem;color:var(--muted)}.action .imp b{color:var(--teal)}
+.st{display:inline-block;padding:2px 8px;color:#fff;font-weight:700;font-size:.72rem;text-transform:uppercase}.st-completed{background:var(--teal)}.st-on_track{background:var(--blue)}.st-behind{background:var(--amber)}.st-not_started{background:var(--s1)}.st-cancelled{background:var(--grey)}.st-no_public_evidence{background:var(--slate)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:10px}.stat div{background:var(--tint);padding:12px}.stat .n{font-size:1.4rem;font-weight:700;color:var(--navy)}.stat .l{font-size:.76rem;color:var(--muted)}
+details.acc{background:var(--card);border:1px solid var(--line);border-top:3px solid #002B49}details.acc summary{cursor:pointer;padding:14px 18px;font-weight:700;color:var(--navy);list-style:none}details.acc summary::after{content:"\25B8";float:right;color:var(--blue)}details.acc[open] summary::after{content:"\25BE"}.accbody{padding:0 18px 18px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}select,input{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:6px 8px;font:inherit}
+.modal{position:fixed;inset:0;background:rgba(0,43,73,.22);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.open{display:flex}.modal .box{background:var(--card);color:var(--ink);max-width:760px;width:100%;max-height:85vh;overflow:auto;padding:22px;border-top:4px solid var(--amber)}.modal h3{margin:0 0 8px;color:var(--navy)}.modal .x{float:right;cursor:pointer;color:var(--muted);font-size:1.2rem}
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem}.draft{color:var(--amber);font-weight:700}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}tr,.action,.ev,.card{break-inside:avoid}.modal{display:none!important}.row{cursor:default}}
+</style></head><body>
+<header class="top"><div class="wrap"><div class="brand">Alvarez &amp; Marsal &nbsp;|&nbsp; Day 1 / Day 2 Board Assessment</div><h1 id="title"></h1><div class="meta" id="meta"></div><div class="mode" id="mode"></div></div></header>
+<main><div class="wrap">
+<div class="kicker">EXECUTIVE SUMMARY</div><div id="summary"></div>
+<div id="scsec"><div class="kicker" id="sck"></div><h2>Grades by dimension</h2><div class="card flush scroll" id="scorecard"></div><div class="sub" id="sccov"></div></div>
+<div id="changes"></div>
+<div class="kicker">PEER COMPARISON</div><h2 id="peerh">Dimension grades against the peer set</h2><div class="card flush scroll" id="peers"></div><div class="sub" id="peernote"></div><div id="peertrend"></div>
+<div id="recon"></div>
+<div class="kicker">POTENTIAL ACTIONS</div><h2 id="acth">What the board could do next</h2><div class="card" id="actions"></div>
+<div id="bot"></div><div id="ain"></div>
+<div class="kicker">COVERAGE</div><h2>Coverage and limitations</h2><div class="card" id="coverage"></div>
+<div class="kicker">SOURCES</div><details class="acc"><summary>Full evidence list (open to see every source used)</summary><div class="accbody"><div class="filters"><select id="fDim"><option value="">All dimensions</option></select><select id="fOrigin"><option value="">All origins</option></select><select id="fInd"><option value="">All indicators</option></select><input id="fText" placeholder="Search evidence text"></div><div id="evList"></div></div></details>
+<footer id="method"></footer></div></main>
+<div class="modal" id="modal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box" id="modalBox"></div></div>
+<script>
+const RUN=__RUN__, FW=__FW__; const DIMS=Object.keys(FW.dimensions).sort((a,b)=>a-b); const IND=FW.indicators; const INDBY=Object.fromEntries(IND.map(i=>[i.id,i]));
+const stage=RUN.run.stage||'outside_in'; const io=stage==='inside_out'; const L=FW.stages[stage].lenses; const LL=FW.stages[stage].labels; const last=L[L.length-1];
+const company=RUN.subjects.find(s=>s.role==='company'), peers=RUN.subjects.filter(s=>s.role==='peer'); const C=company.computed; const hist=RUN.history||[]; const prev=hist.length?hist[hist.length-1]:null;
+const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shortName=n=>{const s=(n||'').replace(/\s*\(.*\)\s*$/,'').replace(/[,.]?\s+(Corporation|Corp\.?|Incorporated|Inc\.?|p\.l\.c\.?|plc|Ltd\.?|Limited|Company|Co\.?|Holdings|Group|N\.V\.|S\.A\.|AG)$/i,'').trim(); return s||n;};
+const SHORT=shortName(company.name);
+const LV={A:5,B:4,C:3,D:2,F:1}; const gchip=(g,big)=>`<span class="g${big?' big':''} g${g||'NA'}">${g||'n/a'}</span>`; const schip=s=>`<span class="s s${s??'NA'}">${s??'n/a'}</span>`;
+const delta=(n,o)=>(n&&o)?LV[n]-LV[o]:null; const dtxt=d=>d==null?'':d>0?`<span class="up">▲ ${d}</span>`:d<0?`<span class="down">▼ ${-d}</span>`:'<span class="small">=</span>';
+const linkify=t=>esc(t).replace(/\[((?:[EXBKLN]|SA|IO)\d{2,3})\]/g,(m,id)=>`<button class="ec" title="${esc((RUN.evidence[id]||{}).document||id)}" onclick="event.stopPropagation();showEv(['${id}'],'${id}')">${id}</button>`);
+const prevGrade=(d)=>prev?((prev.stage==='inside_out'&&prev.dimensions[d].board_io)?prev.dimensions[d].board_io.grade:prev.dimensions[d].board.grade):null;
+const prevOverall=()=>prev?((prev.stage==='inside_out'&&prev.overall.board_io)?prev.overall.board_io.grade:prev.overall.board.grade):null;
+const firstSent=t=>{t=(t||'').trim(); const m=t.match(/^[\s\S]*?[.!?](?=\s+[A-Z\[(]|\s*$)/); return (m?m[0]:t).trim();};
+const endDot=t=>/[.!?]$/.test(t)?t:t+'.';
+const closeModal="document.getElementById('modal').classList.remove('open')";
+const toggle=id=>{const p=document.getElementById(id); if(!p) return; const o=p.classList.toggle('open'); document.querySelectorAll(`[data-for="${id}"] .tg`).forEach(b=>{b.textContent=b.dataset.t+(o?' ▴':' ▾');});}; window.toggle=toggle;
+const tgBtn=(id,t)=>`<button class="tg" data-t="${t}" aria-label="${t}" onclick="event.stopPropagation();toggle('${id}')">${t} ▾</button>`;
+
+// ---- header
+document.getElementById('title').textContent=`${company.name}: Day 1 / Day 2 Board Assessment${io?' — inside-out update':''}`;
+(function(){const w=RUN.run.document_window||{};
+ document.getElementById('meta').innerHTML=[`Period ${esc(RUN.run.period)}`,`Run date ${esc(RUN.run.run_date)}`,`Peers: ${peers.map(p=>esc(p.name)).join(', ')}`,`Window: behaviour from ${esc(w.behaviour_from||'n/a')}, trends from ${esc(w.trend_from||'n/a')}`,hist.length?`Trend vs ${hist.map(h=>esc(h.period)+(h.simulated?' (sim)':'')).join(', ')}`:''].filter(Boolean).map(x=>`<span>${x}</span>`).join('');
+ const ml=FW.run_modes[RUN.run.mode]||RUN.run.mode;
+ document.getElementById('mode').innerHTML=`${io?'Outside-in plus board documents and self-assessment':'Outside-in, public information only'}${ml?` · ${esc(ml)}`:''}${RUN.run.simulated?' · <span class="sim">SIMULATED</span>':''} · <b class="draft">DRAFT ONLY — requires review and approval by a qualified Alvarez and Marsal professional before use</b>`;})();
+
+// ---- executive summary (collapsed by default)
+(function(){const pv=prevOverall(); const mv=!!(prev||io);
+ const tiles=L.map(l=>{const o=C.overall[l]; return `<div title="${esc(LL[l])}: ${esc(o.label||'')}">${gchip(o.grade,true)}${L.length>1?`<div class="lb">${l==='board'?'OI':'IO'}</div>`:''}</div>`;}).join('');
+ const osum=L.map(l=>{const t=(RUN.overall_summary||{})[l]; return t?`<p>${L.length>1?`<b>${esc(LL[l])}${C.overall[l].provisional?' (provisional)':''}:</b> `:''}${linkify(t)}</p>`:'';}).join('');
+ let h=`<details class="exec" id="exec"><summary><span class="tiles">${tiles}</span><span class="hl">${esc(RUN.headline||'')} <span class="more">· open to read</span></span></summary><div class="xbody">${osum}`;
+ h+=`<h4>${mv?'What moved the rating':'What drives the rating'}</h4><p>${linkify(RUN.what_moved||'')}</p>`;
+ if(io&&RUN.inside_vs_outside){h+=`<div class="two" style="margin-top:10px"><div><h4 style="margin-top:0">Better than the public evidence suggested</h4>${(RUN.inside_vs_outside.better||[]).map(x=>`<p>• ${linkify(x)}</p>`).join('')}</div><div><h4 style="margin-top:0">Worse than the public evidence suggested</h4>${(RUN.inside_vs_outside.worse||[]).map(x=>`<p>• ${linkify(x)}</p>`).join('')}</div></div>`;}
+ h+=`<h4>Key actions</h4>`+(RUN.actions||[]).slice(0,5).map(a=>`<p>▸ <b>${esc(a.heading)}.</b> ${linkify(endDot(firstSent(a.description)))}</p>`).join('');
+ if((RUN.key_metrics||[]).length) h+=`<h4>Metrics worth tracking</h4><div class="scroll"><table><thead><tr><th>Metric</th><th>Why it matters</th><th>Now</th></tr></thead><tbody>${RUN.key_metrics.map(m=>`<tr><td><b>${esc(m.metric)}</b></td><td>${linkify(m.why)}</td><td>${linkify(m.current||'')}</td></tr>`).join('')}</tbody></table></div>`;
+ h+=`<h4>Position relative to peers</h4><p>${linkify(RUN.peer_position||'')}</p>`+(RUN.peer_summary_lines||[]).map(x=>`<p>• ${linkify(x)}</p>`).join('')+`</div></details>`;
+ document.getElementById('summary').innerHTML=h;})();
+
+// ---- scorecard
+function dimPanel(d){
+ const ids=IND.filter(i=>i.dimension===d); const cd=C.dimensions[d][last]; const sc=ids.map(i=>({i,s:((company.indicators[i.id]||{})[last]||{}).score})).filter(x=>x.s!=null);
+ let intro='';
+ if(!sc.length) intro=`No indicator in ${esc(FW.dimensions[d])} could be assessed in this run.`;
+ else{const hi=sc.reduce((a,b)=>b.s>a.s?b:a), lo=sc.reduce((a,b)=>b.s<a.s?b:a); const avg=cd.average!=null?cd.average:sc.reduce((t,x)=>t+x.s,0)/sc.length;
+  const rat=x=>linkify(endDot(firstSent(((company.indicators[x.i.id]||{})[last]||{}).rationale||''))).replace(/<\/button>\.$/,'</button>.');
+  intro=`${esc(SHORT)} averages ${Number(avg).toFixed(2)} on ${esc(FW.dimensions[d])}. `+((hi.s===lo.s||hi.i.id===lo.i.id)?`All ${sc.length} indicators score ${hi.s}.`:`<b>Strongest:</b> ${hi.i.id} — ${rat(hi)} <b>Weakest:</b> ${lo.i.id} — ${rat(lo)}`);}
+ const two=L.length>1;
+ let h=`<p>${intro}</p><div class="scroll"><table><thead><tr><th>Indicator</th>${L.map(l=>`<th class="center">${two?(l==='board'?'Outside-in score':'Post inside-out score'):'Score'}</th>`).join('')}<th>Conf.</th><th>Evidence</th></tr></thead><tbody>`;
+ ids.forEach(i=>{const ind=company.indicators[i.id]||{}; const lc=ind[last]||{};
+  h+=`<tr><td>${i.id} ${esc(i.name)} <button class="info ind" title="Definition and anchors" aria-label="Definition and anchors" onclick="event.stopPropagation();showInd('${i.id}')">?</button></td>${L.map(l=>`<td class="center">${schip((ind[l]||{}).score)}</td>`).join('')}<td class="small">${esc(lc.confidence||lc.na_cause||'')}</td><td>${L.map(l=>{const c=ind[l]||{}; return `<div>${two?`<b>${LL[l]}:</b> `:''}${linkify(c.rationale||(c.score==null?'Not assessable.':''))} ${(c.evidence||[]).length?`<button class="info" title="Evidence for this indicator" aria-label="Evidence list" onclick="event.stopPropagation();showEv(${JSON.stringify(c.evidence).replace(/"/g,'&quot;')},'${i.id} ${esc(i.name)}${two?' — '+LL[l]:''}')">i</button>`:''}</div>`;}).join('')}</td></tr>`;});
+ const lim=(company.limitations||{})[d]; h+=`</tbody></table></div>${lim?`<p class="lim"><b>Where this grade is limited:</b> ${linkify(lim)}</p>`:''}`; return h;}
+(function(){
+ document.getElementById('sck').textContent=(prev||io)?'SCORECARD AND TREND':'SCORECARD';
+ const two=L.length>1; const nc=1+hist.length+L.length+(prev||io?1:0)+2;
+ const gh=L.map(l=>`<th class="center">${two?'Grade '+(l==='board'?'(outside-in)':'(post inside-out)'):'Grade'}</th>`).join('');
+ let h='<table><thead><tr><th>Dimension</th>'+hist.map(x=>`<th class="center">${esc(x.period)}${x.simulated?' (sim)':''}</th>`).join('')+gh+((prev||io)?'<th class="center">Change</th>':'')+'<th class="center">Assessed</th><th>Evidence in this run</th><th style="text-align:right">'+'</th></tr></thead><tbody>';
+ DIMS.forEach(d=>{const cur=C.dimensions[d][last].grade; const pv=prevGrade(d); let ch=dtxt(delta(cur,pv)); if(io&&!pv){ch='OI→IO '+dtxt(delta(C.dimensions[d].board_io.grade,C.dimensions[d].board.grade));}
+  h+=`<tr class="row" data-for="sd${d}" onclick="toggle('sd${d}')"><td class="vm"><b>${d}. ${esc(FW.dimensions[d])}</b></td>`+hist.map(x=>`<td class="center vm">${gchip((x.stage==='inside_out'&&x.dimensions[d].board_io)?x.dimensions[d].board_io.grade:x.dimensions[d].board.grade)}</td>`).join('')+L.map(l=>`<td class="center vm">${gchip(C.dimensions[d][l].grade)}</td>`).join('')+((prev||io)?`<td class="center vm">${ch}</td>`:'')+`<td class="center vm">${C.dimensions[d][last].assessed}/${C.dimensions[d][last].of}</td><td class="small">${linkify((RUN.scorecard_headline||{})[d]||'')}</td><td class="vm" style="text-align:right">${tgBtn('sd'+d,'indicators')}</td></tr>`;
+  h+=`<tr><td class="pcell" colspan="${nc+1}"><div class="detail" id="sd${d}">${dimPanel(d)}</div></td></tr>`;});
+ const o=C.overall;
+ h+=`<tr><td class="vm"><b>Overall</b></td>`+hist.map(x=>`<td class="center vm">${gchip((x.stage==='inside_out'&&x.overall.board_io)?x.overall.board_io.grade:x.overall.board.grade)}</td>`).join('')+L.map(l=>`<td class="center vm">${gchip(o[l].grade)}${o[l].provisional?'<div class="prov">PROVISIONAL</div>':''}</td>`).join('')+((prev||io)?`<td class="center vm">${dtxt(delta(o[last].grade,prevOverall()))}</td>`:'')+`<td class="center vm">${o[last].dimensions_reported} dims${o[last].provisional?' <span class="prov">(provisional)</span>':''}</td><td class="small">Rounded average of dimension letters (halves down).</td><td></td></tr></tbody></table>`;
+ document.getElementById('scorecard').innerHTML=h;
+ const cv=C.coverage[last]; const sp=cv.not_assessable||{}; const causes=Object.entries(sp).filter(([k,v])=>v>0).map(([k,v])=>`${v} ${k}`);
+ document.getElementById('sccov').textContent=`Coverage: ${cv.assessed} of ${cv.of} indicators assessed.${causes.length?' Not assessable: '+causes.join(', ')+'.':''} `+(io?'Post inside-out grades use the board documents and self-assessment supplied; outside-in grades are shown unchanged for comparison.':'Grades rest on outside-in information; non public board documents will help at a more accurate grade.');
+ let c2='';
+ if(prev){const rows=IND.filter(i=>{const c=(company.indicators[i.id]||{}).board||{}; const p=(prev.indicators[i.id]||{}).board; return c.score!=null&&p!=null&&c.score!==p;});
+  if(rows.length){c2+=`<div class="kicker">WHAT CHANGED SINCE ${esc(prev.period)}${prev.simulated?' (SIMULATED PRIOR)':''}</div><div class="card flush scroll"><table><thead><tr><th>Indicator</th><th class="center">Prior</th><th class="center">Now</th><th class="center">Δ</th><th>Evidence that moved the score</th></tr></thead><tbody>${rows.map(i=>{const c=company.indicators[i.id].board; const p=prev.indicators[i.id].board; return `<tr><td><b>${i.id}</b> ${esc(i.name)}</td><td class="center">${schip(p)}</td><td class="center">${schip(c.score)}</td><td class="center">${dtxt(c.score-p)}</td><td class="small">${linkify((RUN.change_notes||{})[i.id]||firstSent(c.rationale||''))}</td></tr>`;}).join('')}</tbody></table></div>`;}}
+ if(io){const rows=IND.filter(i=>{const a=((company.indicators[i.id]||{}).board||{}).score, b=((company.indicators[i.id]||{}).board_io||{}).score; return b!=null&&a!==b;});
+  if(rows.length){c2+=`<div class="kicker">OUTSIDE-IN TO POST INSIDE-OUT: INDICATORS THAT MOVED</div><div class="card flush scroll"><table><thead><tr><th>Indicator</th><th class="center">OI</th><th class="center">IO</th><th class="center">Δ</th><th>Outside-in evidence, then what the board documents added</th></tr></thead><tbody>${rows.map(i=>{const a=company.indicators[i.id].board.score, b=company.indicators[i.id].board_io.score; return `<tr><td><b>${i.id}</b> ${esc(i.name)}</td><td class="center">${schip(a)}</td><td class="center">${schip(b)}</td><td class="center">${a==null?'<span class="up">new</span>':dtxt(b-a)}</td><td class="small">${linkify((RUN.io_change_notes||{})[i.id]||(company.indicators[i.id].board_io.rationale||''))}</td></tr>`;}).join('')}</tbody></table></div>`;}}
+ document.getElementById('changes').innerHTML=c2;})();
+
+// ---- modals
+function evHtml(eid){const e=RUN.evidence[eid]; if(!e) return `<div class="ev small">${esc(eid)} missing</div>`; return `<div class="ev"><span class="src">${esc(eid)} ${esc(e.document)}</span> <span class="small">${esc(e.date||'')} · ${esc(e.evidence_class||'direct')}${e.source_origin?' · '+esc(e.source_origin):''}</span> ${e.simulated?'<span class="sim">SIMULATED</span>':''} ${e.recent?'<span class="recent">RECENT</span>':''}${e.question?`<div class="small">Q: ${esc(e.question)}</div>`:''}${e.excerpt?`<div class="exc">${esc(e.excerpt)}</div>`:''}${e.search_log?`<div class="small">Search: ${esc(e.search_log)}</div>`:''}${e.url?`<div class="small"><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.url)}</a></div>`:''}</div>`;}
+function showEv(ids,title){document.getElementById('modalBox').innerHTML=`<span class="x" onclick="${closeModal}">×</span><h3>${esc(title)}</h3>`+ids.map(evHtml).join(''); document.getElementById('modal').classList.add('open');} window.showEv=showEv;
+function showInd(id){const i=INDBY[id]; const ov=(FW.outside_in_overrides||{})[id]; const an=(ov&&!io)?ov.anchors:i.anchors; document.getElementById('modalBox').innerHTML=`<span class="x" onclick="${closeModal}">×</span><h3>${i.id} ${esc(i.name)}</h3><p>${esc(i.definition)}</p>${(ov&&!io)?'<p class="small">Outside-in anchors applied.</p>':''}<table><tr><th>1 – Day 2</th><td>${esc(an['1'])}</td></tr><tr><th>3 – Mixed</th><td>${esc(an['3'])}</td></tr><tr><th>5 – Day 1</th><td>${esc(an['5'])}</td></tr></table><p><b>Board prompt:</b> ${esc(i.board_lens)}</p><p class="small">Sources: ${esc(i.source_types)} · Public availability: ${esc((ov&&ov.availability)||i.availability)}</p>`; document.getElementById('modal').classList.add('open');} window.showInd=showInd;
+
+// ---- peers
+(function(){
+ const rs=RUN.peer_row_summary||{}; const subs=[company].concat(peers);
+ let h='<table><thead><tr><th>Dimension</th><th class="center">'+esc(SHORT)+' (company)</th>'+peers.map(p=>`<th class="center">${esc(p.name)}</th>`).join('')+'<th>How the company compares</th><th></th></tr></thead><tbody>';
+ const nc=peers.length+4;
+ DIMS.forEach(d=>{h+=`<tr class="row" data-for="pd${d}" onclick="toggle('pd${d}')"><td class="vm"><b>${d}. ${esc(FW.dimensions[d])}</b></td><td class="center vm">${gchip(C.dimensions[d].board.grade)}</td>${peers.map(p=>`<td class="center vm">${gchip(p.computed.dimensions[d].board.grade)}</td>`).join('')}<td class="small">${linkify(rs[d]||(RUN.comparative_evidence||{})[d]||'')}</td><td class="vm" style="text-align:right">${tgBtn('pd'+d,'detail')}</td></tr>`;
+  h+=`<tr><td class="pcell" colspan="${nc}"><div class="detail" id="pd${d}">${subs.map(s=>`<p style="margin:0 0 4px"><b>${esc(s.name)}</b> ${gchip(s.computed.dimensions[d].board.grade)}</p><div class="scroll" style="margin-bottom:12px"><table><thead><tr><th>Indicator</th><th class="center">Score</th><th>Rationale</th></tr></thead><tbody>${IND.filter(i=>i.dimension===d).map(i=>{const c=((s.indicators||{})[i.id]||{}).board||{}; return `<tr><td>${i.id} ${esc(i.name)}</td><td class="center">${schip(c.score)}</td><td class="small">${linkify(c.rationale||(c.score==null?'Not assessable.':''))}</td></tr>`;}).join('')}</tbody></table></div>`).join('')}</div></td></tr>`;});
+ h+=`<tr><td class="vm"><b>Overall</b></td><td class="center vm">${gchip(C.overall.board.grade)}</td>${peers.map(p=>`<td class="center vm">${gchip(p.computed.overall.board.grade)}</td>`).join('')}<td class="small">${linkify(RUN.peer_position||'')}</td><td></td></tr></tbody></table>`;
+ document.getElementById('peers').innerHTML=h;
+ document.getElementById('peernote').textContent=(io?'Peers are compared on outside-in grades only; their inside-out information is not available, so the company\'s outside-in grade is used. ':'')+'Peers are assessed on public information with the same retrieval set and rubric. Select a row to see every company\'s indicator scores and rationale for that dimension.';
+ if(prev&&prev.peers&&Object.keys(prev.peers).length){document.getElementById('peertrend').innerHTML=`<div class="kicker">PEER TREND: ${esc(prev.period)} TO ${esc(RUN.run.period)} (OVERALL)</div><div class="card flush scroll"><table><thead><tr><th>Quarter</th>${peers.map(p=>`<th class="center">${esc(p.name)}</th>`).join('')}</tr></thead><tbody><tr><td>${esc(prev.period)}</td>${peers.map(p=>`<td class="center">${gchip((prev.peers[p.name]||{}).overall)}</td>`).join('')}</tr><tr><td>${esc(RUN.run.period)}</td>${peers.map(p=>`<td class="center">${gchip(p.computed.overall.board.grade)}</td>`).join('')}</tr></tbody></table></div>`;}})();
+
+// ---- reconciliation (optional)
+(function(){const rc=RUN.run&&RUN.run.reconciliation?RUN.run.reconciliation:RUN.reconciliation; if(!rc||typeof rc!=='object') return;
+ const rows=rc.rows||[]; const m=rc.models||{}; const ml=k=>{const x=m[k]||{}; return `${esc(x.model||'model')}, ${esc(x.effort||'n/a')} effort`;};
+ const sv=v=>v==null?'n/a':v;
+ let h=`<div class="kicker">RECONCILIATION</div><h2>Where the two runs differed</h2><p class="small" style="margin:0 0 10px">Run A (${ml('A')}) and Run B (${ml('B')}) agreed on ${esc(rc.agreed)} of ${esc(rc.total)} indicator scores; ${rows.length} ${rows.length===1?'was':'were'} reconciled and the model's recommendation is the final score.</p><div class="card flush scroll">`;
+ if(!rows.length) h+=`<p style="padding:14px 18px;margin:0">Both runs agreed on every indicator score; nothing needed reconciling.</p>`;
+ else h+=`<table><thead><tr><th>Cell</th><th class="center">Score (Run A / Run B)</th><th class="center">Final score</th><th>Reason</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.indicator)}</b> ${esc(r.name)}${r.role==='peer'?`<div class="small">${esc(r.subject)}</div>`:''}</td><td class="center">${sv(r.a)} / ${sv(r.b)}</td><td class="center">${schip(r.final)}${r.chosen?`<div class="small">Run ${esc(r.chosen)}'s score stands</div>`:''}</td><td class="small">${linkify(r.reason||'')}</td></tr>`).join('')}</tbody></table>`;
+ document.getElementById('recon').innerHTML=h+'</div>';})();
+
+// ---- actions
+(function(){if(io) document.getElementById('acth').textContent='What the board could do next (updated after the inside-out review)';
+ let h=(RUN.actions||[]).slice(0,5).map((a,k)=>`<div class="action"><h3>${String(k+1).padStart(2,'0')}&nbsp; ${esc(a.heading)}</h3><p>${linkify(a.description)}</p>${a.improves?`<div class="imp small" style="color:var(--ink)"><b>Improves:</b> ${linkify(a.improves)}</div>`:''}${(a.measures||[]).length||a.target_by?`<div class="m">${(a.measures||[]).length?'Measures: '+a.measures.map(esc).join('; '):''}${a.target_by?' &nbsp; Target: '+esc(a.target_by):''}</div>`:''}</div>`).join('')||'<p class="small">No actions recorded.</p>';
+ const pas=RUN.prior_actions_status||[];
+ if(pas.length){h+=`<div class="kicker" style="margin-top:14px">Status of actions from ${esc(prev?prev.period:'the prior report')}</div><div class="scroll"><table><thead><tr><th>Action</th><th>Status</th><th>Evidence and metrics</th></tr></thead><tbody>${pas.map(p=>`<tr><td><b>${esc(p.heading||p.id)}</b></td><td><span class="st st-${esc(p.status)}">${esc((p.status||'').replace(/_/g,' '))}</span></td><td class="small">${linkify(p.evidence_note||'')}${p.metrics_note?' Metrics: '+esc(p.metrics_note):''}</td></tr>`).join('')}</tbody></table></div>`;}
+ else if(prev&&(prev.actions||[]).length&&!io){h+=`<p class="small" style="margin-top:12px">Actions from ${esc(prev.period)}: status cannot be established from public information; it will be asked for in the inside-out stage.</p>`;}
+ document.getElementById('actions').innerHTML=h;
+ const bot=RUN.back_on_track||[]; if(bot.length){document.getElementById('bot').innerHTML=`<div class="kicker">GETTING BACK ON TRACK</div><h2>Actions behind or not started</h2><div class="card flush scroll"><table><thead><tr><th>Action</th><th>What happened</th><th>Impact</th><th>Root cause</th><th>Mechanism to prevent</th><th>Measures to track</th></tr></thead><tbody>${bot.map(b=>`<tr><td><b>${esc(b.heading||b.id)}</b></td><td class="small">${linkify(b.what_happened)}</td><td class="small">${linkify(b.impact)}</td><td class="small">${linkify(b.root_cause)}</td><td class="small">${linkify(b.prevention)}</td><td class="small">${esc(Array.isArray(b.measures)?b.measures.join('; '):b.measures)}</td></tr>`).join('')}</tbody></table></div>`;}
+ const ain=RUN.additional_information_needed||[]; if(ain.length){document.getElementById('ain').innerHTML=`<div class="kicker">ADDITIONAL INFORMATION</div><h2>What would sharpen the assessment</h2><div class="card">${ain.map(x=>`<p style="margin:4px 0">• ${esc(x)}</p>`).join('')}</div>`;}})();
+
+// ---- coverage
+(function(){const cv=C.coverage[last]; const cov=RUN.coverage||{}; const na=IND.filter(i=>((company.indicators[i.id]||{})[last]||{}).score==null).map(i=>`${i.id}${((company.indicators[i.id]||{})[last]||{}).na_cause?' ('+company.indicators[i.id][last].na_cause+')':''}`); const sp=cv.not_assessable||{}; const confs={High:0,Medium:0,Low:0}; IND.forEach(i=>{const c=(company.indicators[i.id]||{})[last]; if(c&&c.score!=null&&confs[c.confidence]!=null) confs[c.confidence]++;});
+ const sim=Object.values(RUN.evidence).filter(e=>e.simulated).length;
+ document.getElementById('coverage').innerHTML=`<div class="stat"><div><div class="n">${sp['disclosure-limited']||0}</div><div class="l">disclosure-limited (the company)</div></div><div><div class="n">${sp['retrieval-limited']||0}</div><div class="l">retrieval-limited (the run)</div></div><div><div class="n">${confs.High} · ${confs.Medium} · ${confs.Low}</div><div class="l">confidence High · Medium · Low</div></div>${sim?`<div><div class="n">${sim}</div><div class="l">simulated evidence items</div></div>`:''}</div><p><b>Not assessable:</b> ${na.length?na.map(esc).join(', '):'none'}</p><p><b>Documents unavailable:</b> ${(cov.documents_unavailable||[]).map(esc).join('; ')||'none'}</p><p><b>Consistency run:</b> ${esc(cov.consistency_result||'not yet run')}</p>${cov.notes?`<p class="small">${esc(cov.notes)}</p>`:''}`;})();
+
+// ---- evidence accordion
+(function(){const fDim=document.getElementById('fDim'),fO=document.getElementById('fOrigin'),fInd=document.getElementById('fInd'),fText=document.getElementById('fText');
+ DIMS.forEach(d=>fDim.insertAdjacentHTML('beforeend',`<option value="${d}">${d}. ${esc(FW.dimensions[d])}</option>`)); ['public','user_public','inside_out','self_assessment'].forEach(o=>fO.insertAdjacentHTML('beforeend',`<option value="${o}">${o.replace('_',' ')}</option>`)); IND.forEach(i=>fInd.insertAdjacentHTML('beforeend',`<option value="${i.id}">${i.id} ${esc(i.name)}</option>`));
+ const uses={}; RUN.subjects.forEach(s=>IND.forEach(i=>['board','board_io'].forEach(l=>{const c=((s.indicators||{})[i.id]||{})[l]; (c?.evidence||[]).forEach(e=>{(uses[e]=uses[e]||[]).push({ind:i.id,dim:i.dimension,sub:s.name,l});});})));
+ function render(){const q=fText.value.toLowerCase(); const list=Object.keys(RUN.evidence).filter(eid=>{const u=uses[eid]||[]; const e=RUN.evidence[eid]; const orig=e.source_origin||'public'; if(fDim.value&&!u.some(x=>x.dim===fDim.value)) return false; if(fO.value&&orig!==fO.value) return false; if(fInd.value&&!u.some(x=>x.ind===fInd.value)) return false; if(q&&!(`${e.document} ${e.excerpt} ${e.date}`.toLowerCase().includes(q))) return false; return true;});
+  document.getElementById('evList').innerHTML=list.length?list.map(eid=>evHtml(eid)+`<div class="small" style="margin:-4px 0 10px 12px">Used in: ${(uses[eid]||[]).map(x=>`<span class="chip">${esc(x.sub===company.name?'':x.sub+' ')}${x.ind}${x.l==='board_io'?' (IO)':''}</span>`).join('')||'<span class="chip">context</span>'}</div>`).join(''):'<p class="small">No evidence matches the filters.</p>';}
+ [fDim,fO,fInd].forEach(x=>x.onchange=render); fText.oninput=render; render();})();
+document.getElementById('method').innerHTML=`Grade scale (average indicator score): ${FW.grade_scale.map(b=>`${b.grade} ${FW.grade_scale_ranges[b.grade]} ${b.label}`).join(' · ')}. Every indicator is scored once, for the board; management's observable actions are attributed to the board's oversight. Overall grades are the rounded average of dimension letters (midpoints round down); provisional when only three dimensions are reported. Rules v${FW.rule_version}. Framework based on Jeff Bezos's Day 1 / Day 2 concept.<br><b class="draft">⚠ DRAFT ONLY — Requires review and approval by a qualified Alvarez and Marsal professional before use.</b>`;
+</script></body></html>

@@ -1,0 +1,30 @@
+# Secrets and local configuration (never commit; .env.example is the template)
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Environments, caches and build output
+.venv/
+node_modules/
+dist/
+frontend/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+
+# Local data: assessments, uploads, databases and generated reports
+data/
+storage/
+backend/storage/
+*.db
+*.sqlite3
+test-board-documents/
+
+# OneDrive sync-conflict copies and stray files
+*-PC-PF604XTV*
+New-Item*
+*.db-shm
+*.db-wal
+*.db-journal

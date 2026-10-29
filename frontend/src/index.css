@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Radix primitives and React-only pieces; the shared brand styles live in styles/legacy.css (ported from css/styles.css). */
+:root { color-scheme: light; }
+
+.dlg-overlay { position: fixed; inset: 0; background: rgba(0, 43, 73, .55); z-index: 50; }
+.dlg-content {
+  position: fixed; z-index: 51; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(92vw, 560px); max-height: 88vh; overflow: auto; background: #fff; border-radius: 10px;
+  padding: 26px 28px; box-shadow: 0 20px 60px rgba(0, 43, 73, .35);
+}
+.dlg-content.wide { width: min(96vw, 1180px); padding: 22px 26px; }
+.dlg-content.mid { width: min(94vw, 760px); }
+.dlg-close { position: absolute; top: 10px; right: 12px; background: none; border: 0; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; padding: 6px 10px; }
+.tip-content { background: #002B49; color: #fff; font-size: .8rem; padding: 6px 10px; border-radius: 6px; z-index: 70; max-width: 280px; }
+.toasts { position: fixed; left: 50%; transform: translateX(-50%); bottom: 28px; z-index: 80; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.toasts .toast { position: static; transform: none; }
+.rtabs-list { display: flex; gap: 28px; flex-wrap: wrap; margin: 4px 0 20px; border-bottom: 1px solid var(--line); }
+.rtabs-trigger { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 2px; font: inherit; font-weight: 700; color: var(--muted); cursor: pointer; }
+.rtabs-trigger[data-state='active'] { color: var(--navy); border-bottom-color: var(--brand); }
+.acc-item { border: 1px solid var(--line); background: #fff; margin-bottom: 10px; border-radius: 8px; }
+.acc-trigger { width: 100%; text-align: left; background: none; border: 0; font: inherit; font-weight: 700; color: var(--head); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+.acc-trigger::after { content: '+'; color: var(--muted); }
+.acc-trigger[data-state='open']::after { content: '\2212'; }
+.acc-item.guard { background: var(--tint); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.fileinput { font: inherit; font-size: .86rem; color: var(--muted); max-width: 100%; }
+.err-text { color: var(--navy); font-weight: 700; font-size: .9rem; }
+@media (max-width: 700px) { .stickynext .wrap { flex-direction: column; align-items: stretch; } .band h1 { font-size: 1.6rem; } .hero h1 { font-size: 2.1rem; } .hgrid { grid-template-columns: 1fr; gap: 32px; } .hero { padding: 48px 0 56px; } .lh { font-size: 1.6rem; } .lsec { padding: 52px 0; } .tbl, .dt { font-size: .85rem; } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+.tnavm { display: none; }
+@media (max-width: 860px) {
+  .tnavm { display: flex; gap: 6px; padding: 0 18px 10px; }
+  .tnavm a { color: #AEC4DA; font-weight: 700; font-size: .88rem; text-decoration: none; padding: 6px 12px; border-radius: 8px; }
+  .tnavm a.on { background: rgba(255,255,255,.14); color: #fff; }
+  .tr .btn.ghost { padding: 0 10px; }
+}
+.tnav a { display: flex; align-items: center; text-decoration: none; height: 100%; color: #AEC4DA; font-weight: 700; font-size: .93rem; border-bottom: 3px solid transparent; padding: 0 2px; }
+.tnav a:hover { color: #fff; }
+.tnav a.on { color: #fff; border-bottom-color: #0085CA; }
+a.bell { text-decoration: none; }
+.tb { position: sticky; }
+
+

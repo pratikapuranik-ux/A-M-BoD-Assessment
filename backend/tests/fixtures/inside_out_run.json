@@ -1,0 +1,3246 @@
+{
+ "run": {
+  "run_date": "2026-10-27",
+  "period": "2026-Q4",
+  "stage": "inside_out",
+  "mode": "director_request",
+  "rule_version": "1.2",
+  "document_window": {
+   "behaviour_from": "2024-10",
+   "trend_from": "FY2023"
+  },
+  "consistency_run": 1,
+  "simulated": true,
+  "note": "Outside-in is the 23 Oct 2026 run; inside-out documents and self-assessment are SIMULATED"
+ },
+ "headline": "Chevron's board gets cash discipline and open dissent right once its documents are read, but its capital posture protects more than the public record suggests",
+ "subjects": [
+  {
+   "name": "Chevron Corporation",
+   "ticker": "CVX",
+   "role": "company",
+   "indicators": {
+    "1.1": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "E01",
+       "E02"
+      ],
+      "rationale": "Customer outcomes appear mainly as volumes, reliability and contracted revenue: the latest results lead on production and refinery throughput [E01], and the one customer named is framed as a contract counterparty [E02]. This meets parts of the 1 anchor (customer as revenue) and parts of 3 (reliability for customers is reported), so 2. The board has not required unfiltered customer evidence in external reporting."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "IO02",
+       "IO03",
+       "IO11"
+      ],
+      "rationale": "Outside-in showed customers reported as volumes and contracts. The board documents add that customer outcomes became a standing agenda item from the second meeting and the pack now carries complaints and account health [IO02] [IO03] [IO11]. Lost-deal reviews are still not presented, so 4 rather than 5."
+     }
+    },
+    "1.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "E03",
+       "E04"
+      ],
+      "rationale": "Directors make disclosed site visits and met frontline employees at Pascagoula in 2025 [E04], and regularly visit work locations [E03]. Visits are employee- rather than customer-facing and there is no disclosure of findings returning to the board, which fits the outside-in 3 anchor."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO02"
+      ],
+      "rationale": "Site visits continue with management present, two outside voices addressed the board in the year and there is no customer advisory board [IO02]. This matches the outside-in 3."
+     }
+    },
+    "1.3": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "E05",
+       "E06"
+      ],
+      "rationale": "The most visible recent customer issue reached the company through consumer litigation over California fuel pricing [E05], with an amended complaint filed in September 2026 [E06]; the claims are contested and unresolved. There is no disclosure of an early-warning or key-customer watch list. Parts of the 1 anchor (issue surfaced via litigation) and of 3 (no evidence of escalation failure) apply, so 2."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO11"
+      ],
+      "rationale": "Outside-in found the consumer pricing suit reached the board through the courts. The documents add a quarterly customer watch list with verbatim complaints and one account flagged at risk [IO11] [IO01]; one escalation still first arrived through a regulator enquiry, so 4."
+     }
+    },
+    "1.4": {
+     "board": {
+      "score": 3,
+      "confidence": "High",
+      "evidence": [
+       "E07",
+       "E08"
+      ],
+      "rationale": "The annual incentive weights operating and safety performance (personal and process safety, net production) at 25% with thresholds and maximums [E07]. There is no customer metric, and the 2025 operating score did not produce a reduction [E08]. A quality metric at meaningful weight without demonstrated downside fits 3."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO04",
+       "SA02"
+      ],
+      "rationale": "Customer satisfaction carries about 10 to 20 per cent of the bonus but has never reduced a payout [IO04] [SA02]. This keeps the outside-in 3."
+     }
+    },
+    "2.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "E09",
+       "E10"
+      ],
+      "rationale": "The board approved a structural reset of the cost base, raising the target to $3-4 billion by end-2026 [E10], after a period in which relative TSR drove a 15% performance-share payout for 2023-25 [E09]. The revision followed relative underperformance rather than being clearly ahead of it, which is the 3 anchor."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO05"
+      ],
+      "rationale": "Outside-in could only show a cost reset after weak returns. The board requested a plan revision, backed by evidence from below the C-suite, ahead of the guidance reset [IO05] [IO01]."
+     }
+    },
+    "2.2": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E11",
+       "E12"
+      ],
+      "rationale": "The compensation committee publishes threshold, plan and maximum values [E12] and reports legacy results separately from the Hess contribution so the acquisition does not flatter the scorecard [E11]. That is transparent testing of headline metrics (part of 5), but there is no evidence of testing against frontline or external reality (3), so 4."
+     },
+     "board_io": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "IO03",
+       "IO12",
+       "SA04"
+      ],
+      "rationale": "Outside-in showed transparent thresholds. The board documents add a KPI restated without documentation and a pack that keeps growing [IO03] [IO12]; the director trusts the pipeline number least [SA04]."
+     }
+    },
+    "2.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E13",
+       "E14"
+      ],
+      "rationale": "Committee chairs have unlimited access to management and outside advisors [E13], and the board meets the Chief Human Resources Officer twice a year on succession, with the Audit Committee meeting functional heads below the C-suite [E14]. Regular access below the C-suite is evidenced (5) but board-appointed advisers are disclosed only for evaluation and search, so 4."
+     },
+     "board_io": {
+      "score": 5,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO13"
+      ],
+      "rationale": "Outside-in showed unlimited access in principle. Minutes and executive-session notes show regular sessions with managers below the C-suite and independent views commissioned by the board [IO01] [IO13]."
+     }
+    },
+    "2.4": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "E15",
+       "E16"
+      ],
+      "rationale": "The board amended its by-laws and governance documents after the Hess merger so a non-independent director could participate fully [E15], and committees review their charters periodically [E16]. The four-committee structure is otherwise unchanged; periodic review with minor change is the 3 anchor."
+     },
+     "board_io": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "IO03",
+       "SA04"
+      ],
+      "rationale": "Outside-in showed periodic charter reviews (3). The documents add that no standing report has been retired in three years and the pack has grown [IO03] [SA04]."
+     }
+    },
+    "3.1": {
+     "board": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "E17",
+       "E18"
+      ],
+      "rationale": "The company holds explicit, targeted positions on two named shifts: carbon intensity (a 2028 portfolio carbon intensity target of 71 gCO2e/MJ) [E17] and power demand from data centres, now backed by a 20-year contract [E18]. Oversight sits with the Public Policy and Sustainability Committee. A third shift is not named with targets, so 4."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "IO05",
+       "SA05"
+      ],
+      "rationale": "Explicit positions on carbon and power are confirmed; the strategy papers show a stated position on one of two named shifts, and the second has no targets [IO05] [SA05]."
+     }
+    },
+    "3.2": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E18",
+       "E19"
+      ],
+      "rationale": "On the AI-power shift the company is the first in the peer set with a long-term firm customer contract [E18]; on the 2025 price downturn it launched its cost programme early in the cycle [E19]. On Hess it moved first but closed late after arbitration. Early on two shocks, in line on the third: 4."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E18",
+       "E19"
+      ],
+      "rationale": "Carried forward: no document supplied settles this indicator. On the AI-power shift the company is the first in the peer set with a long-term firm customer contract [E18]; on the 2025 price downturn it launched its cost programme early in the cycle [E19]. On Hess it moved first but closed late after arbitration. Early on two shocks, in line on the third: 4.",
+      "carried_forward": true
+     }
+    },
+    "3.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E20",
+       "E21"
+      ],
+      "rationale": "Board briefings regularly include outside speakers [E20] and the January 2026 appointment was sourced by an external advisor [E21]; the skills matrix covers environmental and transformation experience. Investor and customer voices are not shown entering the boardroom, so 4."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO02",
+       "IO09"
+      ],
+      "rationale": "Outside-in credited outside speakers and an externally sourced director. The documents show only two external voices in the year and a skills matrix that acknowledges gaps in electrification and the customer side [IO02] [IO09]."
+     }
+    },
+    "3.4": {
+     "board": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "E18",
+       "E22"
+      ],
+      "rationale": "Capital follows the stated positions: the board approved the Hess acquisition for Guyana growth [E22] and the power venture has reached contract stage [E18]. Lower-carbon capital remains modest relative to upstream, so scale is consistent on oil and gas and power but not across all stated positions: 4."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "E18",
+       "E22"
+      ],
+      "rationale": "Carried forward: no document supplied settles this indicator. Capital follows the stated positions: the board approved the Hess acquisition for Guyana growth [E22] and the power venture has reached contract stage [E18]. Lower-carbon capital remains modest relative to upstream, so scale is consistent on oil and gas and power but not across all stated positions: 4.",
+      "carried_forward": true
+     }
+    },
+    "4.1": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E18",
+       "E34"
+      ],
+      "rationale": "The power venture moved from announcement to a 20-year contracted project within roughly 18 months [E18], and the cost programme was scaled up and delivered six months early [E34]. Delegation is disclosed only in general terms, so this meets parts of the outside-in 5 anchor and parts of 3: 4."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO01",
+       "IO04"
+      ],
+      "rationale": "Outside-in showed fast reversible bets. Delegation is set by value rather than reversibility and two pilots have stayed open beyond 18 months [IO04] [IO01]."
+     }
+    },
+    "4.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "E22",
+       "E26"
+      ],
+      "rationale": "The Hess acquisition went through standard approval and a long arbitration before closing [E22]. Within about 15 months of closing, the board approved selling the acquired midstream stake with an expected $3-4 billion after-tax loss on deconsolidation [E26]. Standard diligence without public evidence of alternatives or a decline: 3."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO06"
+      ],
+      "rationale": "Outside-in saw standard rigor on Hess. The minutes show the board declining an acquisition pending an independent review that found synergies overstated, and capital papers carry alternatives and a pre-mortem [IO01] [IO06]. One missing post-investment review keeps it at 4."
+     }
+    },
+    "4.3": {
+     "board": {
+      "score": 3,
+      "confidence": "Low",
+      "evidence": [
+       "E41"
+      ],
+      "rationale": "Silence-based: the 36-month Item 5.02 sweep shows board changes only from retirement policy, death and merger terms, with no resignation over disagreement [E41]. Capped at 3, Low confidence, under Rule 5."
+     },
+     "board_io": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO13"
+      ],
+      "rationale": "Outside-in was silence-based. Executive-session notes show candid dissent with abstentions explained and no relitigation of settled decisions [IO13] [IO01]."
+     }
+    },
+    "5.1": {
+     "board": {
+      "score": 2,
+      "confidence": "High",
+      "evidence": [
+       "E23",
+       "E24"
+      ],
+      "rationale": "In 2025 capital expenditure of $17.3 billion ran below depreciation of $20.1 billion [E23] while $27.1 billion went to shareholders [E24]. The Hess acquisition was a large growth move, so this meets parts of the 1 anchor (capex below depreciation, returns dominant) and parts of 3: 2. Relative to peers, ExxonMobil reinvests above depreciation."
+     },
+     "board_io": {
+      "score": 1,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "IO06"
+      ],
+      "rationale": "Outside-in showed capex below depreciation while $27.1bn went to shareholders. The minutes show a buyback approved without a reinvestment alternative, and the paper names an alternative with no case behind it [IO01] [IO06]."
+     }
+    },
+    "5.2": {
+     "board": {
+      "score": 3,
+      "confidence": "High",
+      "evidence": [
+       "E27",
+       "E28",
+       "E29"
+      ],
+      "rationale": "The independent directors waived the CEO retirement age in 2023 [E27], and average director tenure is 7.2 years [E28]. Against that, a new director was added in 2026 and the September 2026 officer elections show a visible executive pipeline [E29]. Parts of 1 (limit waived) and parts of 5 (visible pipeline) net to 3."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO09"
+      ],
+      "rationale": "Long tenure and the waived retirement age are acknowledged; CEO succession is planned and skills gaps are recorded [IO09]. This matches the outside-in 3."
+     }
+    },
+    "5.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E30",
+       "E31",
+       "E32"
+      ],
+      "rationale": "Evaluations are internal but individual director reviews are compiled by outside counsel [E30]. The board engages holders of over 40% of shares [E32], and shareholders hold proxy access and special-meeting rights; the independent-chair proposal drew about 15% [E31]. Openly accountable to owners (5) with evaluation short of externally facilitated: 4."
+     },
+     "board_io": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "IO08",
+       "SA10"
+      ],
+      "rationale": "Outside-in credited evaluations run through outside counsel. The documents show an internal evaluation with individual reviews, actions partly closed, and owner feedback heard but not acted on [IO08] [SA10]."
+     }
+    },
+    "5.4": {
+     "board": {
+      "score": 3,
+      "confidence": "High",
+      "evidence": [
+       "E10",
+       "E33"
+      ],
+      "rationale": "When prices fell in 2025 the first visible lever was cost: a workforce-linked restructuring with severance settled by end-2026 [E33] and a raised structural-cost target [E10]. Growth projects and the power venture were kept, so cost actions ran alongside reinvestment: 3."
+     },
+     "board_io": {
+      "score": 2,
+      "confidence": "High",
+      "evidence": [
+       "IO01",
+       "SA09"
+      ],
+      "rationale": "Outside-in showed cost moves first. The minutes show the buyback approved with two abstentions and no reinvestment alternative presented [IO01]; the director confirms cost then buybacks [SA09]."
+     }
+    },
+    "6.1": {
+     "board": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "E35",
+       "E36"
+      ],
+      "rationale": "Free cash flow excluding working capital is one of two financial measures in the annual incentive [E35], and 2025 free cash flow of $16.6 billion exceeded net income of $12.3 billion [E36]. Cash is central to incentives and messaging but carries a minority weight: 4."
+     },
+     "board_io": {
+      "score": 5,
+      "confidence": "High",
+      "evidence": [
+       "IO07",
+       "IO10"
+      ],
+      "rationale": "Free cash flow is in the incentive plan outside-in. Treasury reports now track cash against the board's headroom floor [IO07], and the CEO report gives cash a small share of time, covered elsewhere [IO10]."
+     }
+    },
+    "6.2": {
+     "board": {
+      "score": 4,
+      "confidence": "High",
+      "evidence": [
+       "E37",
+       "E38",
+       "E40"
+      ],
+      "rationale": "The company holds AA-/Aa2 ratings [E40]; the net debt ratio fell to 13.1% by Q2 2026 after debt assumed with Hess [E38], and S&P describes a conservative financial policy [E37]. Leverage is below BP and close to ExxonMobil: 4."
+     },
+     "board_io": {
+      "score": 5,
+      "confidence": "High",
+      "evidence": [
+       "IO04",
+       "IO07",
+       "SA12"
+      ],
+      "rationale": "Outside-in showed an AA- balance sheet. Treasury reports show headroom above the board\u2019s floor under downside stress, with a stated leverage policy [IO07] [IO04] [SA12]."
+     }
+    },
+    "6.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "E19",
+       "E39"
+      ],
+      "rationale": "Portfolio moves ran under a stated $10-15 billion asset-sale target, with about $9 billion realised by January 2026 [E39], and the cost programme launched before any rating or liquidity pressure [E19]. Proactive under a stated policy, with the latest divestment crystallising a loss: 4."
+     },
+     "board_io": {
+      "score": 5,
+      "confidence": "High",
+      "evidence": [
+       "IO07",
+       "IO12",
+       "SA11"
+      ],
+      "rationale": "Early-warning triggers have been adopted and the committee initiated refinancing while the numbers still looked fine [IO07] [IO12] [SA11]."
+     }
+    }
+   },
+   "assessment_text": {
+    "1": "Customer outcomes are largely invisible at board level. Public reporting leads on production, throughput and returns [E01]; the one customer named is a contract counterparty [E02]. Directors visit sites and meet employees [E04] but no customer-facing programme is disclosed. The most visible customer issue surfaced through consumer litigation over California fuel pricing [E05]. Incentives carry a 25% operating and safety weight but no customer metric [E07]. This is the weakest dimension and the one where the board's attention most clearly sits elsewhere.",
+    "2": "The board tests its metrics more transparently than most. The compensation committee publishes thresholds and separates legacy results from the Hess contribution [E11], and committee chairs have unlimited access to management and advisers [E13]. The main assumption revision, a structural cost reset, followed a period of weak relative returns [E09] [E10]. Committee structures are reviewed periodically but little has been retired [E16].",
+    "3": "Chevron holds explicit, targeted positions on carbon intensity and on power for data centres [E17] [E18], and has put capital behind them through Hess and a contracted 2.67 GW power project [E22]. It was first in the peer set to sign a long-term firm power customer and moved early on cost in the 2025 downturn [E19]. Recent board appointments were externally sourced [E21]. Lower-carbon capital remains modest.",
+    "4": "Reversible bets move quickly: the power venture went from announcement to contract in about 18 months and the cost programme finished six months early [E34]. Irreversible decisions get standard rigor; within about 15 months of closing Hess the board approved selling the acquired midstream stake at an expected $3-4 billion loss [E26]. There is no public evidence of dissent either way [E41].",
+    "5": "The board protects the present more than it builds. In 2025 capex ran below depreciation while $27.1 billion went to shareholders [E23] [E24]. The 2023 waiver of the CEO retirement age [E27] and a combined chair and CEO role sit alongside a now-visible executive pipeline [E29]. Owner accountability is strong, with proxy access and engagement with holders of over 40% of shares [E32]; the first lever under 2025 price pressure was cost [E33].",
+    "6": "Liquidity is a strength. Free cash flow is in the annual incentive [E35] and exceeded net income in 2025 [E36]. The balance sheet absorbed Hess and the net debt ratio fell to 13.1% by mid-2026 [E38], with AA-/Aa2 ratings [E40]. Asset sales ran under a stated target ahead of any stress [E39]."
+   },
+   "limitations": {
+    "1": "Boardroom customer discussion is not disclosed; inferred from external reporting and incentives.",
+    "2": "Board pack content and advisor appointments are not public.",
+    "3": "Capital allocation to lower-carbon positions is not separately disclosed at board level.",
+    "4": "Delegation of authority and board deliberation on Hess are not public; 4.3 is silence-based.",
+    "5": "Only one year of proxy was read in full; five-year trend in renewal relies on the 2023 announcement and board-change table.",
+    "6": "Three years of audited cash flows were used rather than five."
+   },
+   "computed": {
+    "dimensions": {
+     "1": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 2.5,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.5,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      }
+     },
+     "2": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.5,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.25,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      }
+     },
+     "3": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 4.0,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.75,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      }
+     },
+     "4": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 3.33,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 3,
+       "of": 3,
+       "average": 3.67,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      }
+     },
+     "5": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.0,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 4,
+       "of": 4,
+       "average": 2.25,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     },
+     "6": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 4.0,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      },
+      "board_io": {
+       "assessed": 3,
+       "of": 3,
+       "average": 5.0,
+       "grade": "A",
+       "label": "Day 1",
+       "reported": true
+      }
+     }
+    },
+    "overall": {
+     "board": {
+      "dimensions_reported": 6,
+      "provisional": false,
+      "grade": "C",
+      "numeric_average": 3.33,
+      "label": "Day 2 creeping in"
+     },
+     "board_io": {
+      "dimensions_reported": 6,
+      "provisional": false,
+      "grade": "B",
+      "numeric_average": 3.67,
+      "label": "Day 1 early drift"
+     }
+    },
+    "coverage": {
+     "board": {
+      "assessed": 22,
+      "of": 22,
+      "not_assessable": {
+       "rule-limited": 0,
+       "disclosure-limited": 0,
+       "retrieval-limited": 0,
+       "unspecified": 0
+      }
+     },
+     "board_io": {
+      "assessed": 22,
+      "of": 22,
+      "not_assessable": {
+       "rule-limited": 0,
+       "disclosure-limited": 0,
+       "retrieval-limited": 0,
+       "unspecified": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "Exxon Mobil (ExxonMobil Holdings Corporation)",
+   "ticker": "XOM",
+   "role": "peer",
+   "indicators": {
+    "1.1": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "X01",
+       "X06"
+      ],
+      "rationale": "Customers are mentioned as being supported during the 2026 disruption [X01], but external messaging is led by production, cost and returns [X06]. Parts of the 1 anchor (customer as revenue) and 3 (reliability of supply reported): 2. Sources: [X01], [X06]"
+     }
+    },
+    "1.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X02"
+      ],
+      "rationale": "The board and its safety committee periodically visit an operations site [X02]. There is no disclosed customer programme or evidence of findings returning: outside-in 3. Sources: [X02]"
+     }
+    },
+    "1.3": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "X03"
+      ],
+      "rationale": "The most visible customer-facing issue reached the company through a California Attorney General consumer-protection suit over plastics-recycling claims [X03], which the company contests. No early-warning disclosure was found. Parts of 1 and 3: 2, Low confidence (single press source for the event). Sources: [X03]"
+     }
+    },
+    "1.4": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "X04",
+       "X05"
+      ],
+      "rationale": "The bonus pool moves with two-thirds of the change in annual earnings [X04]; safety, spills and emissions are inputs to the committee's judgement without disclosed weights [X05]. Mostly financial (1) with qualitative quality inputs (3): 2. Sources: [X04], [X05]"
+     }
+    },
+    "2.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X11"
+      ],
+      "rationale": "The board keeps a consistent strategy and states the current environment does not change it; the published outlook explicitly says the world is not on a net-zero pathway [X11]. No material self-initiated revision is visible in 36 months, but the evidence has not clearly contradicted the core assumption either: 3. Sources: [X11]"
+     }
+    },
+    "2.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X07"
+      ],
+      "rationale": "The headline structural-savings metric is defined against a 2019 base with a disclosed revision policy [X07]. Definitions are explained but not tested against external reality: 3. Sources: [X07]"
+     }
+    },
+    "2.3": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X08"
+      ],
+      "rationale": "New directors receive onboarding from senior leaders [X08], but no regular board access below the C-suite or board-appointed advisers is disclosed: 3. Sources: [X08]"
+     }
+    },
+    "2.4": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X09"
+      ],
+      "rationale": "The committee structure, including a Finance Committee, appears unchanged [X09]; no committee was retired or redesigned in the window. Capped at 3, Low. Sources: [X09]"
+     }
+    },
+    "3.1": {
+     "board": {
+      "score": 5,
+      "confidence": "Medium",
+      "evidence": [
+       "X10",
+       "X11"
+      ],
+      "rationale": "The company publishes explicit positions with targets on named shifts: a low-carbon solutions business with stated plans [X10] and a published view on the energy-transition pathway updated in the annual plan [X11], plus 2030 emission plans. Systematic, targeted and overseen: 5. Sources: [X10], [X11]"
+     }
+    },
+    "3.2": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "X14",
+       "X24"
+      ],
+      "rationale": "It moved first on Permian consolidation (Pioneer, reflected in 2024 capital additions) [X14] and has run structural cost savings since 2019, ahead of peers [X24]. In line on the 2026 disruption: 4. Sources: [X14], [X24]"
+     }
+    },
+    "3.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "X12"
+      ],
+      "rationale": "The 2025 appointment was sourced by a search firm to add energy-transition and capital-allocation expertise in response to shareholder interest [X12]; the skills matrix covers low-carbon technology. External voices in the boardroom are not disclosed: 4. Sources: [X12]"
+     }
+    },
+    "3.4": {
+     "board": {
+      "score": 5,
+      "confidence": "Medium",
+      "evidence": [
+       "X14",
+       "X25"
+      ],
+      "rationale": "Capital visibly follows the stated thesis: the Pioneer acquisition (2024 additions of $109 billion) [X14] and 2026 planned investment 20% above the nearest IOC [X25]. Scale matches conviction: 5. Sources: [X14], [X25]"
+     }
+    },
+    "4.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X15"
+      ],
+      "rationale": "Delegation is disclosed in general terms (management grants awards within committee-set ceilings) [X15]; no public examples of pilots scaled or stopped within 12 months were found: 3. Sources: [X15]"
+     }
+    },
+    "4.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X16",
+       "X17"
+      ],
+      "rationale": "The Pioneer integration delivered synergies about double the initial estimate [X16], while 2026 brought $1.1 billion of impairments [X17]. Outcomes are good but no evidence of alternatives sought or a deal declined: 3. Sources: [X16], [X17]"
+     }
+    },
+    "4.3": {
+     "board": {
+      "score": 3,
+      "confidence": "Low",
+      "evidence": [
+       "X18"
+      ],
+      "rationale": "Silence-based: no Item 5.02 resignation over disagreement in 36 months [X18]. Capped at 3, Low. Sources: [X18]"
+     }
+    },
+    "5.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X13",
+       "X19"
+      ],
+      "rationale": "Capital expenditure has exceeded depreciation in each of the last three years ($28.4 billion in 2025) [X13], while shareholder returns of $37.5 billion were larger still [X19]. Balanced, with capex above depreciation: 3, and the strongest reinvestment rate in the peer set. Sources: [X13], [X19]"
+     }
+    },
+    "5.2": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "X12",
+       "X20"
+      ],
+      "rationale": "Average non-employee director tenure is 4.6 years and nearly 70% joined since 2021 [X20], with a 2025 appointment tied to skills shareholders asked for [X12]. The age limit can be waived case by case and the CEO has served since 2017: 4. Sources: [X20], [X12]"
+     }
+    },
+    "5.3": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "X21",
+       "X22",
+       "X23",
+       "X30"
+      ],
+      "rationale": "The board introduced a retail programme that votes enrolled shares with its recommendations [X21] and secured a Texas redomiciliation with 71.3% support [X22] despite both leading proxy advisers recommending against [X23]. It did not adopt elective Texas provisions that weaken rights [X30]. Protective structures (1) with some responsiveness (3): 2. Sources: [X21], [X22], [X23], [X30]"
+     }
+    },
+    "5.4": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "X24",
+       "X25"
+      ],
+      "rationale": "Under pressure the company kept investment highest in the peer set [X25] with structural cost savings as the enabler [X24]: reinvestment leads, cost supports, so 4 (stops short of pricing or innovation leading). Sources: [X24], [X25]"
+     }
+    },
+    "6.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "X26"
+      ],
+      "rationale": "Free cash flow is strong ($19.9 billion in H1 2026) [X26], but the bonus formula moves with earnings rather than cash, so cash metrics carry low weight in incentives: 3. Sources: [X26]"
+     }
+    },
+    "6.2": {
+     "board": {
+      "score": 5,
+      "confidence": "Medium",
+      "evidence": [
+       "X27",
+       "X29"
+      ],
+      "rationale": "Net debt-to-capital of 11% with an AA rating [X27], and the balance sheet strengthened further in 2026 [X29]: lowest leverage in the peer set, 5. Sources: [X27], [X29]"
+     }
+    },
+    "6.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "X07",
+       "X28"
+      ],
+      "rationale": "A stated minimum cash policy [X28] and a cost programme running since 2019 [X07] preserve options ahead of stress. No refinancing under pressure in the window: 4. Sources: [X28], [X07]"
+     }
+    }
+   },
+   "summary": "ExxonMobil grades C overall, with an A on external trends from explicit positions and capital at scale (Pioneer, investment 20% above the nearest IOC). It is held back by customer blindness (D) and a board that insulates itself from owners through the retail voting programme and the Texas redomiciliation.",
+   "computed": {
+    "dimensions": {
+     "1": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 2.25,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     },
+     "2": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.0,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      }
+     },
+     "3": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 4.5,
+       "grade": "A",
+       "label": "Day 1",
+       "reported": true
+      }
+     },
+     "4": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 3.0,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      }
+     },
+     "5": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.25,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      }
+     },
+     "6": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 4.0,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      }
+     }
+    },
+    "overall": {
+     "board": {
+      "dimensions_reported": 6,
+      "provisional": false,
+      "grade": "C",
+      "numeric_average": 3.33,
+      "label": "Day 2 creeping in"
+     }
+    },
+    "coverage": {
+     "board": {
+      "assessed": 22,
+      "of": 22,
+      "not_assessable": {
+       "rule-limited": 0,
+       "disclosure-limited": 0,
+       "retrieval-limited": 0,
+       "unspecified": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "BP p.l.c.",
+   "ticker": "BP",
+   "role": "peer",
+   "indicators": {
+    "1.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B01",
+       "B02"
+      ],
+      "rationale": "Customers are a reporting segment with its own metrics (convenience, retail fuels, EV charging, Castrol) [B01], and the new CEO leads the latest results on keeping energy flowing for customers [B02]. Evidence is management-curated rather than unfiltered: 3. Sources: [B01], [B02]"
+     }
+    },
+    "1.2": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B03",
+       "B04"
+      ],
+      "rationale": "Directors run a structured workforce engagement programme that brings employee feedback to the board [B03], covering topics including retail safety [B04]. Findings return to the board (5) but the programme is employee- not customer-facing (3): 4. Sources: [B03], [B04]"
+     }
+    },
+    "1.3": {
+     "board": {
+      "score": 1,
+      "confidence": "Medium",
+      "evidence": [
+       "B05"
+      ],
+      "rationale": "Customer harm reached the board through a regulator: New Zealand's Commerce Commission announced fair-trading charges over fuel discounts and pricing, including a further instance after remediation [B05]. Strong direct evidence (regulator record): 1. Sources: [B05]"
+     }
+    },
+    "1.4": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B06",
+       "B07"
+      ],
+      "rationale": "The annual bonus weights process safety (15%) and reliability and availability (15%) [B06], and the committee reduced the formulaic outcome by four points for fatalities [B07]. Meaningful quality metrics with demonstrated downside (5), but no customer metric: 4. Sources: [B06], [B07]"
+     }
+    },
+    "2.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B08",
+       "B09"
+      ],
+      "rationale": "The February 2025 strategy reset revised core assumptions [B08] but followed sustained underperformance and an activist stake; the new CEO acknowledges performance has fallen short [B09]. Revision under external pressure: 3. Sources: [B08], [B09]"
+     }
+    },
+    "2.2": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B09",
+       "B10"
+      ],
+      "rationale": "Targets have been redefined transparently (the cost target restated after the Castrol decision) [B10], and management acknowledges value write-offs [B09]. Occasional deep dives rather than routine testing: 3. Sources: [B10], [B09]"
+     }
+    },
+    "2.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B11",
+       "B12"
+      ],
+      "rationale": "The board added insight sessions with leaders of the businesses most important to the strategy [B11] and holds private sessions with the ethics and compliance head [B12]. Regular access below the C-suite (5); board-appointed advisers only for search: 4. Sources: [B11], [B12]"
+     }
+    },
+    "2.4": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B13",
+       "B14"
+      ],
+      "rationale": "The board redesigned its committees in August 2026, creating a nomination and governance committee and a people and remuneration committee [B13], and proposed retiring prior climate-reporting resolutions, which shareholders rejected [B14]. Active redesign (5) driven partly by turmoil: 4. Sources: [B13], [B14]"
+     }
+    },
+    "3.1": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B08",
+       "B16"
+      ],
+      "rationale": "Positions on the energy transition have been reversed twice since 2020; the current reset names financial rather than structural-shift targets [B16], and transition positions remain in flux [B08]. Parts of 1 and 3: 2. Sources: [B08], [B16]"
+     }
+    },
+    "3.2": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B08",
+       "B17"
+      ],
+      "rationale": "The company reset its strategy after peers had already re-weighted to oil and gas [B08], and suspended buybacks in February 2026 to repair the balance sheet [B17]. Reactive on two shocks, broadly in line on the 2026 supply disruption: 2. Sources: [B08], [B17]"
+     }
+    },
+    "3.3": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B18"
+      ],
+      "rationale": "The board added three non-executives in 2025 with oil and gas operating, finance and transformation experience to support the reset [B18]. Skills now cover the stated priorities; external voices in the room are not disclosed: 4. Sources: [B18]"
+     }
+    },
+    "3.4": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B15",
+       "B36"
+      ],
+      "rationale": "Capital has not consistently followed stated positions: it stepped up into solar (Lightsource bp) [B36] and now intends to sell transition businesses including Archaea [B15]. Visible capital, but reversed: 2. Sources: [B36], [B15]"
+     }
+    },
+    "4.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B19",
+       "B20"
+      ],
+      "rationale": "The new CEO restructured into Upstream and Downstream within four months [B20] and the refinery sale completed [B19]. Initiatives are being stopped quickly, though with impairments: 3 on the outside-in anchor. Sources: [B20], [B19]"
+     }
+    },
+    "4.2": {
+     "board": {
+      "score": 1,
+      "confidence": "Medium",
+      "evidence": [
+       "B21",
+       "B22"
+      ],
+      "rationale": "The board removed its chair eight months after appointment, citing governance and conduct concerns [B21], following the CEO stepping down in December 2025 [B22]. Emergency succession following a major appointment is the 1 anchor; formal board acts are strong evidence. Sources: [B21], [B22]"
+     }
+    },
+    "4.3": {
+     "board": {
+      "score": 2,
+      "confidence": "Low",
+      "evidence": [
+       "B14",
+       "B21",
+       "B23"
+      ],
+      "rationale": "The chair's removal was unanimous [B21] but was publicly disputed afterwards [B23], and two board-proposed special resolutions failed at the 2026 AGM [B14]. Decisive action (part of 3/5) with public relitigation (part of 1): 2. Sources: [B21], [B23], [B14]"
+     }
+    },
+    "5.1": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B16",
+       "B17"
+      ],
+      "rationale": "The board suspended buybacks [B17] rather than use them for EPS support and directed excess cash to the balance sheet under the reset [B16]. Neither growth- nor return-dominated: 3. Sources: [B17], [B16]"
+     }
+    },
+    "5.2": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B18",
+       "B22",
+       "B24"
+      ],
+      "rationale": "The board has had three chair arrangements and three CEOs in about 18 months [B22] [B24]. Renewal is under way with search processes and new directors [B18], but it has been reactive rather than ahead of need: parts of 1 and 3, so 2. Sources: [B24], [B22], [B18]"
+     }
+    },
+    "5.3": {
+     "board": {
+      "score": 3,
+      "confidence": "Medium",
+      "evidence": [
+       "B25",
+       "B26",
+       "B27"
+      ],
+      "rationale": "The 2024 board review was externally facilitated [B25], but no chair review was undertaken in 2025 [B26]. After a significant vote against the chair the board committed to report back within six months [B27]: 3. Sources: [B25], [B26], [B27]"
+     }
+    },
+    "5.4": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B15",
+       "B34"
+      ],
+      "rationale": "The first levers under pressure were a $20 billion disposal programme [B34] and exits from transition businesses [B15], alongside a reset of upstream investment. Mainly retrenchment with some reinvestment: 2. Sources: [B34], [B15]"
+     }
+    },
+    "6.1": {
+     "board": {
+      "score": 4,
+      "confidence": "Medium",
+      "evidence": [
+       "B29",
+       "B30"
+      ],
+      "rationale": "Modified free cash flow carries 30% of the annual bonus [B29] and growing free cash flow is a primary reset target [B30]. Cash is central to incentives and messaging; cash conversion trails ExxonMobil: 4. Sources: [B29], [B30]"
+     }
+    },
+    "6.2": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B31",
+       "B32",
+       "B33"
+      ],
+      "rationale": "Net debt of $22.3 billion at Q2 2026 [B31] plus about $13 billion of hybrids [B33] leaves leverage above both peers; S&P rates A- with a positive outlook [B32]. Above-peer leverage that is improving: 2. Sources: [B31], [B32], [B33]"
+     }
+    },
+    "6.3": {
+     "board": {
+      "score": 2,
+      "confidence": "Medium",
+      "evidence": [
+       "B17",
+       "B28"
+      ],
+      "rationale": "The buyback was suspended and balance-sheet repair prioritised only after sustained underperformance [B17]; the CEO says the reduction is still not enough [B28]. Action after visible stress (1), ahead of further deterioration (3): 2. Sources: [B17], [B28]"
+     }
+    }
+   },
+   "summary": "BP grades D overall: customer-linked reporting and incentives and good below-C-suite access do not offset four dimensions at D, and the 2.5 average rounds down. Three chair arrangements and three CEOs in about 18 months, reversed transition positions and above-peer leverage make it the most Day 2 board in the set on decision-making and renewal.",
+   "computed": {
+    "dimensions": {
+     "1": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.0,
+       "grade": "C",
+       "label": "Day 2 creeping in",
+       "reported": true
+      }
+     },
+     "2": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 3.5,
+       "grade": "B",
+       "label": "Day 1 early drift",
+       "reported": true
+      }
+     },
+     "3": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 2.5,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     },
+     "4": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 2.0,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     },
+     "5": {
+      "board": {
+       "assessed": 4,
+       "of": 4,
+       "average": 2.5,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     },
+     "6": {
+      "board": {
+       "assessed": 3,
+       "of": 3,
+       "average": 2.67,
+       "grade": "D",
+       "label": "Day 2 established",
+       "reported": true
+      }
+     }
+    },
+    "overall": {
+     "board": {
+      "dimensions_reported": 6,
+      "provisional": false,
+      "grade": "D",
+      "numeric_average": 2.5,
+      "label": "Day 2 established"
+     }
+    },
+    "coverage": {
+     "board": {
+      "assessed": 22,
+      "of": 22,
+      "not_assessable": {
+       "rule-limited": 0,
+       "disclosure-limited": 0,
+       "retrieval-limited": 0,
+       "unspecified": 0
+      }
+     }
+    }
+   }
+  }
+ ],
+ "evidence": {
+  "B01": {
+   "document": "bp Annual Report and Form 20-F 2025, customers & products",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "convenience and retail fuels, EV charging, as well as Castrol",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B02": {
+   "document": "bp 2Q 2026 results, CEO statement",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "working tirelessly to keep energy flowing for our customers",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B03": {
+   "document": "bp Annual Report and Form 20-F 2025, people, culture and governance committee",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "workforce engagement programme (WFEP)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B04": {
+   "document": "bp Annual Report and Form 20-F 2025, board engagement",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "retail safety ... transformation, and remuneration",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B05": {
+   "document": "NZ Commerce Commission: ComCom to take BP to court over pricing errors and discounts",
+   "doc_type": "public",
+   "date": "2026-06-03",
+   "url": "https://www.comcom.govt.nz/news-and-media/news-and-events/2026/comcom-to-take-bp-to-court-over-pricing-errors-and-discounts/",
+   "excerpt": "uncovered a further instance where customers allegedly did not receive the price",
+   "evidence_class": "strong_direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B06": {
+   "document": "bp Annual Report and Form 20-F 2025, directors' remuneration report",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "reliability and availability (15%)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B07": {
+   "document": "bp Annual Report and Form 20-F 2025, 2025 annual bonus outcome",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "should be reduced by 4 points to 1.59 out of 2",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B08": {
+   "document": "bp Annual Report and Form 20-F 2025, strategic report",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "making progress on a reset strategy",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B09": {
+   "document": "bp 2Q 2026 results, CEO priorities",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "we have written off too much value",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B10": {
+   "document": "bp Annual Report and Form 20-F 2025, Castrol footnote",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "the $4-5 billion structural cost reduction target by end 2027",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B11": {
+   "document": "bp Annual Report and Form 20-F 2025, board performance",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "programme of insight sessions ... briefings from leaders of the businesses",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B12": {
+   "document": "bp Annual Report and Form 20-F 2025, culture oversight",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "private sessions with bp's SVP, ethics and compliance",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B13": {
+   "document": "bp 6-K: Board committee membership changes",
+   "doc_type": "public",
+   "date": "2026-08-01",
+   "url": "https://www.sec.gov/Archives/edgar/data/0000313807/000165495426007068/a7867o.htm",
+   "excerpt": "Nomination and governance committee ... People and remuneration committee",
+   "evidence_class": "board_act",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": true
+  },
+  "B14": {
+   "document": "bp 2026 AGM poll results (RNS)",
+   "doc_type": "public",
+   "date": "2026-04-23",
+   "url": "https://www.investegate.co.uk/announcement/rns/bp--bp./result-of-agm/9535618",
+   "excerpt": "special resolutions ... adoption of new Articles ... 47.12% for",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B15": {
+   "document": "bp 2Q 2026 results, portfolio actions",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "announcing our intention to sell Archaea, our biogas business",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B16": {
+   "document": "bp Annual Report and Form 20-F 2025, reset strategy targets",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "primary target for net debt of $14-18 billion",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B17": {
+   "document": "bp 4Q 2025 results announcement",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "The board has decided to suspend the share buyback",
+   "evidence_class": "board_act",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B18": {
+   "document": "bp Annual Report and Form 20-F 2025, succession planning",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "appointed three new non-executive directors",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B19": {
+   "document": "bp Annual Report and Form 20-F 2025, portfolio",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "completed the sale of the Gelsenkirchen refinery",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B20": {
+   "document": "bp 2Q 2026 results, organisation",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "we moved to an Upstream and Downstream organization",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B21": {
+   "document": "bp 6-K: board decision on Chair",
+   "doc_type": "public",
+   "date": "2026-05-26",
+   "url": "https://www.sec.gov/Archives/edgar/data/0000313807/000165495426005313/a7378f.htm",
+   "excerpt": "unanimously decided that Albert Manifold should no longer serve as Chair",
+   "evidence_class": "board_act",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B22": {
+   "document": "bp Annual Report and Form 20-F 2025, board changes",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "Murray Auchincloss (18 December 2025) stepped down",
+   "evidence_class": "board_act",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B23": {
+   "document": "CNBC: ousted BP chair responds to removal",
+   "doc_type": "public",
+   "date": "2026-05-28",
+   "url": "https://www.cnbc.com/2026/05/28/bp-ousted-chair-albert-manifold-comment-lies.html",
+   "excerpt": "disputed the characterization of his conduct",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B24": {
+   "document": "bp 6-K: Ian Tyler appointed bp Chair",
+   "doc_type": "public",
+   "date": "2026-09-02",
+   "url": "https://www.sec.gov/Archives/edgar/data/0000313807/000165495426008071/a9916s.htm",
+   "excerpt": "appointed Ian Tyler as Chair ... following an extensive search process",
+   "evidence_class": "board_act",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": true
+  },
+  "B25": {
+   "document": "bp Annual Report and Form 20-F 2025, board performance review",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "externally facilitated board performance review in 2024",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B26": {
+   "document": "bp Annual Report and Form 20-F 2025, chair review",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "a performance review of the chair was not undertaken in 2025",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B27": {
+   "document": "bp 2026 AGM poll results (RNS), director elections",
+   "doc_type": "public",
+   "date": "2026-04-23",
+   "url": "https://www.investegate.co.uk/announcement/rns/bp--bp./result-of-agm/9535618",
+   "excerpt": "seek to understand the reason why shareholders voted as they did",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B28": {
+   "document": "bp 2Q 2026 results, balance sheet priority",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "That is still not enough \u2013 we need to do more",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B29": {
+   "document": "bp Annual Report and Form 20-F 2025, remuneration chair's introduction",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "modified free cash flow (30%) and structural cost reductions (25%)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B30": {
+   "document": "bp Annual Report and Form 20-F 2025, strategy reset",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "primary financial targets: growing free cash flow",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B31": {
+   "document": "bp 2Q 2026 results, financial summary",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "Net debt ... 22,251",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B32": {
+   "document": "bp 1Q 2026 Form 6-K, credit ratings update",
+   "doc_type": "public",
+   "date": "2026-04",
+   "url": "https://www.sec.gov/Archives/edgar/data/0000313807/000031380726000010/a31032026bp6kq1.htm",
+   "excerpt": "S&P ... revised the outlook ... to positive and affirmed ... A-/A-2",
+   "evidence_class": "indirect",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "B33": {
+   "document": "bp 2Q 2026 results, hybrids",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "$2.9 billion (\u20ac2.5 billion) perpetual hybrid bond redemption",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B34": {
+   "document": "bp 4Q 2025 results, disposal programme",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "execution of our $20bn disposal programme",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "B35": {
+   "document": "bp 2Q 2026 results, operating performance",
+   "doc_type": "public",
+   "date": "2026-08-04",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "our plants didn't run as well as they did last quarter",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "B36": {
+   "document": "bp Annual Report and Form 20-F 2025, step-acquisition",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.bp.com/en/global/corporate/investors.html",
+   "excerpt": "on the step-acquisition of Lightsource bp",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E01": {
+   "document": "Chevron 2Q 2026 earnings release",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Record U.S. production; worldwide production increased 20 percent from last year",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E02": {
+   "document": "Chevron 2Q 2026 earnings call transcript (prepared remarks)",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "quality customer, a 20-year firm PPA",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E03": {
+   "document": "Chevron 2026 Proxy Statement, director orientation and education",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Directors regularly visit Chevron work locations to meet with employees",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E04": {
+   "document": "Chevron 2026 Proxy Statement, letter from the Lead Director",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "the Board visited operations in Pascagoula, Mississippi, engaging directly with employees",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E05": {
+   "document": "Herold v. Chevron Corp., N.D. Cal. 3:25-cv-10282 (consumer class action, LCFS pricing)",
+   "doc_type": "public",
+   "date": "2025-11-26",
+   "url": "https://www.climatecasechart.com/document/herold-v-chevron-corp_4377",
+   "excerpt": "alleged inflated LCFS compliance costs passed on to gasoline consumers",
+   "evidence_class": "strong_direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "E06": {
+   "document": "MLex: second amended complaint filed against five California refiners incl. Chevron",
+   "doc_type": "public",
+   "date": "2026-09-18",
+   "url": "https://www.mlex.com/mlex/articles/2527300",
+   "excerpt": "second amended complaint challenging an alleged unlawful scheme",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": true
+  },
+  "E07": {
+   "document": "Chevron 2026 Proxy Statement, CIP pay elements",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Operating & safety performance (25%)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E08": {
+   "document": "Chevron 2026 Proxy Statement, 2025 CIP corporate performance rating",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Final corporate performance rating 1.25",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E09": {
+   "document": "Chevron 2026 Proxy Statement, LTIP outcome",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "2023-2025 performance share payout: 15% payout multiplier",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E10": {
+   "document": "Chevron 2025 Form 10-K, Business Environment and Outlook",
+   "doc_type": "public",
+   "date": "2026-02-20",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "plans to achieve $3-4 billion in structural cost reductions by the end of 2026",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E11": {
+   "document": "Chevron 2026 Proxy Statement, 2025 CIP scorecard notes",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Results Excluding Hess Corp. are bolded values",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E12": {
+   "document": "Chevron 2026 Proxy Statement, CIP method",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "thresholds and maximums for specific performance measures from our Plan",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E13": {
+   "document": "Chevron 2026 Proxy Statement, board committees",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "unlimited access to management, information, and outside advisors",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E14": {
+   "document": "Chevron 2026 Proxy Statement, human capital oversight",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Board meets with the Chief Human Resources Officer biannually",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E15": {
+   "document": "Chevron 2026 Proxy Statement, board leadership structure",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "the Board recently amended the By-Laws and other governance documents",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E16": {
+   "document": "Chevron 2026 Proxy Statement, board committees",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Each Committee assesses the adequacy of its charter periodically",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E17": {
+   "document": "Chevron 2025 Form 10-K, GHG targets",
+   "doc_type": "public",
+   "date": "2026-02-20",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "PCI target is 71 grams (g) carbon dioxide equivalent (CO2e) per megajoule",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E18": {
+   "document": "Chevron 2Q 2026 earnings release, power agreement",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "20-year power purchase agreement with Microsoft to provide 2.67 gigawatts",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E19": {
+   "document": "Chevron 4Q 2025 earnings call transcript",
+   "doc_type": "public",
+   "date": "2026-01-30",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "we launched our structural cost-reduction program",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E20": {
+   "document": "Chevron 2026 Proxy Statement, director orientation",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Board briefings and presentations ... which regularly include outside speakers",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E21": {
+   "document": "Chevron 2026 Proxy Statement, election of directors",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Mr. Horton was initially identified by an external advisor",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E22": {
+   "document": "Chevron 2025 Annual Report Supplement, Hess acquisition",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Completed the acquisition of Hess",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E23": {
+   "document": "Chevron 2025 Annual Report Supplement, five-year-to-date cash flow",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Capital expenditures 17,347 ... Depreciation, depletion and amortization 20,132",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E24": {
+   "document": "Chevron 2025 Annual Report Supplement, cash returned",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Total cash returned to shareholders 27,055",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E25": {
+   "document": "Chevron 1Q 2026 earnings call transcript, analyst Q&A on buyback",
+   "doc_type": "public",
+   "date": "2026-05-01",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "for not being procyclical on the buyback",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E26": {
+   "document": "Chevron Form 8-K, Hess Midstream divestment (Items 7.01/8.01)",
+   "doc_type": "public",
+   "date": "2026-10-06",
+   "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000093410&type=8-K",
+   "excerpt": "one-time after-tax loss estimated at approximately $3 to $4 billion",
+   "evidence_class": "board_act",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E27": {
+   "document": "Chevron news release: waiver of mandatory retirement age for CEO",
+   "doc_type": "public",
+   "date": "2023-07-23",
+   "url": "https://www.businesswire.com/news/home/20230723430175/en/",
+   "excerpt": "independent directors waived the company's mandatory retirement age of 65",
+   "evidence_class": "board_act",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "E28": {
+   "document": "Chevron 2026 Proxy Statement, board composition",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "7.2 average tenure years",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E29": {
+   "document": "Chevron Form 8-K Item 5.02, officer elections",
+   "doc_type": "public",
+   "date": "2026-09-30",
+   "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000093410&type=8-K",
+   "excerpt": "Board elected Jeff B. Gustavson to the position of Chief Financial Officer",
+   "evidence_class": "board_act",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E30": {
+   "document": "Chevron 2026 Proxy Statement, board and committee evaluations",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "submits the evaluations to outside counsel retained by the Company",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E31": {
+   "document": "Chevron news release: Annual Meeting of Stockholders",
+   "doc_type": "public",
+   "date": "2026-05-27",
+   "url": "https://chevroncorp.gcs-web.com/node/38341",
+   "excerpt": "Approximately 15% of the votes cast ... independent chair",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "E32": {
+   "document": "Chevron 2026 Proxy Statement, stockholder engagement",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "95 one-on-one ... meetings with stockholders representing over 40%",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E33": {
+   "document": "Chevron 2025 Form 10-K, Note 8 restructuring",
+   "doc_type": "public",
+   "date": "2026-02-20",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "accrued severance liability ... expected to be substantially settled by the end of 2026",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E34": {
+   "document": "Chevron 2Q 2026 earnings call transcript",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "structural cost reduction target six months early",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E35": {
+   "document": "Chevron 2026 Proxy Statement, CIP financial measures",
+   "doc_type": "public",
+   "date": "2026-04-07",
+   "url": "https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm",
+   "excerpt": "Free cash flow excluding working capital",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E36": {
+   "document": "Chevron 2025 Annual Report Supplement, free cash flow",
+   "doc_type": "public",
+   "date": "2026-03",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Free cash flow $16,592; net income attributable $12,299",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E37": {
+   "document": "S&P Global Ratings research update (Chevron / Hess)",
+   "doc_type": "public",
+   "date": "2025-07-21",
+   "url": "S&P RatingsDirect, report 3409895",
+   "excerpt": "conservative financial policy that balances shareholder returns and leverage",
+   "evidence_class": "indirect",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E38": {
+   "document": "Chevron 2Q 2026 earnings release, financial ratios",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "Net debt ratio ... 13.1 %",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "E39": {
+   "document": "Chevron 2025 Form 10-K, asset dispositions",
+   "doc_type": "public",
+   "date": "2026-02-20",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "generated approximately $9 billion of asset sales proceeds",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E40": {
+   "document": "Chevron 2025 Form 10-K, Liquidity and Capital Resources",
+   "doc_type": "public",
+   "date": "2026-02-20",
+   "url": "https://www.chevron.com/investors",
+   "excerpt": "AA- rating by Standard and Poor's Corporation and an Aa2 rating",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "E41": {
+   "document": "SEC EDGAR 8-K sweep, Chevron (Item 5.02, Oct 2023 - Oct 2026)",
+   "doc_type": "public",
+   "date": "2026-10-23",
+   "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000093410&type=8-K",
+   "excerpt": "No director resignation citing disagreement found",
+   "evidence_class": "silence",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false,
+   "search_log": "Search: SEC EDGAR Chevron 8-K list; Item 5.02; 2023-10 to 2026-10; uploaded 8-Ks of 30 Sep and 6 Oct 2026 plus proxy board-change table reviewed; result: changes due to retirement policy, death and merger terms only; 2026-10-23"
+  },
+  "X01": {
+   "document": "ExxonMobil 2Q 2026 earnings release",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "moved products where they were needed, optimized assets, and supported customers",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X02": {
+   "document": "ExxonMobil 2026 Proxy Statement, board site visits",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "The Board ... periodically visits an ExxonMobil operations site",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X03": {
+   "document": "KTVU / FOX: California AG sues ExxonMobil over plastics recycling claims",
+   "doc_type": "public",
+   "date": "2024-09-23",
+   "url": "https://www.ktvu.com/news/california-ag-sues-exxon-mobil-over-alleged-plastic-recycling-deception",
+   "excerpt": "alleges violations of California nuisance law and California unfair competition law",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "X04": {
+   "document": "ExxonMobil 2026 Proxy Statement, bonus program",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "% change in bonus program = (% change in annual earnings) x (2/3)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X05": {
+   "document": "ExxonMobil 2026 Proxy Statement, inputs to compensation committee",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Safety, ROCE, CFOAS, TSR ... Spills, Operated GHG Emissions Intensity",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X06": {
+   "document": "ExxonMobil 2Q 2026 earnings release, CEO statement",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "remain committed to further growing advantaged production",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X07": {
+   "document": "ExxonMobil 2Q 2026 earnings release, structural cost savings definition",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Estimates of cumulative annual Structural Cost Savings may be revised",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X08": {
+   "document": "ExxonMobil 2026 Proxy Statement, onboarding",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "comprehensive onboarding sessions with senior leaders",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X09": {
+   "document": "ExxonMobil 2026 Proxy Statement, committee structure",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Environment, Safety and Public Policy, and Finance Committees",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X10": {
+   "document": "ExxonMobil Company Overview and Investment Case",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Low Carbon Solutions: Leadership for a lower-carbon future",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X11": {
+   "document": "ExxonMobil 2Q 2026 earnings release, cautionary statement",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "not yet on a pathway to achieve net-zero by 2050",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X12": {
+   "document": "ExxonMobil 2026 Proxy Statement, director succession",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "joined the Board in November 2025",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X13": {
+   "document": "ExxonMobil 2025 Form 10-K, cash flow statement",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Additions to property, plant, and equipment (28,358) (24,306) (21,919)",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X14": {
+   "document": "ExxonMobil 2025 Form 10-K, segment capex incl. Pioneer (2024)",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Additions to property, plant, and equipment ... 109,332",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X15": {
+   "document": "ExxonMobil 2026 Proxy Statement, grant governance",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "A committee comprised of ExxonMobil's CEO and Management Committee grants incentive awards",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X16": {
+   "document": "ExxonMobil 2026 Proxy Statement, Pioneer integration",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "approximately $4.0 billion in synergies with Pioneer, doubling initial expectations",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X17": {
+   "document": "ExxonMobil 2Q 2026 earnings release, identified items",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Impairments (1,079)",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X18": {
+   "document": "SEC EDGAR 8-K sweep, ExxonMobil (Item 5.02, Oct 2023 - Oct 2026)",
+   "doc_type": "public",
+   "date": "2026-10-23",
+   "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000034088&type=8-K",
+   "excerpt": "No director resignation citing disagreement found",
+   "evidence_class": "silence",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false,
+   "search_log": "Search: SEC EDGAR ExxonMobil / ExxonMobil Holdings 8-K list; Item 5.02; 2023-10 to 2026-10; uploaded 8-K of 16 Oct 2026 and proxy reviewed; result: none citing disagreement; 2026-10-23"
+  },
+  "X19": {
+   "document": "ExxonMobil 2025 Form 10-K, financing cash flows",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Common stock acquired (20,273); Cash dividends (17,231)",
+   "evidence_class": "strong_direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X20": {
+   "document": "ExxonMobil 2026 Proxy Statement, board tenure",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "average tenure of ExxonMobil's non-employee directors is 4.6 years",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X21": {
+   "document": "ExxonMobil 2026 Proxy Statement, retail voting program",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "provide a standing instruction that authorizes voting",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X22": {
+   "document": "ExxonMobil: 2026 Annual Shareholder Meeting preliminary results",
+   "doc_type": "public",
+   "date": "2026-06-01",
+   "url": "https://corporate.exxonmobil.com/news/corporate-news/2026-annual-shareholder-meeting",
+   "excerpt": "Texas Redomiciliation | Approved | 71.3% FOR",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "X23": {
+   "document": "Reuters: Exxon wins shareholder backing for legal move to Texas",
+   "doc_type": "public",
+   "date": "2026-05-27",
+   "url": "https://www.dailysignal.com/2026/05/28/exxon-wins-shareholder-move-texas/",
+   "excerpt": "two leading proxy advisory firms advised investors to strike down",
+   "evidence_class": "direct",
+   "source_origin": "public",
+   "simulated": false,
+   "recent": false
+  },
+  "X24": {
+   "document": "ExxonMobil 2026 Proxy Statement, 2025 business performance",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "$15.1 billion in structural cost savings ... vs. 2019",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X25": {
+   "document": "ExxonMobil 2Q 2026 earnings release, highlights",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "2026 planned investments are 20% higher than nearest IOC",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X26": {
+   "document": "ExxonMobil 2Q 2026 earnings release, free cash flow",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "Free Cash Flow (non-GAAP) ... 19,935",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X27": {
+   "document": "ExxonMobil 2026 Proxy Statement, financial performance",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "net debt-to-capital ratio at 11%, consistent with strong AA rating",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X28": {
+   "document": "ExxonMobil Company Overview and Investment Case, distributions",
+   "doc_type": "public",
+   "date": "2026-02",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "$5 billion minimum cash",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X29": {
+   "document": "ExxonMobil 2Q 2026 earnings release, balance sheet",
+   "doc_type": "public",
+   "date": "2026-07-31",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "strengthened the balance sheet",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": true
+  },
+  "X30": {
+   "document": "ExxonMobil 2026 Proxy Statement, Texas redomiciliation",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "not adopting any elective provisions of the Texas corporate statute",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "X31": {
+   "document": "ExxonMobil 2026 Proxy Statement, board evaluation",
+   "doc_type": "public",
+   "date": "2026-04-08",
+   "url": "https://investor.exxonmobil.com",
+   "excerpt": "periodically engage outside counsel to bring a third-party perspective",
+   "evidence_class": "direct",
+   "source_origin": "user_public",
+   "simulated": false,
+   "recent": false
+  },
+  "IO01": {
+   "document": "Board and committee minutes (12 months) (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO02": {
+   "document": "Board agendas and annual calendar (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO03": {
+   "document": "Board and committee packs (routine pre-reads) (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO04": {
+   "document": "Governance framework: delegation of authority, committee terms, capital and treasury policies, incentive scorecards (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO05": {
+   "document": "Strategy papers and plan versions (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO06": {
+   "document": "Capital and investment papers with post-investment reviews (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO07": {
+   "document": "Treasury and liquidity reports (stress tests, covenant headroom) (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO08": {
+   "document": "Board evaluation report and action log (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO09": {
+   "document": "Skills matrix and board/CEO succession plans (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO10": {
+   "document": "CEO reports to the board (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO11": {
+   "document": "Customer insight and key-account reports (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO12": {
+   "document": "Internal audit and risk reports (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "IO13": {
+   "document": "Chair / lead independent director notes from executive sessions (board document)",
+   "doc_type": "board document",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Simulated document for the prototype",
+   "evidence_class": "inside_out",
+   "source_origin": "inside_out",
+   "simulated": true,
+   "recent": true
+  },
+  "SA01": {
+   "document": "Director self-assessment, Q1 (Dimension 1: Customer Obsession)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Yes, a lost-contract debrief in Q2 changed our pricing posture; it reached us through\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA02": {
+   "document": "Director self-assessment, Q2 (Dimension 1: Customer Obsession)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Customer satisfaction sits in the annual bonus at about 10%; it has never reduced\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA03": {
+   "document": "Director self-assessment, Q3 (Dimension 2: Resisting Proxies)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "We revised our volume assumptions after a guidance miss last year; outside pressure prompted\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA04": {
+   "document": "Director self-assessment, Q4 (Dimension 2: Resisting Proxies)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "I trust the pipeline conversion number least. We have not retired a report in\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA05": {
+   "document": "Director self-assessment, Q5 (Dimension 3: Embracing External Trends)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Electrification and channel shift. We hold a position on the first with capex targets;\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA06": {
+   "document": "Director self-assessment, Q6 (Dimension 3: Embracing External Trends)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "On tariffs we moved with peers; on the channel shift, after them. Management initiated\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA07": {
+   "document": "Director self-assessment, Q7 (Dimension 4: High-Velocity Decision-Making)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Informally yes. A pricing pilot took one meeting; the divestiture took four. We deferred\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA08": {
+   "document": "Director self-assessment, Q8 (Dimension 4: High-Velocity Decision-Making)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Minority views are not formally recorded. Decisions generally stay settled; one was revisited twice.",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA09": {
+   "document": "Director self-assessment, Q9 (Dimension 5: Building over Protecting)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Cost first, then buybacks to support EPS. Reinvestment was raised by two directors but\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA10": {
+   "document": "Director self-assessment, Q10 (Dimension 5: Building over Protecting)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "The last evaluation added a technology skills matrix; the last appointment brought digital experience.\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA11": {
+   "document": "Director self-assessment, Q11 (Dimension 6: Liquidity and Capital Management)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "More time on earnings. No formal trigger; we would act on a rating warning.\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  },
+  "SA12": {
+   "document": "Director self-assessment, Q12 (Dimension 6: Liquidity and Capital Management)",
+   "doc_type": "self-assessment",
+   "date": "2026-10-23",
+   "url": "",
+   "excerpt": "Leverage policy is 2.0-2.5x net debt/EBITDA, reviewed annually, stress-tested at budget. Working capital is\u2026",
+   "evidence_class": "self_assessment",
+   "source_origin": "self_assessment",
+   "simulated": true,
+   "recent": true
+  }
+ },
+ "actions": [
+  {
+   "id": "2026-Q4-A1",
+   "heading": "Put a customer measure into the 2027 Chevron Incentive Plan, with a payout downside",
+   "description": "The documents show customer satisfaction in the bonus at about 10 to 20 per cent but never paid below threshold [IO04] [SA02]. Management Compensation Committee to set a threshold below which the customer element reduces payout, and to report it.",
+   "measures": [
+    "Customer measure weight in CIP",
+    "Payout reduction applied when missed"
+   ],
+   "target_by": "2027-Q1"
+  },
+  {
+   "id": "2026-Q4-A2",
+   "heading": "Require a funded reinvestment alternative in every buyback and capital paper",
+   "description": "The latest buyback paper names an alternative with no case behind it [IO01] [IO06]. Board to require a costed reinvestment alternative, tested against a disclosed reinvestment floor, before any return of capital is approved.",
+   "measures": [
+    "Papers with a costed alternative",
+    "Capex / depreciation ratio"
+   ],
+   "target_by": "2027-Q1"
+  },
+  {
+   "id": "2026-Q4-A3",
+   "heading": "Retire reports and document every KPI change",
+   "description": "One KPI was restated without documentation and no report has been retired in three years [IO03] [IO12]. Governance Committee to retire a quarter of standing reports and require a definition note for any KPI change.",
+   "measures": [
+    "Pack pages",
+    "KPI definitions documented"
+   ],
+   "target_by": "2027-Q1"
+  },
+  {
+   "id": "2026-Q4-A4",
+   "heading": "Present lost-deal reviews and complete missing post-investment reviews",
+   "description": "Lost-deal reviews are still not presented and one post-investment review is missing [IO11] [IO06]. Management to bring both to the board each quarter.",
+   "measures": [
+    "Lost-deal reviews presented",
+    "Post-investment reviews completed"
+   ],
+   "target_by": "2027-Q2"
+  },
+  {
+   "id": "2026-Q4-A5",
+   "heading": "Publish a CEO succession timeline and review board leadership",
+   "description": "Following the 2023 retirement-age waiver, independent directors to disclose the succession planning horizon and review the combined chair and CEO role [IO09].",
+   "measures": [
+    "Succession disclosure in 2027 proxy",
+    "Leadership-structure review completed"
+   ],
+   "target_by": "2027-Q2"
+  }
+ ],
+ "coverage": {
+  "documents_unavailable": [],
+  "consistency_result": "Outside-in run 1 of 2",
+  "notes": ""
+ },
+ "overall_summary": {
+  "board": "Chevron's board grades C overall (Day 2 creeping in): strong on cash, external trends and metric discipline, held back by customer blindness and a protect-the-present capital and leadership posture.",
+  "board_io": "Chevron's board grades B after board documents and a director self-assessment (outside-in C): liquidity governance, decision rigor and customer early warning improve; capital posture and metric discipline weaken."
+ },
+ "what_moved": "Board documents lift liquidity and capital management to A and decision-making, customer obsession and external trends to B. Stress-tested headroom and adopted early-warning triggers, a board that declined an acquisition on independent review, and a customer watch list that now reaches the pack all show up only once documents are read. Building over protecting falls to D: a buyback was approved without a reinvestment alternative, and resisting proxies slips to C once a growing pack and an undocumented KPI restatement are visible.",
+ "headline_findings": [
+  "Customer outcomes became a standing board item and a quarterly watch list now reaches the pack [IO02] [IO11].",
+  "The buyback was approved without a funded reinvestment alternative [IO01] [IO06].",
+  "Treasury reports show headroom above the board's floor under stress and adopted early-warning triggers [IO07] [IO04]."
+ ],
+ "key_metrics": [
+  {
+   "metric": "Capex to depreciation",
+   "why": "Tests whether the board is reinvesting or harvesting",
+   "current": "0.86x (2025)"
+  },
+  {
+   "metric": "Net debt ratio",
+   "why": "Liquidity is altitude; options preserved",
+   "current": "13.1% (2Q26)"
+  },
+  {
+   "metric": "Free cash flow / net income",
+   "why": "Cash over earnings orientation",
+   "current": "1.35x (2025)"
+  },
+  {
+   "metric": "Customer or quality weight in annual incentive",
+   "why": "Whether customer outcomes carry pay consequences",
+   "current": "0% customer; 25% operating and safety"
+  },
+  {
+   "metric": "Independent-chair vote support",
+   "why": "Owner appetite for separating chair and CEO",
+   "current": "~15% (May 2026)"
+  }
+ ],
+ "peer_position": "Chevron and ExxonMobil grade C overall; BP grades D. Chevron trails ExxonMobil on external trends and reinvestment but leads it on owner accountability; it is ahead of BP on four of six dimensions, trailing only on customer evidence and resisting proxies.",
+ "peer_summary_lines": [
+  "ExxonMobil: better on external trends (A) and balance sheet; worse on owner accountability (Texas move, retail voting programme); at par overall (C).",
+  "BP: worse on decision-making, renewal and liquidity (D); better on customer evidence and incentives; behind overall (D)."
+ ],
+ "scorecard_headline": {
+  "1": "Customers appear as volumes and contracts; a consumer pricing suit is pending [E05]",
+  "2": "Transparent metrics; cost reset followed weak returns [E11]",
+  "3": "Explicit power and carbon positions with capital behind them [E18]",
+  "4": "Fast on reversible bets; standard rigor on Hess [E26]",
+  "5": "Capex below depreciation; retirement age waived [E23] [E27]",
+  "6": "AA- balance sheet and cash in incentives [E40]",
+  "7": "Rounded average of dimension letters (midpoints round down)."
+ },
+ "indicator_summary": {
+  "1.1": "Reporting leads on volumes and returns; customer named only as a contract [E01] [E02]",
+  "1.2": "Site visits and employee contact, no customer programme [E04]",
+  "1.3": "Consumer pricing class action pending; no watch-list disclosure [E05]",
+  "1.4": "25% operating and safety weight, no customer metric [E07]",
+  "2.1": "Cost reset after weak relative returns [E09] [E10]",
+  "2.2": "Transparent thresholds; Hess separated out of scorecard [E11]",
+  "2.3": "Unlimited access to management and advisers [E13]",
+  "2.4": "Periodic charter review; by-law change after Hess [E15]",
+  "3.1": "Targets on carbon intensity and data-centre power [E17] [E18]",
+  "3.2": "First firm power contract in peer set; early on cost [E18] [E19]",
+  "3.3": "Outside speakers; externally sourced director [E21]",
+  "3.4": "Hess and contracted power project [E22]",
+  "4.1": "Power venture to contract in ~18 months [E34]",
+  "4.2": "Hess midstream sold at expected $3-4bn loss [E26]",
+  "4.3": "No disagreement resignations (silence) [E41]",
+  "5.1": "Capex below depreciation; returns $27.1bn [E23] [E24]",
+  "5.2": "CEO retirement age waived; pipeline visible [E27] [E29]",
+  "5.3": "Strong owner rights; evaluation via outside counsel [E30]",
+  "5.4": "Cost first in 2025 downturn [E33]",
+  "6.1": "FCF in incentive and above net income [E35] [E36]",
+  "6.2": "AA-; net debt ratio 13.1% [E38]",
+  "6.3": "Asset sales under stated target ahead of stress [E39]"
+ },
+ "peer_row_summary": {
+  "1": "All three are weak. BP (C) is better: a customer segment with its own metrics and safety-linked pay with demonstrated downside. Chevron (D) and ExxonMobil (D) treat customers as volume.",
+  "2": "Chevron and BP (B) lead ExxonMobil (C): Chevron on transparent metrics and access, BP on below-C-suite insight sessions and committee redesign.",
+  "3": "ExxonMobil (A) leads with explicit positions and capital at scale; Chevron (B) is close, with the earliest power move; BP (D) has reversed positions.",
+  "4": "Chevron and ExxonMobil (C) are at par; BP (D) is weakest after its chair was removed eight months into the role.",
+  "5": "ExxonMobil and Chevron (C) at par for different reasons: ExxonMobil reinvests but insulates its board; Chevron is accountable to owners but harvests. BP (D) has reactive renewal.",
+  "6": "Chevron and ExxonMobil (B) are at par with AA ratings; BP (D) carries above-peer leverage, now falling."
+ },
+ "additional_information_needed": [],
+ "inside_vs_outside": {
+  "better": [
+   "Customer evidence and early warning: a standing customer item, quarterly watch list and verbatim complaints now reach the board [IO02] [IO11].",
+   "Liquidity governance: a headroom floor, stress tests and adopted triggers exist that the public record does not show [IO07] [IO04].",
+   "Candor: dissent is aired in executive session and settled decisions are not relitigated [IO13]."
+  ],
+  "worse": [
+   "Capital posture: the buyback was approved without a reinvestment alternative and the paper\u2019s alternative has no case behind it [IO01] [IO06].",
+   "Metric and process discipline: a KPI was restated without documentation, the pack is growing and no report has been retired in three years [IO03] [IO12]."
+  ]
+ },
+ "prior_actions_status": [
+  {
+   "id": "2026-Q3-A1",
+   "heading": "Add a customer-harm watch list to board packs",
+   "status": "completed",
+   "evidence_note": "Watch list present in each pack from meeting 2 [IO11] [IO03].",
+   "metrics_note": "Watch list present in each pack; escalations closed within 60 days"
+  },
+  {
+   "id": "2026-Q3-A2",
+   "heading": "Schedule directors\u2019 frontline sessions without management",
+   "status": "behind",
+   "evidence_note": "Site visits continue with management present [IO02]; no unmediated session minuted [IO01].",
+   "metrics_note": "Sessions held per year; findings minuted"
+  },
+  {
+   "id": "2026-Q3-A3",
+   "heading": "Adopt a stated liquidity trigger framework",
+   "status": "completed",
+   "evidence_note": "Triggers adopted and reviewed in the treasury report [IO07] [IO12].",
+   "metrics_note": "Framework approved; quarters with trigger review minuted"
+  },
+  {
+   "id": "2026-Q3-A4",
+   "heading": "Retire one standing report and one committee workstream",
+   "status": "not_started",
+   "evidence_note": "No report retired and the pack grew [IO03].",
+   "metrics_note": "Items retired; board pack page count"
+  }
+ ],
+ "back_on_track": [
+  {
+   "id": "2026-Q3-A2",
+   "heading": "Schedule directors\u2019 frontline sessions without management",
+   "what_happened": "Work slipped two quarters behind competing operational priorities.",
+   "impact": "Customer-harm signals still reach the board after management has resolved them.",
+   "root_cause": "No owner below the CEO and no date in the board\u2019s action log.",
+   "prevention": "Name an executive owner and put the sessions on the board\u2019s forward agenda with a date.",
+   "measures": [
+    "Owner named",
+    "Date in action log",
+    "First session minuted"
+   ]
+  },
+  {
+   "id": "2026-Q3-A4",
+   "heading": "Retire one standing report and one committee workstream",
+   "what_happened": "Nothing was retired and the pack grew.",
+   "impact": "Directors\u2019 time goes to backward-looking reporting.",
+   "root_cause": "Reports accumulate faster than they are retired and nobody owns pruning.",
+   "prevention": "Give the Governance Committee a standing duty to retire one report each quarter.",
+   "measures": [
+    "Items retired",
+    "Pack page count"
+   ]
+  }
+ ],
+ "self_ratings": {
+  "1": 3,
+  "3": 3
+ },
+ "io_change_notes": {},
+ "history": [
+  {
+   "period": "2026-Q3",
+   "stage": "outside_in",
+   "simulated": true,
+   "run_date": "2026-09-28",
+   "lenses": [
+    "board"
+   ],
+   "dimensions": {
+    "1": {
+     "board": {
+      "grade": "F",
+      "average": 1.75
+     }
+    },
+    "2": {
+     "board": {
+      "grade": "B",
+      "average": 3.75
+     }
+    },
+    "3": {
+     "board": {
+      "grade": "B",
+      "average": 3.75
+     }
+    },
+    "4": {
+     "board": {
+      "grade": "C",
+      "average": 3.0
+     }
+    },
+    "5": {
+     "board": {
+      "grade": "D",
+      "average": 2.5
+     }
+    },
+    "6": {
+     "board": {
+      "grade": "B",
+      "average": 3.67
+     }
+    }
+   },
+   "overall": {
+    "board": {
+     "grade": "C",
+     "provisional": false
+    }
+   },
+   "indicators": {
+    "1.1": {
+     "board": 2
+    },
+    "1.2": {
+     "board": 1
+    },
+    "1.3": {
+     "board": 1
+    },
+    "1.4": {
+     "board": 3
+    },
+    "2.1": {
+     "board": 1
+    },
+    "2.2": {
+     "board": 5
+    },
+    "2.3": {
+     "board": 4
+    },
+    "2.4": {
+     "board": 5
+    },
+    "3.1": {
+     "board": 3
+    },
+    "3.2": {
+     "board": 4
+    },
+    "3.3": {
+     "board": 4
+    },
+    "3.4": {
+     "board": 4
+    },
+    "4.1": {
+     "board": 5
+    },
+    "4.2": {
+     "board": 1
+    },
+    "4.3": {
+     "board": 3
+    },
+    "5.1": {
+     "board": 2
+    },
+    "5.2": {
+     "board": 1
+    },
+    "5.3": {
+     "board": 4
+    },
+    "5.4": {
+     "board": 3
+    },
+    "6.1": {
+     "board": 4
+    },
+    "6.2": {
+     "board": 3
+    },
+    "6.3": {
+     "board": 4
+    }
+   },
+   "indicator_rationale": {
+    "1.1": {
+     "board": "Customer outcomes appear mainly as volumes, reliability and contracted revenue: the latest results lead on production and refinery throughput [E01], and the one customer named is framed as a contract counterparty [E02]. This meets parts of the 1 anchor (customer as revenue) and parts of 3 (reliability for customers is reported), so 2. The board has not required unfiltered customer evidence in external reporting."
+    },
+    "1.2": {
+     "board": "[SIMULATED 2026-Q3] Directors make disclosed site visits and met frontline employees at Pascagoula in 2025 [E04], and regularly visit work locations [E03]. Visits are employee- rather than customer-facing and there is no disclosure of findings returning to the board, which fits the outside-in 3 anchor."
+    },
+    "1.3": {
+     "board": "[SIMULATED 2026-Q3] The most visible recent customer issue reached the company through consumer litigation over California fuel pricing [E05], with an amended complaint filed in September 2026 [E06]; the claims are contested and unresolved. There is no disclosure of an early-warning or key-customer watch list. Parts of the 1 anchor (issue surfaced via litigation) and of 3 (no evidence of escalation failure) apply, so 2."
+    },
+    "1.4": {
+     "board": "The annual incentive weights operating and safety performance (personal and process safety, net production) at 25% with thresholds and maximums [E07]. There is no customer metric, and the 2025 operating score did not produce a reduction [E08]. A quality metric at meaningful weight without demonstrated downside fits 3."
+    },
+    "2.1": {
+     "board": "[SIMULATED 2026-Q3] The board approved a structural reset of the cost base, raising the target to $3-4 billion by end-2026 [E10], after a period in which relative TSR drove a 15% performance-share payout for 2023-25 [E09]. The revision followed relative underperformance rather than being clearly ahead of it, which is the 3 anchor."
+    },
+    "2.2": {
+     "board": "[SIMULATED 2026-Q3] The compensation committee publishes threshold, plan and maximum values [E12] and reports legacy results separately from the Hess contribution so the acquisition does not flatter the scorecard [E11]. That is transparent testing of headline metrics (part of 5), but there is no evidence of testing against frontline or external reality (3), so 4."
+    },
+    "2.3": {
+     "board": "Committee chairs have unlimited access to management and outside advisors [E13], and the board meets the Chief Human Resources Officer twice a year on succession, with the Audit Committee meeting functional heads below the C-suite [E14]. Regular access below the C-suite is evidenced (5) but board-appointed advisers are disclosed only for evaluation and search, so 4."
+    },
+    "2.4": {
+     "board": "[SIMULATED 2026-Q3] The board amended its by-laws and governance documents after the Hess merger so a non-independent director could participate fully [E15], and committees review their charters periodically [E16]. The four-committee structure is otherwise unchanged; periodic review with minor change is the 3 anchor."
+    },
+    "3.1": {
+     "board": "[SIMULATED 2026-Q3] The company holds explicit, targeted positions on two named shifts: carbon intensity (a 2028 portfolio carbon intensity target of 71 gCO2e/MJ) [E17] and power demand from data centres, now backed by a 20-year contract [E18]. Oversight sits with the Public Policy and Sustainability Committee. A third shift is not named with targets, so 4."
+    },
+    "3.2": {
+     "board": "On the AI-power shift the company is the first in the peer set with a long-term firm customer contract [E18]; on the 2025 price downturn it launched its cost programme early in the cycle [E19]. On Hess it moved first but closed late after arbitration. Early on two shocks, in line on the third: 4."
+    },
+    "3.3": {
+     "board": "Board briefings regularly include outside speakers [E20] and the January 2026 appointment was sourced by an external advisor [E21]; the skills matrix covers environmental and transformation experience. Investor and customer voices are not shown entering the boardroom, so 4."
+    },
+    "3.4": {
+     "board": "Capital follows the stated positions: the board approved the Hess acquisition for Guyana growth [E22] and the power venture has reached contract stage [E18]. Lower-carbon capital remains modest relative to upstream, so scale is consistent on oil and gas and power but not across all stated positions: 4."
+    },
+    "4.1": {
+     "board": "[SIMULATED 2026-Q3] The power venture moved from announcement to a 20-year contracted project within roughly 18 months [E18], and the cost programme was scaled up and delivered six months early [E34]. Delegation is disclosed only in general terms, so this meets parts of the outside-in 5 anchor and parts of 3: 4."
+    },
+    "4.2": {
+     "board": "[SIMULATED 2026-Q3] The Hess acquisition went through standard approval and a long arbitration before closing [E22]. Within about 15 months of closing, the board approved selling the acquired midstream stake with an expected $3-4 billion after-tax loss on deconsolidation [E26]. Standard diligence without public evidence of alternatives or a decline: 3."
+    },
+    "4.3": {
+     "board": "[SIMULATED 2026-Q3] Silence-based: the 36-month Item 5.02 sweep shows board changes only from retirement policy, death and merger terms, with no resignation over disagreement [E41]. Capped at 3, Low confidence, under Rule 5."
+    },
+    "5.1": {
+     "board": "In 2025 capital expenditure of $17.3 billion ran below depreciation of $20.1 billion [E23] while $27.1 billion went to shareholders [E24]. The Hess acquisition was a large growth move, so this meets parts of the 1 anchor (capex below depreciation, returns dominant) and parts of 3: 2. Relative to peers, ExxonMobil reinvests above depreciation."
+    },
+    "5.2": {
+     "board": "[SIMULATED 2026-Q3] The independent directors waived the CEO retirement age in 2023 [E27], and average director tenure is 7.2 years [E28]. Against that, a new director was added in 2026 and the September 2026 officer elections show a visible executive pipeline [E29]. Parts of 1 (limit waived) and parts of 5 (visible pipeline) net to 3."
+    },
+    "5.3": {
+     "board": "Evaluations are internal but individual director reviews are compiled by outside counsel [E30]. The board engages holders of over 40% of shares [E32], and shareholders hold proxy access and special-meeting rights; the independent-chair proposal drew about 15% [E31]. Openly accountable to owners (5) with evaluation short of externally facilitated: 4."
+    },
+    "5.4": {
+     "board": "When prices fell in 2025 the first visible lever was cost: a workforce-linked restructuring with severance settled by end-2026 [E33] and a raised structural-cost target [E10]. Growth projects and the power venture were kept, so cost actions ran alongside reinvestment: 3."
+    },
+    "6.1": {
+     "board": "Free cash flow excluding working capital is one of two financial measures in the annual incentive [E35], and 2025 free cash flow of $16.6 billion exceeded net income of $12.3 billion [E36]. Cash is central to incentives and messaging but carries a minority weight: 4."
+    },
+    "6.2": {
+     "board": "[SIMULATED 2026-Q3] The company holds AA-/Aa2 ratings [E40]; the net debt ratio fell to 13.1% by Q2 2026 after debt assumed with Hess [E38], and S&P describes a conservative financial policy [E37]. Leverage is below BP and close to ExxonMobil: 4."
+    },
+    "6.3": {
+     "board": "Portfolio moves ran under a stated $10-15 billion asset-sale target, with about $9 billion realised by January 2026 [E39], and the cost programme launched before any rating or liquidity pressure [E19]. Proactive under a stated policy, with the latest divestment crystallising a loss: 4."
+    }
+   },
+   "peers": {
+    "Exxon Mobil (ExxonMobil Holdings Corporation)": {
+     "1": "D",
+     "2": "C",
+     "3": "A",
+     "4": "C",
+     "5": "B",
+     "6": "B",
+     "overall": "C"
+    },
+    "BP p.l.c.": {
+     "1": "B",
+     "2": "C",
+     "3": "C",
+     "4": "D",
+     "5": "C",
+     "6": "D",
+     "overall": "C"
+    }
+   },
+   "actions": [
+    {
+     "id": "2026-Q3-A1",
+     "heading": "Add a customer-harm watch list to board packs",
+     "description": "Management to add a standing one-page watch list of key customers actively unhappy or escalating, with status of remediation, to every board pack.",
+     "measures": [
+      "Watch list present in each pack",
+      "Number of key-customer escalations closed within 60 days"
+     ],
+     "target_by": "2026-Q4"
+    },
+    {
+     "id": "2026-Q3-A2",
+     "heading": "Schedule directors' frontline sessions without management",
+     "description": "Two structured director sessions with customers and frontline staff per year, without management present, with findings minuted.",
+     "measures": [
+      "Sessions held per year",
+      "Findings minuted and actions tracked"
+     ],
+     "target_by": "2026-Q4"
+    },
+    {
+     "id": "2026-Q3-A3",
+     "heading": "Adopt a stated liquidity trigger framework",
+     "description": "Board to approve early-warning liquidity triggers (headroom, leverage, maturity concentration) that mandate a board discussion when breached.",
+     "measures": [
+      "Framework approved and disclosed",
+      "Quarters with trigger review minuted"
+     ],
+     "target_by": "2026-Q4"
+    },
+    {
+     "id": "2026-Q3-A4",
+     "heading": "Retire one standing report and one committee workstream",
+     "description": "Governance committee to identify one standing report and one committee workstream that no longer earn their place and retire them.",
+     "measures": [
+      "Items retired",
+      "Board pack page count"
+     ],
+     "target_by": "2026-Q4"
+    }
+   ],
+   "key_metrics": [
+    {
+     "metric": "Free cash flow conversion",
+     "why": "Tests whether cash, not EPS, is driving decisions"
+    },
+    {
+     "metric": "Key-customer escalations open > 60 days",
+     "why": "Leading indicator of customer-harm reaching the board late"
+    }
+   ]
+  }
+ ]
+}
