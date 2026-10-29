@@ -82,11 +82,13 @@ def is_busy(e) -> bool:
 def api_error(e, label, model=None) -> ResearchError:
     """Maps an SDK error to a ResearchError with a user-facing message."""
     P, M = cfg.PROVIDER, model or cfg.MODEL
+    log.error("api_error", step=label, model=M, kind=type(e).__name__, status=getattr(e, "status_code", None), body=getattr(e, "body", None), error=_err(e))
     if isinstance(e, anthropic.AuthenticationError): return ResearchError(f"The server's {P} API key was rejected. Check the key in .env.")
     if isinstance(e, anthropic.PermissionDeniedError): return ResearchError(f"The {P} API key lacks access to {M} or to web search ({_err(e)}).")
     if isinstance(e, anthropic.NotFoundError): return ResearchError(f"The model {M} is not available to this {P} key ({_err(e)}).")
     if isinstance(e, anthropic.RateLimitError): return ResearchError(f"The {P} rate limit was reached; try again in a few minutes.")
-    if isinstance(e, anthropic.BadRequestError): return ResearchError(f"The {label} request was rejected: {_err(e)}")
+    body = getattr(e, "body", None); err = body.get("error") if isinstance(body, dict) else None
+    if isinstance(e, anthropic.BadRequestError) or (isinstance(err, dict) and err.get("type") == "invalid_request_error"): return ResearchError(f"The {label} request was rejected: {_err(e)}")
     if is_busy(e) and not isinstance(e, anthropic.APIConnectionError): return ResearchError(f"{P} stayed busy during {label} after {len(cfg.RETRY_WAITS)} retries; try again shortly.")
     if isinstance(e, anthropic.APIStatusError): return ResearchError(f"The {P} API returned an error during {label} ({e.status_code}); try again shortly.")
     if isinstance(e, anthropic.APIConnectionError): return ResearchError(f"Could not reach the {P} API during {label}; check the server's network.")

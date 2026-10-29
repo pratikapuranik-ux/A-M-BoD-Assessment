@@ -29,6 +29,23 @@ def echo(content):
     return out
 
 
+STUB = "[Page text removed to keep the conversation within the context window. Source:"
+
+
+def stub_fetch(b):
+    """A web_fetch_tool_result with its page text replaced by a short note (URL and title kept); anything else comes back unchanged."""
+    d = b if isinstance(b, dict) else b.model_dump(exclude_none=True) if hasattr(b, "model_dump") else None
+    if not d or d.get("type") != "web_fetch_tool_result": return b
+    res = d.get("content")
+    if not isinstance(res, dict) or res.get("type") != "web_fetch_result": return b  # fetch errors are already short
+    doc = res.get("content") or {}
+    if str((doc.get("source") or {}).get("data", "")).startswith(STUB): return b
+    note = {"type": "document", "source": {"type": "text", "media_type": "text/plain", "data": f"{STUB} {res.get('url', '')}]"}}
+    if doc.get("title"): note["title"] = doc["title"]
+    if doc.get("citations"): note["citations"] = doc["citations"]
+    return {**d, "content": {**res, "content": note}}
+
+
 def scrub(x):
     """Drops control characters from every string (python-docx and the dashboards cannot take them)."""
     if isinstance(x, str): return cfg.CTRL_RE.sub("", x)
@@ -43,6 +60,19 @@ class Conv:
         self.model = model  # None = the default model (BOARD_MODEL); Run B and the reconciliation name theirs
         self.stop = None  # threading.Event shared by parallel steps: set when one fails, so the others stop calling Claude
         self.messages, self.pending, self.strict = [{"role": "user", "content": content}], [], True
+        self.ctx = 0  # prompt size in tokens at the last turn
+
+    def prune(self, keep=None) -> int:
+        """Stubs every fetched page except the newest `keep`, whichever turn it is in (one turn can hold dozens); returns how many it cut."""
+        keep = cfg.KEEP_RECENT if keep is None else keep
+        pages = [(i, j) for i, m in enumerate(self.messages) if m["role"] == "assistant"
+                 for j, b in enumerate(m["content"]) if stub_fetch(b) is not b]
+        cut = 0
+        for i, j in pages[:max(0, len(pages) - keep)]:
+            content = list(self.messages[i]["content"]); content[j] = stub_fetch(content[j])
+            self.messages[i] = {**self.messages[i], "content": content}; cut += 1
+        if cut: log.info("context_pruned", step=self.label, pages=cut, was=self.ctx, kept_pages=keep)
+        return cut
 
     def say(self, text, error=False):
         if self.pending:
@@ -78,10 +108,13 @@ class Conv:
     def _request(self):
         """One streamed request; waits and retries (tenacity, RETRY_WAITS) while the service is busy or unreachable."""
         anthropic = cl.anthropic
+        if self.ctx > cfg.PRUNE_AT: self.prune()
         try:
             return cl.call_with_retry(self._stream, self.label, self.stop, getattr(self.on_phase, "say", None))
         except Exception as e:
             if anthropic is None or not isinstance(e, anthropic.APIError): raise
+            if "prompt is too long" in cl._err(e).lower() and self.prune(keep=2):  # estimate was off: cut harder and try once more
+                return self._request()
             if isinstance(e, anthropic.BadRequestError) and self.strict and "too complex" in cl._err(e).lower():
                 log.warning("strict_schema_rejected", error=cl._err(e))
                 self.strict = False
@@ -93,6 +126,7 @@ class Conv:
         for _ in range(cfg.MAX_CONTINUATIONS):
             msg = self._request()
             u = getattr(msg, "usage", None)
+            self.ctx = sum(getattr(u, k, None) or 0 for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
             log.info("turn", step=self.label, stop=msg.stop_reason, input=getattr(u, "input_tokens", None),
                      cache_read=getattr(u, "cache_read_input_tokens", None), cache_write=getattr(u, "cache_creation_input_tokens", None),
                      output=getattr(u, "output_tokens", None))

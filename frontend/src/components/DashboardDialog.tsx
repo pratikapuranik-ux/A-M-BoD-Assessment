@@ -35,6 +35,7 @@ export default function DashboardDialog({ open, onOpenChange, title, url }: { op
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', paddingBottom: 8 }}>
             <Dialog.Title style={{ margin: 0, color: 'var(--navy, #002B49)', fontSize: '1.1rem', flex: 1 }}>{title}</Dialog.Title>
             {state === 'ok' && <a href={url} target="_blank" rel="noopener" style={{ fontWeight: 700, color: '#0085CA' }}>Open in a new tab</a>}
+            {state === 'ok' && <a href={url} download style={{ fontWeight: 700, color: '#0085CA' }}>Download</a>}
             <Dialog.Close aria-label="Close" style={{ border: '1px solid #D9D9D9', background: '#fff', borderRadius: 8, width: 36, height: 36, fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer' }}>×</Dialog.Close>
           </div>
           {state === 'loading' && <p className="muted" role="status">Loading the dashboard…</p>}

@@ -66,7 +66,7 @@ def clean_response(b: dict, paper: bool = False) -> tuple[dict, dict]:
     nq = len(convert.FW["questionnaire"]); a, r = b.get("answers") or {}, b.get("ratings") or {}
     if not isinstance(a, dict) or not isinstance(r, dict): raise ApiError(400, "answers and ratings must be objects")
     answers = {str(k): CTRL.sub("", str(a.get(str(k)) or "")).strip()[:4000] for k in range(1, nq + 1)}
-    ratings = {str(d): v for d, v in r.items() if str(d) in convert.DIMS and type(v) is int and v in (1, 3, 5)}
+    ratings = {str(d): v for d, v in r.items() if str(d) in convert.DIMS and type(v) is int and v in (1, 2, 3, 4, 5)}
     if paper and not any(answers.values()) and not ratings: raise ApiError(400, "the questionnaire has no answers or ratings")
     if not paper and not any(answers.values()): raise ApiError(400, "answer at least one question")
     return answers, ratings

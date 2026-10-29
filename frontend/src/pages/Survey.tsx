@@ -13,9 +13,11 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const typo = (s: string) => s.replace(/(\w)'(\w)/g, '$1’$2').replace(/(\w)'(\s)/g, '$1’$2');
 
 const RATING_OPTIONS: [number, string][] = [
-  [1, 'Mostly Day 2'],
+  [1, 'Day 2'],
+  [2, 'Mostly Day 2'],
   [3, 'Mixed'],
-  [5, 'Mostly Day 1'],
+  [4, 'Mostly Day 1'],
+  [5, 'Day 1'],
 ];
 
 /** Language guardrails (references/guardrails.md): the board as a body, non-accusatory, no legal conclusions or investment advice. */

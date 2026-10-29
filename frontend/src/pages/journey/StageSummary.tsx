@@ -36,13 +36,13 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
   return (
     <>
       <PageHead title="Your board assessment" sub={`${j.meta.company} · ${j.meta.period} · complete and saved to your Briefcase`}
-        right={<><PlanButton stage="io" j={j} /><Link className="btn sec" to="/briefcase"><Icon name="brief" size={16} />Briefcase</Link></>} eyebrow="Stage 2 of 3 · complete" />
+        right={<PlanButton stage="io" j={j} />} eyebrow="Stage 2 of 3 · complete" />
       <DeliveryCard stage="io" j={j} />
       {anyDl('io_docx', 'io_html', 'oi_docx', 'oi_html', 'prior_docx', 'quest') && (
         <>
           <h2 className="sech">Download the readout</h2>
           <div className="grid3">
-            {anyDl('io_docx', 'io_html') && <DownloadGroup title="Board assessment" sub="Both grades side by side, peer comparison, updated actions and sources."><DlButton files={files} k="io_docx" label="Report (Word)" icon="doc" variant="" /><DlButton files={files} k="io_html" label="Dashboard (HTML)" icon="web" /></DownloadGroup>}
+            {anyDl('io_docx', 'io_html') && <DownloadGroup title="Board assessment" sub="Both grades side by side, peer comparison, updated actions and sources."><DlButton files={files} k="io_docx" label="Report (Word)" icon="doc" /><DlButton files={files} k="io_html" label="Dashboard (HTML)" icon="web" /></DownloadGroup>}
             {anyDl('oi_docx', 'oi_html') && <DownloadGroup title="Outside-in view" sub="The public-information report for the same period."><DlButton files={files} k="oi_docx" label="Report (Word)" icon="doc" /><DlButton files={files} k="oi_html" label="Dashboard (HTML)" icon="web" /></DownloadGroup>}
             {anyDl('prior_docx', 'quest') && <DownloadGroup title="Supporting files" sub="The earlier-quarter report and the director questionnaire."><DlButton files={files} k="prior_docx" label="Earlier quarter (Word)" icon="doc" /><DlButton files={files} k="quest" label="Questionnaire (Word)" icon="doc" /></DownloadGroup>}
           </div>

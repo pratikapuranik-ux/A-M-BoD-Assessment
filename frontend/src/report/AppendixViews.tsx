@@ -34,7 +34,7 @@ export function DimensionDetail() {
               <Codes text={t?.text} />
             </p>
             <Muted>
-              <b>Where this grade is limited:</b> {typo((t?.limit || '').replace(/^Where this grade is limited:\s*/, ''))}
+              <b>Where this grade is limited:</b> <Codes text={(t?.limit || '').replace(/^Where this grade is limited:\s*/, '')} />
             </Muted>
             <DTable caption={`Indicators of dimension ${d}`}>
               <thead>
@@ -118,7 +118,7 @@ export function PeersAppendix() {
                 </tr>
               </tbody>
             </DTable>
-            <p className="mb-3">{typo(pd?.summary)}</p>
+            <p className="mb-3"><Codes text={pd?.summary} /></p>
             <DTable caption={`${p.full} indicator scores`}>
               <thead>
                 <tr>
@@ -831,8 +831,8 @@ function DashActions() {
                   <td className={td}>
                     <b>{typo(r[0])}</b>
                   </td>
-                  <td className={td}>{typo(r[1])}</td>
-                  <td className={td}>{typo(r[2])}</td>
+                  <td className={td}><Codes text={r[1]} /></td>
+                  <td className={td}><Codes text={r[2]} /></td>
                 </tr>
               ))}
             </tbody>

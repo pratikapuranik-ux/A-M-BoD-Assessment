@@ -278,7 +278,7 @@ def io_prepare(state: InsideOutState):
     base["run"].update(stage="inside_out", run_date=t.isoformat(), simulated=False)
     io_items, blocks, sa = _io_inputs(base, documents, answers, t)
     if not io_items and not sa: raise ValueError("upload at least one board document or answer at least one question")
-    ratings = {str(k): int(v) for k, v in (ratings or {}).items() if str(k) in DIMS and int(v) in (1, 3, 5)}
+    ratings = {str(k): int(v) for k, v in (ratings or {}).items() if str(k) in DIMS and int(v) in (1, 2, 3, 4, 5)}
     comp = next(s for s in base["subjects"] if s["role"] == "company"); short = short_name(comp["name"])
     hist = sorted(base.get("history", []), key=lambda h: h.get("period", ""))
     prior = hist[-1].get("actions", []) if hist else []

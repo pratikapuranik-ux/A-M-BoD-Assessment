@@ -83,11 +83,11 @@ function ExecutiveSummary() {
             {!ioO.grade || !O.overall.grade ? ' An overall grade needs at least three dimensions with enough evidence to be reported.' : ''}
           </>
         ) : (
-          typo(view.overall_line)
+          <Codes text={view.overall_line} />
         )}
       </p>
       <Eb>What drives the rating</Eb>
-      <p className="mb-3">{typo(io ? view.io?.drives : view.drives)}</p>
+      <p className="mb-3"><Codes text={io ? view.io?.drives : view.drives} /></p>
       {io && view.io ? (
         <>
           <Eb>Inside view against the public record</Eb>
@@ -136,17 +136,17 @@ function ExecutiveSummary() {
               <td className={td}>
                 <b>{typo(r[0])}</b>
               </td>
-              <td className={td}>{typo(r[1])}</td>
-              <td className={td}>{typo(r[2])}</td>
+              <td className={td}><Codes text={r[1]} /></td>
+              <td className={td}><Codes text={r[2]} /></td>
             </tr>
           ))}
         </tbody>
       </DTable>
       <Eb>Position relative to peers</Eb>
-      <p className="mb-3">{typo(view.position)}</p>
+      <p className="mb-3"><Codes text={view.position} /></p>
       {(view.position_lines || []).map((x, k) => (
         <p key={k} className="mb-1 pl-3">
-          {typo(x)}
+          <Codes text={x} />
         </p>
       ))}
       {io ? <Muted>Peers are compared on outside-in grades only; they are never re-scored with inside-out information.</Muted> : null}
@@ -550,7 +550,7 @@ function Additional() {
       <H2>Only where it would change a grade or an action</H2>
       {(view.addl || []).map((x, k) => (
         <p key={k} className="mb-1 pl-3">
-          {typo(x)}
+          <Codes text={x} />
         </p>
       ))}
     </Section>

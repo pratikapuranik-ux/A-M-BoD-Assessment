@@ -1,4 +1,4 @@
-"""Control-flow tests for the LangGraph research agents with a scripted fake Anthropic client (no network, no API key).
+﻿"""Control-flow tests for the LangGraph research agents with a scripted fake Anthropic client (no network, no API key).
 
 Run from backend/:  python -m pytest tests/test_research.py
 """
@@ -643,3 +643,46 @@ def test_a_model_that_cannot_be_used_stops_the_run_before_any_research(monkeypat
     monkeypatch.setattr(G, "_research_once", lambda *a, **k: pytest.fail("research must not start"))
     with pytest.raises(C.ResearchError, match="not available"):
         G.run_outside_in("Chevron", "CVX", PEER_ARGS, "2026-Q4", "director_request", None)
+
+
+# ---------------------------------------------------------------- context pruning
+
+def _fetch_block(url, text, tid):
+    return {"type": "web_fetch_tool_result", "tool_use_id": tid,
+            "content": {"type": "web_fetch_result", "url": url, "retrieved_at": "2026-10-29",
+                        "content": {"type": "document", "title": "T " + url, "source": {"type": "text", "media_type": "text/plain", "data": text}}}}
+
+
+def test_old_fetched_pages_are_stubbed_and_recent_ones_kept():
+    conv = V.Conv("research on BP", [], "go")
+    for n in range(6):
+        conv.messages.append({"role": "assistant", "content": [{"type": "text", "text": f"turn {n}"}, _fetch_block(f"https://x/{n}", "BIG" * 1000, f"s{n}")]})
+        conv.messages.append({"role": "user", "content": "next"})
+    assert conv.prune(keep=2) == 4
+    pages = [m["content"][1]["content"]["content"] for m in conv.messages if m["role"] == "assistant"]
+    assert all(p["source"]["data"].startswith(V.STUB) and "https://x/" in p["source"]["data"] and p["title"].startswith("T ") for p in pages[:4])
+    assert all(p["source"]["data"] == "BIG" * 1000 for p in pages[4:])
+    assert conv.messages[1]["content"][1]["tool_use_id"] == "s0" and conv.prune(keep=2) == 0  # structure kept; a second pass changes nothing
+
+
+def test_pages_are_counted_across_turns_so_one_big_turn_is_pruned_too():
+    conv = V.Conv("research on Chevron", [], "go")
+    conv.messages.append({"role": "assistant", "content": [_fetch_block(f"https://x/{n}", "BIG" * 1000, f"s{n}") for n in range(30)]})
+    assert conv.prune(keep=8) == 22
+    data = [b["content"]["content"]["source"]["data"] for b in conv.messages[1]["content"]]
+    assert all(d.startswith(V.STUB) for d in data[:22]) and all(d == "BIG" * 1000 for d in data[22:])
+
+
+def test_a_conversation_over_the_ceiling_is_pruned_before_the_next_request(monkeypatch):
+    monkeypatch.setattr(cfg, "PRUNE_AT", 1000); monkeypatch.setattr(cfg, "KEEP_RECENT", 1)
+    sent = []
+    def model(kw):
+        sent.append(copy.deepcopy(kw["messages"]))
+        return NS(content=[{"type": "text", "text": "ok"}, _fetch_block(f"https://x/{len(sent)}", "BIG" * 100, f"s{len(sent)}")], stop_reason="end_turn",
+                  stop_details=None, usage=NS(input_tokens=5000, output_tokens=1, cache_read_input_tokens=0, cache_creation_input_tokens=0))
+    monkeypatch.setattr(C, "get_client", lambda: FakeClient(model))
+    conv = V.Conv("research on BP", [], "go")
+    for _ in range(3):
+        conv.turn(); conv.say("more")
+    stubbed = [b["content"]["content"]["source"]["data"].startswith(V.STUB) for m in sent[-1] if m["role"] == "assistant" for b in m["content"] if b["type"] == "web_fetch_tool_result"]
+    assert stubbed == [True, False] and conv.ctx == 5000

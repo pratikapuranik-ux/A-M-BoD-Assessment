@@ -46,6 +46,8 @@ RED = "8B2F0B"  # F and score 1: the dark brick red of the reference report
 GRADE_FILL = {"A": TEAL, "B": BLUE, "C": SLATE, "D": AMBER, "F": RED, None: "969696"}
 SCORE_FILL = {1: RED, 2: AMBER, 3: SLATE, 4: BLUE, 5: TEAL}
 DRAFT = "DRAFT ONLY — Requires review and approval by a qualified Alvarez and Marsal professional before use."
+# The director's own rating per dimension, on the same 1-5 scale as the indicator scores (index + 1 is the value)
+RATING_LABELS = ("1  Day 2", "2  Mostly Day 2", "3  Mixed", "4  Mostly Day 1", "5  Day 1")
 
 
 def stage_of(run): return run.get("run", {}).get("stage", "outside_in")
@@ -633,11 +635,11 @@ def build_questionnaire(company: str, out_path: str, simulate: bool = False) -> 
         for _ in range(4 if not sim else 0): cell.add_paragraph()
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
         if n % 2 == 0:
-            rt = doc.add_table(rows=1, cols=4); _light_borders(rt)
-            rt.rows[0].cells[0].text = f"Your own rating for Dimension {d} (optional): mark one"
+            rt = doc.add_table(rows=1, cols=len(RATING_LABELS) + 1); _light_borders(rt)
+            rt.rows[0].cells[0].text = f"Dimension {d} rating (optional): mark one"
             _qshade(rt.rows[0].cells[0], TINT)
-            pick = rnd.choice([1, 2, 2, 3])  # one rating per dimension (legacy drew once per cell)
-            for k, lab in enumerate(("1  Day 2", "3  Mixed", "5  Day 1"), 1):
+            pick = rnd.choice([2, 3, 3, 4])  # one rating per dimension (legacy drew once per cell)
+            for k, lab in enumerate(RATING_LABELS, 1):
                 rt.rows[0].cells[k].text = ("☒ " if sim and k == pick else "☐ ") + lab
             doc.add_paragraph()
     _qp(doc, "Thank you. Return this file to the A&M team. " + DRAFT, 8, italic=True, color=GREY)
@@ -648,7 +650,7 @@ def build_questionnaire(company: str, out_path: str, simulate: bool = False) -> 
 
 
 def parse_questionnaire(path: str, run_date: str = "") -> dict:
-    """Read a returned questionnaire (.docx). -> {answers: [str], ratings: {dim: 1|3|5}, simulated: bool,
+    """Read a returned questionnaire (.docx). -> {answers: [str], ratings: {dim: 1-5}, simulated: bool,
     evidence: {SA01: {...}}} where evidence items are ready to merge into run["evidence"]."""
     doc = Document(path); qs = FW["questionnaire"]; answers: list[str] = []; ratings: dict = {}; qi = 0
     for t in doc.tables[1:]:  # skip the meta table
@@ -656,10 +658,10 @@ def parse_questionnaire(path: str, run_date: str = "") -> dict:
             txt = "\n".join(p_.text for p_ in t.rows[0].cells[0].paragraphs).strip()
             if txt.startswith("Your answer:"): txt = ""
             answers.append(txt); qi += 1
-        elif len(t.columns) == 4 and qi:
+        elif len(t.columns) == len(RATING_LABELS) + 1 and qi:
             d = qs[qi - 1][0]
-            for k, lab in ((1, 1), (2, 3), (3, 5)):
-                if "☒" in t.rows[0].cells[k].text: ratings[d] = lab
+            for k in range(1, len(RATING_LABELS) + 1):
+                if "☒" in t.rows[0].cells[k].text: ratings[d] = k
     sim = any("[SIMULATED]" in a for a in answers); evidence = {}
     for n, ((d, dname, q_), a) in enumerate(zip(qs, answers), 1):
         if not a: continue

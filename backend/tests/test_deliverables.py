@@ -84,7 +84,7 @@ def test_questionnaire_roundtrip(tmp_path):
     sim = D.build_questionnaire("Acme Corp", str(tmp_path / "qs.docx"), simulate=True)
     res = D.parse_questionnaire(sim, run_date="2026-10-23")
     assert res["simulated"] and len(res["evidence"]) == 12 and res["evidence"]["SA01"]["source_origin"] == "self_assessment"
-    assert set(res["ratings"]) == {"1", "2", "3", "4", "5", "6"} and set(res["ratings"].values()) <= {1, 3, 5}
+    assert set(res["ratings"]) == {"1", "2", "3", "4", "5", "6"} and set(res["ratings"].values()) <= {1, 2, 3, 4, 5}
 
 
 def test_file_names():

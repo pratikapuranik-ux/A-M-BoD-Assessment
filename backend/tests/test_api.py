@@ -97,7 +97,9 @@ def test_import_end_to_end(client):
     assert v["meta"]["company"] == "Testco Corporation" and v["meta"]["short"] == "Testco" and v["io"] is None and v["prior"]["period"] == "2026-Q3"
     assert set(v["files"]) == {"oi_docx", "oi_html", "prior_docx", "quest"}
     for k, url in v["files"].items():
-        r = client.get(url); assert r.status_code == 200 and len(r.content) > 1000 and "attachment" in r.headers.get("content-disposition", ""), k
+        # the dashboards render in an iframe, so they are served inline; the Word files download
+        want = "inline" if k.endswith("_html") else "attachment"
+        r = client.get(url); assert r.status_code == 200 and len(r.content) > 1000 and want in r.headers.get("content-disposition", ""), k
     assert client.get("/api/companies/testco/view?mode=internal_dry_run").json()["meta"]["mode"] == "internal_dry_run"
     assert client.get("/api/companies/testco/view?mode=bogus").status_code == 400 and client.get("/api/companies/testco/files/nope").status_code == 404
     assert [(p["period"], p["stage"]) for p in v["priors"]] == [("2026-Q3", "outside_in")]
@@ -350,3 +352,12 @@ def test_deleted_company_has_no_orphans(client):
     with session_scope() as s:
         for t in (models.StageRun, models.SurveyInvite, models.SurveyResponse, models.SurveyHash, models.PriorRun, models.Deliverable):
             assert s.scalar(select(func.count()).select_from(t).where(t.company_id == cid)) == 0, t.__tablename__
+
+
+def test_the_dimension_rating_takes_the_whole_five_point_scale(client):
+    """Day 2 (1) to Day 1 (5), with the two intermediate points; anything off the scale is dropped."""
+    from app.api import survey as sv
+    _, r = sv.clean_response({"answers": {}, "ratings": {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5}}, paper=True)
+    assert r == {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5}
+    _, r = sv.clean_response({"answers": {}, "ratings": {"1": 0, "2": 6, "3": True, "4": 2.0, "5": 4}}, paper=True)
+    assert r == {"5": 4}, "out of range, bool and float are ignored"

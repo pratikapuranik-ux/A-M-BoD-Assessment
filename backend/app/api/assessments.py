@@ -53,6 +53,10 @@ def file(cid: str, key: str):
     if key not in FILE_KEYS: raise ApiError(404, f"unknown file key '{key}' (one of {list(FILE_KEYS)})")
     p = repo.file_path(cid, key)
     if not p: raise ApiError(404, f"{key} has not been built for '{cid}'")
+    # the dashboards are shown in an iframe, so they are served inline; attachment would make the browser download them instead.
+    # no-cache so a browser that cached an earlier attachment response revalidates instead of downloading the file again.
+    if p.suffix == ".html":
+        return FileResponse(str(p), headers={"Content-Disposition": f'inline; filename="{p.name}"', "Cache-Control": "no-cache"})
     return FileResponse(str(p), filename=p.name)
 
 
