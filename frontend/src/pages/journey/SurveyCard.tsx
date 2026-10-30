@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, ButtonLink, Card, Chip, DlButton, Meter, toast } from '../../components/ui'
-import { useInvite, useSurvey, useUninvite } from '../../api/queries'
+import { useInvite, useRemoveResponse, useSurvey, useUninvite } from '../../api/queries'
 import { EMAIL_RE } from '../../lib/journey'
 import { numWord } from '../../lib/constants'
 import { parseQuestionnaire } from '../../lib/questionnaire'
@@ -28,7 +28,7 @@ function mailtoFor(x: { email: string; link: string }, company: string, period: 
 
 export default function SurveyCard({ cid, j, apiOn }: { cid: string; j: JourneyView; apiOn: boolean }) {
   const { v, n } = useSurveyNow(cid, true)
-  const invite = useInvite(cid), uninvite = useUninvite(cid)
+  const invite = useInvite(cid), uninvite = useUninvite(cid), removeResponse = useRemoveResponse(cid)
   const qFiles = useInsideOut((s) => s.qFiles)
   const [emails, setEmails] = useState('')
   const [msg, setMsg] = useState('')
@@ -65,9 +65,23 @@ export default function SurveyCard({ cid, j, apiOn }: { cid: string; j: JourneyV
       <p className="muted">Invite directors to answer {numWord(j.q.length)} short questions about how the board works. Each person receives a personal link. Answers are pooled and never attributed to anyone.</p>
       {v.local && <p className="muted">These links open only on this computer. To invite directors on other devices, host the app and set BOARD_PUBLIC_URL.</p>}
       <div className="svmeter">
-        <div style={{ flex: '0 0 min(220px, 40%)' }}><Meter pct={(n / (v.min || 1)) * 100} /></div>
-        <span><b>{n} of {v.min}</b> responses{need ? ` · ${need} more needed before the inside-out view can be prepared` : ' · enough to prepare the inside-out view'}</span>
+        <div style={{ flex: '0 0 min(220px, 40%)' }}><Meter pct={Math.min(100, (n / (v.min || 1)) * 100)} /></div>
+        <span>{need ? <><b>{n} of {v.min}</b> responses · {need} more needed before the inside-out view can be prepared</> : <><b>{n} {n === 1 ? 'response' : 'responses'}</b> · enough to prepare the inside-out view (at least {v.min} needed)</>}</span>
       </div>
+      {(v.items?.length ?? 0) > 0 && (
+        <>
+          <h4 className="svh">Responses received</h4>
+          <div className="scroll"><table className="tbl svt"><tbody>
+            {v.items!.map((x) => (
+              <tr key={x.id}>
+                <td>{x.name}</td>
+                <td className="ra"><Button variant="sec" size="sm" aria-label={`Delete ${x.name}`} disabled={removeResponse.isPending}
+                  onClick={() => { if (window.confirm(`Delete ${x.name}? Its answers are removed and no longer count toward the inside-out view.`)) removeResponse.mutate(x.id, { onError: (e) => toast((e as Error).message) }) }}>Delete</Button></td>
+              </tr>))}
+          </tbody></table></div>
+          <p className="ks">Names are placeholders: responses are anonymous and cannot be traced to a director.</p>
+        </>
+      )}
       <label htmlFor="svemails">Invite by email</label>
       <div className="svadd">
         <input type="text" id="svemails" value={emails} onChange={(e) => setEmails(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); doInvite() } }}

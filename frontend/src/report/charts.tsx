@@ -99,8 +99,11 @@ export function IndicatorHeatmap({ scores }: { scores: Record<string, Score> }) 
                     className="cursor-pointer outline-none [&:focus-visible>rect]:stroke-[#002B49] [&:focus-visible>rect]:stroke-[3px] hover:opacity-90"
                   >
                     <rect x={x(k) ?? 0} y={(y.bandwidth() - cell) / 2} width={cell} height={cell} rx={6} fill={scoreColor(s)} stroke="transparent" />
-                    <text x={(x(k) ?? 0) + cell / 2} y={y.bandwidth() / 2} textAnchor="middle" dominantBaseline="middle" className="fill-white text-[14px] font-bold" pointerEvents="none">
+                    <text x={(x(k) ?? 0) + cell / 2} y={(y.bandwidth() - cell) / 2 + 13} textAnchor="middle" dominantBaseline="middle" className="fill-white text-[10px] font-semibold opacity-90" pointerEvents="none">
                       {i}
+                    </text>
+                    <text x={(x(k) ?? 0) + cell / 2} y={(y.bandwidth() - cell) / 2 + cell - 15} textAnchor="middle" dominantBaseline="middle" className="fill-white text-[20px] font-bold" pointerEvents="none">
+                      {s == null ? '–' : s}
                     </text>
                   </g>
                 </Tip>

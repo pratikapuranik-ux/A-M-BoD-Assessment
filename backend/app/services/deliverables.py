@@ -264,6 +264,24 @@ def two_lines(text):
     return " ".join(re.split(r"(?<=[.!?])\s+", (text or "").strip())[:2]) if text else ""
 
 
+_DOC_KINDS = (("proxy statements", r"proxy|def 14a"), ("annual reports and filings", r"annual report|10-k|10-q|form |filing|accounts"),
+              ("earnings calls and results", r"earnings|conference call|transcript|results|cash flow|capex"), ("credit ratings", r"rating|moody|s&p|fitch"),
+              ("governance policies and charters", r"charter|guideline|policy|code of|bylaw"))
+
+
+def doc_summary(names: list[str]) -> str:
+    """Two sentences on a set of documents: how many, of what kinds, and over which years. Counts only; nothing is composed from the text."""
+    n = len(names); kinds: dict[str, int] = {}
+    for x in names:
+        k = next((label for label, pat in _DOC_KINDS if re.search(pat, x.lower())), "news, analyst and other sources")
+        kinds[k] = kinds.get(k, 0) + 1
+    top = sorted(kinds.items(), key=lambda kv: -kv[1])
+    mix = ", ".join(f"{c} {k}" for k, c in top[:3]) + (f" and {sum(c for _, c in top[3:])} other" if len(top) > 3 else "")
+    years = sorted({int(y) for x in names for y in re.findall(r"\b(20\d\d)\b", x)})
+    span = f" Dated {years[0]} to {years[-1]}." if len(years) > 1 else f" Dated {years[0]}." if years else ""
+    return f"{n} document{'s' if n != 1 else ''}, mainly {mix}.{span}"
+
+
 def hist_grade(h, d=None):
     """A history entry's dimension (or overall) grade: board_io for an inside-out quarter, as the dashboard does."""
     x = h["dimensions"][d] if d else h["overall"]
@@ -348,30 +366,42 @@ def build_docx(run: dict, out_path: str) -> str:
     chg = bool(hist) or io  # the Change column and the trend wording only appear when there is something to compare with
     section(doc, "Scorecard and trend" if chg else "Scorecard", "Grades by dimension" + (f", {len(hist)} prior quarter(s)" if hist else ""))
     hcols = [h["period"] for h in hist]
-    hdr = ["Dimension"] + [f"{h['period']}{' (sim)' if h['simulated'] else ''}" for h in hist] + [period] + (["Change"] if chg else []) + ["Evidence in this run"]
-    wfix = 3.6 + 1.1 * len(hist) + 1.3 + (1.2 if chg else 0); widths = [3.6] + [1.1] * len(hist) + [1.3] + ([1.2] if chg else []) + [17.4 - wfix]
+    cols = ["board", "board_io"] if io else lenses[-1:]  # inside-out: past quarters, then this quarter's outside-in grade, then its inside-out grade
+    hdr = ["Dimension"] + [f"{h['period']}{' (sim)' if h['simulated'] else ''}" for h in hist] + ([f"{period} outside-in", f"{period} inside-out"] if io else [period]) + ([("Change vs outside-in" if io else "Change")] if chg else []) + ["Evidence in this run"]
+    wfix = 3.6 + 1.1 * len(hist) + 1.3 * len(cols) + (1.2 if chg else 0); widths = [3.6] + [1.1] * len(hist) + [1.3] * len(cols) + ([1.2] if chg else []) + [17.4 - wfix]
     tt = table(doc, hdr, widths)
     for d in DIMS:
         row = new_row(tt); set_cell(row[0], f"{d}. {FW['dimensions'][d]}", bold=True, color=NAVY); k = 1
         for h in hist:
             grade_cell(row[k], hist_grade(h, d), 8.5); k += 1
-        cur = C["dimensions"][d][lenses[-1]]["grade"]; grade_cell(row[k], cur, 9.5); k += 1  # one current grade; the per-lens pair is in the appendix
-        dl = grade_delta(cur, hist_grade(hist[-1], d) if hist else None)  # an inside-out prior counts at its board_io grade
-        if dl is None and io: dl = grade_delta(cur, C["dimensions"][d]["board"]["grade"])  # no prior quarter: movement from the outside-in grade
+        for l_ in cols[:-1]: grade_cell(row[k], C["dimensions"][d][l_]["grade"], 8.5); k += 1
+        cur = C["dimensions"][d][lenses[-1]]["grade"]; grade_cell(row[k], cur, 9.5); k += 1
+        dl = grade_delta(cur, C["dimensions"][d]["board"]["grade"]) if io else grade_delta(cur, hist_grade(hist[-1], d) if hist else None)  # inside-out: vs this quarter's outside-in; an inside-out prior counts at its board_io grade
         if chg: set_cell(row[k], mv(dl), size=8, align="center", color=mv_color(dl)); k += 1
         set_cell(row[k], (run.get("scorecard_headline") or {}).get(d, ""), size=7.5)
     row = new_row(tt); set_cell(row[0], "Overall", bold=True, color="FFFFFF"); shade(row[0], NAVY); k = 1
     for h in hist: grade_cell(row[k], hist_grade(h), 8.5); k += 1
+    for l_ in cols[:-1]: grade_cell(row[k], C["overall"][l_].get("grade"), 8.5); k += 1
     grade_cell(row[k], C["overall"][lenses[-1]].get("grade"), 9.5); k += 1
     if chg:
-        odl = grade_delta(C["overall"][lenses[-1]].get("grade"), hist_grade(hist[-1]) if hist else None)
-        if odl is None and io: odl = grade_delta(C["overall"][lenses[-1]].get("grade"), C["overall"]["board"].get("grade"))
+        odl = grade_delta(C["overall"][lenses[-1]].get("grade"), C["overall"]["board"].get("grade")) if io else grade_delta(C["overall"][lenses[-1]].get("grade"), hist_grade(hist[-1]) if hist else None)
         set_cell(row[k], mv(odl), size=8, align="center", color=mv_color(odl)); k += 1
     set_cell(row[k], "Rounded average of dimension letters (midpoints round down)." + (" * provisional" if C["overall"][lenses[-1]].get("provisional") else ""), size=7, italic=True)
     cv = C["coverage"][lenses[-1]]
     split = ", ".join(f"{n} {c}" for c, n in (cv.get("not_assessable") or {}).items() if n)
     cov = f"Coverage: {cv['assessed']} of {cv['of']} indicators assessed" + (f" (not assessable: {split})" if split else "") + ". "
-    para(doc, cov + ("Grades rest on outside-in information; where an indicator is not assessable or scored on thin public evidence, board documents can arrive at a more accurate grade." if not io else "Grades use the board documents and self-assessment supplied. Change is the movement in steps from the prior quarter, or from the outside-in grade where there is none; both lens grades are in the appendix."), size=7.5, italic=True, color=GREY, before=2)
+    para(doc, cov + ("Grades rest on outside-in information; where an indicator is not assessable or scored on thin public evidence, board documents can arrive at a more accurate grade." if not io else "Grades use the board documents and self-assessment supplied. Change is the movement in steps from this quarter's outside-in grade to its inside-out grade; earlier quarters are shown for reference."), size=7.5, italic=True, color=GREY, before=2)
+    if hist:  # trend analysis in words, from the grades in the table above
+        prev = hist[-1]; cur_o = C["overall"][lenses[-1]].get("grade"); pv_o = hist_grade(prev); tag = " (simulated)" if prev["simulated"] else ""
+        dls = {d: grade_delta(C["dimensions"][d][lenses[-1]]["grade"], hist_grade(prev, d)) for d in DIMS}
+        up = [d for d, x in dls.items() if (x or 0) > 0]; dn = [d for d, x in dls.items() if (x or 0) < 0]; same = [d for d, x in dls.items() if x == 0]
+        name = lambda ds: ", ".join(FW["dimensions"][d] for d in ds)
+        odl = grade_delta(cur_o, pv_o)
+        verb = "held at" if odl == 0 else "improved to" if (odl or 0) > 0 else "fell to"
+        kicker(doc, "Trend analysis")
+        para(doc, f"Against {prev['period']}{tag}, the overall grade {verb} {cur_o or 'n/a'}" + (f" (from {pv_o})" if odl else f" ({pv_o} in {prev['period']})") + f". Of the six dimensions, {len(up)} improved, {len(dn)} declined and {len(same)} held."
+                  + (f" Within {period}, the grade moved from {C['overall']['board'].get('grade') or 'n/a'} on public information (outside-in) to {cur_o or 'n/a'} once the board documents and self-assessment were added (inside-out)." if io else "")
+                  + (f" Improved: {name(up)}." if up else "") + (f" Declined: {name(dn)}." if dn else "") + (" The prior quarter is simulated and is shown for illustration only." if prev["simulated"] else ""), size=8.5)
     # what changed table
     changes = []
     if hist:
@@ -465,31 +495,6 @@ def build_docx(run: dict, out_path: str) -> str:
         for b in ain:
             p = doc.add_paragraph(); rich(p, "• " + b, 8.5); p.paragraph_format.space_after = Pt(1)
 
-    # ================= COVERAGE AND LIMITATIONS =================
-    section(doc, "Coverage and limitations", "What this assessment could and could not see")
-    cvl = C["coverage"][lenses[-1]]; nac = cvl.get("not_assessable") or {}; cells = {i: (comp["indicators"].get(i) or {}).get(lenses[-1]) or {} for i in IND_IDS}
-    confs = [c.get("confidence") for c in cells.values() if c.get("score") is not None]
-    para(doc, f"{cvl['assessed']} of {cvl['of']} indicators assessed. Not assessable: " + " · ".join(f"{nac.get(k, 0)} {k}" for k in ("disclosure-limited", "retrieval-limited", "rule-limited")) + (f" · {nac['unspecified']} unspecified" if nac.get("unspecified") else "") + ".", size=8.5)
-    para(doc, "Confidence of the assessed indicators: " + " · ".join(f"{sum(1 for c in confs if c == lv)} {lv}" for lv in ("High", "Medium", "Low")) + ".", size=8.5)
-    nas = [f"{i} {IND_NAME[i]} ({c.get('na_cause') or 'cause not recorded'})" for i, c in cells.items() if c.get("score") is None]
-    if nas: para(doc, "Not assessable, with cause: " + "; ".join(nas) + ".", size=8, after=3)
-    cited = {x for c in comp["indicators"].values() for l in lenses for x in ((c.get(l) or {}).get("evidence") or [])}
-    docs_ = {}  # the company's distinct cited documents, grouped by origin (peer sources are in Sources consulted); self-assessment items are excluded
-    for k, e in run["evidence"].items():
-        if k in cited and not is_sa(e) and e.get("document"): docs_.setdefault("Board documents (inside-out)" if e.get("evidence_class") == "inside_out" or e.get("source_origin") == "inside_out" else "Public record", set()).add(e["document"])
-    kicker(doc, "Documents available")
-    sup = [d["name"] for d in (run.get("run") or {}).get("documents_provided") or [] if d.get("name")]
-    if sup:
-        para(doc, f"Supplied by the user: {len(sup)} document(s)", size=8, bold=True, color=NAVY, after=1, keep=True)
-        for x in sup: para(doc, "• " + x, size=7.5, after=0)
-    for g, ds in sorted(docs_.items(), reverse=True):
-        para(doc, f"{g}: {len(ds)} document(s)", size=8, bold=True, color=NAVY, after=1, keep=True)
-        for x in sorted(ds): para(doc, "• " + x, size=7.5, after=0)
-    kicker(doc, "Documents unavailable"); un = (run.get("coverage") or {}).get("documents_unavailable") or []
-    for x in un: para(doc, "• " + x, size=7.5, after=0)
-    if not un: para(doc, "None recorded.", size=8, italic=True, color=GREY)
-    if (run.get("coverage") or {}).get("notes"): kicker(doc, "Notes"); para(doc, run["coverage"]["notes"], size=8)
-
     doc.add_page_break()
 
     # ================= APPENDICES =================
@@ -511,6 +516,28 @@ def build_docx(run: dict, out_path: str) -> str:
             for t_ in ts:
                 p = doc.add_paragraph(); rich(p, t_.get("theme", ""), 8.5, bold=True, color=NAVY); p.paragraph_format.space_after = Pt(0); p.paragraph_format.keep_with_next = True
                 para(doc, t_.get("summary", ""), size=8, after=3)
+    # coverage and limitations: an appendix, not part of the body
+    app_title("Coverage and limitations")
+    para(doc, "What this assessment could and could not see.", size=8.5, italic=True, color=GREY)
+    cvl = C["coverage"][lenses[-1]]; nac = cvl.get("not_assessable") or {}; cells = {i: (comp["indicators"].get(i) or {}).get(lenses[-1]) or {} for i in IND_IDS}
+    confs = [c.get("confidence") for c in cells.values() if c.get("score") is not None]
+    para(doc, f"{cvl['assessed']} of {cvl['of']} indicators assessed. Not assessable: " + " · ".join(f"{nac.get(k, 0)} {k}" for k in ("disclosure-limited", "retrieval-limited", "rule-limited")) + (f" · {nac['unspecified']} unspecified" if nac.get("unspecified") else "") + ".", size=8.5)
+    para(doc, "Confidence of the assessed indicators: " + " · ".join(f"{sum(1 for c in confs if c == lv)} {lv}" for lv in ("High", "Medium", "Low")) + ".", size=8.5)
+    nas = [f"{i} {IND_NAME[i]} ({c.get('na_cause') or 'cause not recorded'})" for i, c in cells.items() if c.get("score") is None]
+    if nas: para(doc, "Not assessable, with cause: " + "; ".join(nas) + ".", size=8, after=3)
+    cited = {x for c in comp["indicators"].values() for l in lenses for x in ((c.get(l) or {}).get("evidence") or [])}
+    docs_ = {}  # the company's distinct cited documents, grouped by origin (peer sources are in Sources consulted); self-assessment items are excluded
+    for k, e in run["evidence"].items():
+        if k in cited and not is_sa(e) and e.get("document"): docs_.setdefault("Board documents (inside-out)" if e.get("evidence_class") == "inside_out" or e.get("source_origin") == "inside_out" else "Public record", set()).add(e["document"])
+    kicker(doc, "Documents available")
+    sup = [d["name"] for d in (run.get("run") or {}).get("documents_provided") or [] if d.get("name")]
+    for g, ds in (([("Supplied by the user", sup)] if sup else []) + sorted(docs_.items(), reverse=True)):
+        p_ = para(doc, "", after=2); run_fmt(p_.add_run(g + ": "), 8.5, bold=True, color=NAVY); run_fmt(p_.add_run(doc_summary(sorted(ds))), 8.5)
+    para(doc, "Every document is listed, with its link, in the Sources consulted appendix.", size=7.5, italic=True, color=GREY)
+    kicker(doc, "Documents unavailable"); un = (run.get("coverage") or {}).get("documents_unavailable") or []
+    for x in un: para(doc, "• " + x, size=7.5, after=0)
+    if not un: para(doc, "None recorded.", size=8, italic=True, color=GREY)
+    if (run.get("coverage") or {}).get("notes"): kicker(doc, "Notes"); para(doc, run["coverage"]["notes"], size=8)
     app_title("Detailed indicator view")
     for d in DIMS:
         kicker(doc, f"{d}. {FW['dimensions'][d]}  ·  " + "  ·  ".join(f"{labels[l]} {C['dimensions'][d][l]['grade'] or 'n/a'}" for l in lenses))
@@ -530,24 +557,6 @@ def build_docx(run: dict, out_path: str) -> str:
             set_cell(row[k + 1], " / ".join((ind.get(l) or {}).get("confidence") or "–" for l in lenses), size=7.5, align="center")
         lim = (comp.get("limitations") or {}).get(d)
         if lim: para(doc, "Where this grade is limited: " + lim, size=7.5, italic=True, color=GREY)
-    # indicator-level comparison: moved here from the body, which keeps to the narrative
-    app_title("Indicator-level comparison")
-    if io:
-        kicker(doc, "Outside-in to post inside-out: indicators that moved")
-        tc = table(doc, ["Indicator", "OI", "IO", "Δ", "Outside-in evidence, then what the board documents added"], [4.6, 1.0, 1.0, 0.9, 9.9])
-        for i in IND_IDS:
-            a = ((comp["indicators"].get(i) or {}).get("board") or {}).get("score"); b = ((comp["indicators"].get(i) or {}).get("board_io") or {}).get("score")
-            if b is None or a == b: continue
-            ind = next(x for x in IND if x["id"] == i); row = new_row(tc); set_cell(row[0], f"{i} {ind['name']}", bold=True, color=NAVY)
-            score_cell(row[1], a, 8); score_cell(row[2], b, 8); set_cell(row[3], ("+" if a is None else ("+" if b > a else "")) + (str(b) if a is None else str(b - a)), align="center", bold=True, color=TEAL if a is None or b > a else "A6192E")
-            p = row[4].paragraphs[0]; text_with_links(p, (run.get("io_change_notes") or {}).get(i) or first_sentence(((comp["indicators"][i].get("board_io") or {}).get("rationale"))), size=7.5)
-    kicker(doc, "Evidence behind each indicator")
-    hdr = ["Indicator"] + ([labels[l] for l in lenses] if io else ["Score"]) + ["Summary of the evidence"]; widths = [4.4] + [1.2] * len(lenses) + [17.4 - 4.4 - 1.2 * len(lenses)]
-    te = table(doc, hdr, widths); summ = run.get("indicator_summary") or {}
-    for i in IND:
-        ind = comp["indicators"].get(i["id"], {}); row = new_row(te); set_cell(row[0], f"{i['id']} {i['name']}", bold=True, color=NAVY); k = 1
-        for l in lenses: score_cell(row[k], (ind.get(l) or {}).get("score"), 8); k += 1
-        p = row[k].paragraphs[0]; text_with_links(p, summ.get(i["id"]) or first_sentence((ind.get(lenses[-1]) or {}).get("rationale")) or "Not assessable.", size=7.5)
     # peer one-pagers
     appn += 1
     for n, p_ in enumerate(peers):

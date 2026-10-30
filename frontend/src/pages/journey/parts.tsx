@@ -172,7 +172,7 @@ export function PriorCard({ j, fresh }: { j?: JourneyView; fresh: boolean }) {
       ) : (
         <>
           <p className="muted">Choose up to two earlier assessments to compare with this quarter.</p>
-          <div className="plist pempty"><Icon name="clip" size={18} /><span>No earlier assessments {fresh ? 'yet' : `of ${co} yet`}. Each completed assessment is listed here, so in a later quarter you can pick up to two to show the trend.</span></div>
+          <div className="plist pempty"><Icon name="clip" size={18} /><span>{fresh ? 'No earlier assessments to show. Enter a company that is already on file (same name or ticker) and its earlier assessments are listed here, so you can pick up to two to show the trend.' : `No earlier assessments of ${co} yet. Each completed assessment is listed here, so in a later quarter you can pick up to two to show the trend.`}</span></div>
           <p className="ks">0 of 2 selected</p>
         </>
       )}

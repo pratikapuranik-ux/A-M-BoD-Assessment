@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import type { View } from '../api/viewTypes';
 import { useReportUi, type Stage } from '../store/reportUi';
 import { CoverageAccordion, DimensionDetail, MethodAppendix, ThemesAndGuardrails, PeersAppendix, SourcesAppendix } from './AppendixViews';
-import { IndicatorHeatmap } from './charts';
 import { DIMS, DIMN, DRAFT, RUN_CIRC, ReportProvider, firstSentence, typo, useReport } from './context';
 import { ReportDialogs } from './dialogs';
 import { Arrow, BackOnTrackItem, CodeButton, Codes, DTable, DeltaCell, Eb, EvText, GradeCell, GradeChip, GradeTile, H2, IndButton, KV, Muted, PriorActionsTable, ScoreCell, ScoreChip, Section, btnCls, td, th } from './parts';
@@ -145,18 +144,6 @@ function ExecutiveSummary() {
   );
 }
 
-function AtAGlance() {
-  const { now } = useReport();
-  return (
-    <Section id="at-a-glance">
-      <Eb>At a glance</Eb>
-      <H2>Twenty-two indicators</H2>
-      <Muted>Select a square for the rationale and evidence.</Muted>
-      <IndicatorHeatmap scores={now} />
-    </Section>
-  );
-}
-
 function Scorecard() {
   const { view, io, ids, dimOf, model, O, L, history, last, now, ioCell, indName, indLine, dimLabel } = useReport();
   const openDims = useReportUi((s) => s.openDims);
@@ -175,8 +162,18 @@ function Scorecard() {
                 {x.period}
               </th>
             ))}
-            <th className={th}>{io ? 'After inside-out, vs outside-in' : view.meta.period}</th>
-            {last ? <th className={th}>Change</th> : null}
+            {io ? (
+              <>
+                <th className={th}>{view.meta.period} outside-in</th>
+                <th className={th}>{view.meta.period} inside-out</th>
+                <th className={th}>Change vs outside-in</th>
+              </>
+            ) : (
+              <>
+                <th className={th}>{view.meta.period}</th>
+                {last ? <th className={th}>Change</th> : null}
+              </>
+            )}
             <th className={th}>Evidence in this run</th>
           </tr>
         </thead>
@@ -198,18 +195,24 @@ function Scorecard() {
                     <GradeCell key={x.period} grade={x.dims[d]?.grade} />
                   ))}
                   {io ? (
-                    <td className={td}>
-                      <GradeChip grade={model.io.dims[d].grade} /> <Arrow now={model.io.dims[d].grade} prev={O.dims[d].grade} />
-                      {avgMove(O.dims[d].avg, model.io.dims[d].avg)}
-                    </td>
+                    <>
+                      <GradeCell grade={O.dims[d].grade} />
+                      <GradeCell grade={model.io.dims[d].grade} />
+                      <td className={td}>
+                        <Arrow now={model.io.dims[d].grade} prev={O.dims[d].grade} />
+                        {avgMove(O.dims[d].avg, model.io.dims[d].avg)}
+                      </td>
+                    </>
                   ) : (
-                    <GradeCell grade={O.dims[d].grade} />
+                    <>
+                      <GradeCell grade={O.dims[d].grade} />
+                      {last ? (
+                        <td className={td}>
+                          <Arrow now={L.dims[d].grade} prev={last.dims[d]?.grade} />
+                        </td>
+                      ) : null}
+                    </>
                   )}
-                  {last ? (
-                    <td className={td}>
-                      <Arrow now={L.dims[d].grade} prev={last.dims[d]?.grade} />
-                    </td>
-                  ) : null}
                   <td className={td}>
                     <Codes text={view.scorecard?.[k]?.line} />
                   </td>
@@ -227,14 +230,17 @@ function Scorecard() {
                           <ScoreCell key={x.period} score={x.ind[i]} />
                         ))}
                         {io ? (
-                          <td className={`${td} whitespace-nowrap`}>
-                            <ScoreChip score={model.ioSc[i]} />
-                            {scMove(model.oiSc[i], model.ioSc[i])}
-                          </td>
+                          <>
+                            <ScoreCell score={model.oiSc[i]} />
+                            <ScoreCell score={model.ioSc[i]} />
+                            <DeltaCell a={model.oiSc[i]} b={model.ioSc[i]} />
+                          </>
                         ) : (
-                          <ScoreCell score={model.oiSc[i]} />
+                          <>
+                            <ScoreCell score={model.oiSc[i]} />
+                            {last ? <DeltaCell a={last.ind[i]} b={now[i]} /> : null}
+                          </>
                         )}
-                        {last ? <DeltaCell a={last.ind[i]} b={now[i]} /> : null}
                         <td className={td}>{c && !c.carried ? <EvText text={firstSentence(c.rat)} ev={c.ev} /> : <EvText text={indLine(i)} ev={view.ind[i].ev} />}</td>
                       </tr>
                     );
@@ -248,18 +254,24 @@ function Scorecard() {
               <GradeCell key={x.period} grade={x.overall.grade} />
             ))}
             {io ? (
-              <td className={td}>
-                <GradeChip grade={model.io.overall.grade} /> <Arrow now={model.io.overall.grade} prev={O.overall.grade} />
-                {avgMove(O.overall.avg, model.io.overall.avg)}
-              </td>
+              <>
+                <GradeCell grade={O.overall.grade} />
+                <GradeCell grade={model.io.overall.grade} />
+                <td className={td}>
+                  <Arrow now={model.io.overall.grade} prev={O.overall.grade} />
+                  {avgMove(O.overall.avg, model.io.overall.avg)}
+                </td>
+              </>
             ) : (
-              <GradeCell grade={O.overall.grade} />
+              <>
+                <GradeCell grade={O.overall.grade} />
+                {last ? (
+                  <td className={td}>
+                    <Arrow now={L.overall.grade} prev={last.overall.grade} />
+                  </td>
+                ) : null}
+              </>
             )}
-            {last ? (
-              <td className={td}>
-                <Arrow now={L.overall.grade} prev={last.overall.grade} />
-              </td>
-            ) : null}
             <td className={td}>
               <i>Rounded average of dimension letters (midpoints round down).</i>
             </td>
@@ -559,9 +571,7 @@ function ReportBody() {
     <>
       <Cover />
       <ExecutiveSummary />
-      <AtAGlance />
       <Scorecard />
-      <CoverageAccordion />
       <WhatChanged />
       <EvidenceBehind />
       <PeerComparison />
@@ -573,6 +583,7 @@ function ReportBody() {
       <SourcesAppendix />
       <MethodAppendix />
       <ThemesAndGuardrails />
+      <CoverageAccordion />
     </>
   );
 }

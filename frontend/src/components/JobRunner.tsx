@@ -42,7 +42,9 @@ function AddJobWatcher({ job }: { job: AddJob }) {
           if (!id) throw new Error('The company could not be found after the run.')
           await queryClient.invalidateQueries({ queryKey: keys.companies })
           const v = await queryClient.fetchQuery({ queryKey: keys.view(id), queryFn: () => api<View>(`/companies/${enc(id)}/view`), staleTime: 0 })
-          useSession.setState({ companyId: id, oiDone: true, seen3: false, priorSel: [] })
+          // earlier assessments picked on the setup page stay selected if they are on file for this company
+          const onFile = ((v as unknown as { priors?: { period: string }[] }).priors || []).map((p) => p.period)
+          useSession.setState({ companyId: id, oiDone: true, seen3: false, priorSel: useSession.getState().priorSel.filter((p) => onFile.includes(p)) })
           const s = useInsideOut.getState()
           s.resetRun(); s.resetAdd('file'); s.setAddJob(null)
           nav(PATHS.oi)

@@ -56,7 +56,7 @@ PRUNE_AT, KEEP_RECENT = _int_env("BOARD_CONTEXT_PRUNE_AT", 400000, lo=50000), _i
 MIN_FETCHES, MIN_FETCHES_PEER = _int_env("BOARD_MIN_FETCHES", 20), _int_env("BOARD_MIN_FETCHES_PEER", 12)
 REVIEW_ROUNDS = _int_env("BOARD_REVIEW_ROUNDS", 2, lo=0)
 # Rule 12: every outside-in assessment is run this many times on the same rule version and the runs are compared (1 = no test)
-CONSISTENCY_RUNS = _int_env("BOARD_CONSISTENCY_RUNS", 1)  # set 2 for Run A (BOARD_MODEL) plus Run B (BOARD_MODEL_B) and reconciliation
+CONSISTENCY_RUNS = 1  # always one run; the Run A / Run B reconciliation path (graph._run_two) is not used
 MAX_CONTINUATIONS, MAX_JSON_RETRIES, MAX_FIX_ROUNDS, SUBJECT_WORKERS = 8, 2, 3, 6  # company and up to five peers at once
 CACHE = {"type": "ephemeral", "ttl": "1h"}
 PEER_PREFIXES = "XBKLN"

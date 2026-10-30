@@ -61,8 +61,14 @@ class InviteOut(BaseModel):
     link: str
 
 
+class ResponseItemOut(BaseModel):
+    id: int
+    name: str
+
+
 class SurveyStatusOut(BaseModel):
     invites: list[InviteOut]
+    items: list[ResponseItemOut] = []
     responses: int
     count: int
     min: int

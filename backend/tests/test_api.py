@@ -305,7 +305,7 @@ def test_survey_guardrails(client, monkeypatch):
     monkeypatch.setattr(repo, "MAX_INVITES", 3); assert c.post(u + "/invite", json={"emails": ["c@x.org", "d@x.org"]}).status_code == 400
     assert len(c.get(u).json()["invites"]) == 2, "an over-limit batch adds none"; monkeypatch.undo()
     monkeypatch.setenv("BOARD_PUBLIC_URL", "http://127.0.0.1:5173/")
-    st = c.get(u).json(); assert st["invites"][0]["link"].startswith("http://127.0.0.1:5173/?take=") and st["local"] is True
+    st = c.get(u).json(); assert st["invites"][0]["link"].startswith("http://testserver/?take=") and st["local"] is False, "a local public URL is ignored for the request's own address"
     monkeypatch.setenv("BOARD_PUBLIC_URL", "https://board.example.org"); st = c.get(u).json()
     assert st["invites"][0]["link"].startswith("https://board.example.org/?take=") and st["local"] is False
     tok = st["invites"][0]["token"]  # an online response identical to a stored one is refused and leaves the link usable
@@ -321,6 +321,10 @@ def test_survey_guardrails(client, monkeypatch):
     from app.api import survey as sv  # each question shuffled and numbered on its own
     a, _ = sv.combine([{"answers": {"1": "a", "2": ""}, "ratings": {}}, {"answers": {"1": "", "2": "b"}, "ratings": {}}])
     assert a["1"] == "Response 1: a" and a["2"] == "Response 1: b"
+    st = c.get(u).json(); assert [i["name"] for i in st["items"]] == [f"Respondent {k}" for k in range(1, 6)]
+    st = c.delete(u + f"/responses/{st['items'][0]['id']}").json()  # a deleted response drops out; fewer than used is not a differencing risk
+    assert st["count"] == 4 and len(st["items"]) == 4 and st["can_generate"] is True
+    assert c.delete(u + "/responses/999999").status_code == 404
     repo.delete_company(cid)
 
 

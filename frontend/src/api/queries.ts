@@ -126,6 +126,14 @@ export const useUninvite = (id: string) => {
   })
 }
 
+export const useRemoveResponse = (id: string) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (rid: number) => api<SurveyStatus>(`/companies/${enc(id)}/survey/responses/${rid}`, { method: 'DELETE' }),
+    onSuccess: (v) => setSurvey(qc, id, v),
+  })
+}
+
 export interface ActionBody { heading?: string; description?: string; target?: string; measures?: string[] }
 
 /** Edit (n given, with body), add (no n) or delete (n, no body) one board action; the company view is refetched. */

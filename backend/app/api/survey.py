@@ -47,19 +47,21 @@ def can_generate(n: int, used: int | None) -> tuple[bool, str | None]:
     if n == 0: return True, None  # documents only: no respondent can be singled out (the run route requires documents)
     if n < m:
         return False, f"{n} of {m} self-assessment responses received. To keep responses anonymous, the inside-out view is prepared only once at least {m} people have responded."
-    if used is None or n == used or n - used >= m: return True, None
+    if used is None or n <= used or n - used >= m: return True, None  # n < used: responses were deleted, nobody new to single out
     k = m - (n - used)
     return False, f"Wait for {k} more response{'s' if k != 1 else ''} before refreshing the inside-out view, so a single new response cannot be singled out"
 
 
 def _base_url(request: Request) -> str:
     pub = (os.environ.get("BOARD_PUBLIC_URL") or os.environ.get("NEXUS_PUBLIC_URL") or "").strip().rstrip("/")
-    return pub + "/" if pub else str(request.base_url)
+    # a public URL that points at this computer (e.g. an old Vite dev port) is no better than where the app is being served: use the request's own address
+    return pub + "/" if pub and urlsplit(pub).hostname not in LOCAL_HOSTS else str(request.base_url)
 
 
 def status(cid: str, request: Request) -> dict:
     s = repo.load_survey(cid); base = _base_url(request); n = len(s["responses"]); ok, why = can_generate(n, s.get("used"))
     return {"invites": [{"token": i["token"], "email": i["email"], "created": i["created"], "responded": i["responded"], "link": f"{base}?take={i['token']}"} for i in s["invites"]],
+            "items": [{"id": rid, "name": f"Respondent {k}"} for k, rid in enumerate(repo.response_ids(cid), 1)],  # placeholder names, in stored (random) order
             "responses": n, "count": n, "min": min_responses(), "can_generate": ok, "reason": why, "local": urlsplit(base).hostname in LOCAL_HOSTS}
 
 
@@ -113,6 +115,13 @@ async def survey_paper_response(cid: str, request: Request):
     _company(cid); answers, ratings = clean_response(await read_body(request), paper=True)
     try: repo.add_response(cid, answers, ratings)
     except repo.DuplicateResponse: raise ApiError(409, "this questionnaire has already been added")
+    return status(cid, request)
+
+
+@router.delete("/api/companies/{cid}/survey/responses/{rid}", response_model=SurveyStatusOut)
+def survey_delete_response(cid: str, rid: int, request: Request):
+    _company(cid)
+    if not repo.remove_response(cid, rid): raise ApiError(404, "no response with that id")
     return status(cid, request)
 
 
