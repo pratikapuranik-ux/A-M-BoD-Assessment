@@ -28,3 +28,5 @@ New-Item*
 *.db-shm
 *.db-wal
 *.db-journal
+
+exports/

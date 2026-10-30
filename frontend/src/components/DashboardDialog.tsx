@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
+import { snapshotHtml } from '../snapshot'
 
 /** Near full-screen dialog showing the backend-generated HTML dashboard in an iframe. */
 export default function DashboardDialog({ open, onOpenChange, title, url }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; url: string }) {
@@ -44,7 +45,8 @@ export default function DashboardDialog({ open, onOpenChange, title, url }: { op
             <>
               {!loaded && <p className="muted" role="status">Loading the dashboard…</p>}
               <iframe
-                src={url}
+                src={snapshotHtml(url) ? undefined : url}
+                srcDoc={snapshotHtml(url) ?? undefined}
                 title={title}
                 sandbox="allow-scripts allow-same-origin allow-popups allow-downloads"
                 onLoad={() => setLoaded(true)}
