@@ -25,7 +25,6 @@ export const IDS = Object.keys(BASE.ind).sort((a, b) => a.localeCompare(b, undef
 export const NUMW = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
 export const numWord = (n: number) => NUMW[n] ?? String(n)
 
-export const MAX_OI_DOCS = 10
 export const MAX_PEERS = 5
-export const FILE_ACCEPT = '.pdf,.docx,.txt,.md'
+export const FILE_ACCEPT = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.html,.htm,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff,.zip'
 

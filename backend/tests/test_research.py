@@ -2,7 +2,7 @@
 
 Run from backend/:  python -m pytest tests/test_research.py
 """
-import base64, copy, json, re, sys, threading
+import base64, copy, datetime as dt, json, re, sys, threading
 from pathlib import Path
 from types import SimpleNamespace as NS
 
@@ -11,15 +11,18 @@ import pytest
 BACKEND = Path(__file__).resolve().parent.parent
 ROOT = BACKEND.parent
 sys.path.insert(0, str(BACKEND))
+from app.domain import retrieval as RT  # noqa: E402
 from app.agents import checks as K, client as C, conversation as V, graph as G, grading, nodes as N, progress as P, settings as cfg, tools as T  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def single_pass(monkeypatch):
     """The scripted fake-client tests describe one pass: no consistency re-run and no retrieval review unless a test turns them on."""
     monkeypatch.setattr(cfg, "CONSISTENCY_RUNS", 1); monkeypatch.setattr(cfg, "REVIEW_ROUNDS", 0)
+    monkeypatch.setattr(N, "today", lambda: AS_OF)  # the retrieval windows are measured from the as-of date: keep the tests independent of the calendar
 
 
-EX = json.loads((ROOT / "skill" / "example_runs" / "outside_in_run.json").read_text(encoding="utf-8"))
+AS_OF = dt.date(2026, 10, 29)
+EX = json.loads((BACKEND / "tests" / "fixtures" / "outside_in_run.json").read_text(encoding="utf-8"))
 COMPANY, PEERS = EX["subjects"][0], EX["subjects"][1:]
 PEER_ARGS = [{"name": p["name"], "ticker": p["ticker"]} for p in PEERS]
 PREFIX = {"E": COMPANY, "X": PEERS[0], "B": PEERS[1]}
@@ -71,15 +74,40 @@ def subject_submission(prefix):
               "rationale": c["board"]["rationale"], "summary": EX["indicator_summary"].get(i, "") if prefix == "E" else ""}
              for i, c in s["indicators"].items()]
     ev = [{"code": k, "document": v["document"], "doc_type": v.get("doc_type", ""), "date": v["date"], "url": v.get("url", ""),
-           "excerpt": v.get("excerpt", ""), "evidence_class": v["evidence_class"], "search_log": v.get("search_log", "")}
+           "excerpt": v.get("excerpt", ""), "evidence_class": v["evidence_class"], "search_log": v.get("search_log", ""),
+           "source_type": "company", "outlet": "", "underlying_source_type": "", "event_date": _event_date(v["date"])}
           for k, v in EX["evidence"].items() if k.startswith(prefix)]
     dims = [{"dimension": d, "assessment_text": s.get("assessment_text", {}).get(d, f"Dimension {d} text."),
              "limitations": s.get("limitations", {}).get(d, "Public information only.")} for d in cfg.DIMS]
     return {"indicators": cells, "evidence": ev, "dimensions": dims,
-            "comparables": [{"metric": "Capex to depreciation", "value": "0.9x", "evidence": f"{prefix}01"}], "documents_unavailable": []}
+            "comparables": [{"metric": "Capex to depreciation", "value": "0.9x", "evidence": f"{prefix}01"}], "documents_unavailable": [],
+            **log_submission(s["name"], f"{prefix}01")}
 
 
-def empty_patch(): return {"indicators": [], "evidence": [], "dimensions": [], "comparables": [], "documents_unavailable": []}
+def _event_date(d):
+    """The example run's dates, padded to a day and kept inside the 24-month behaviour window of AS_OF."""
+    d = (d + "-01-01")[:10] if len(d) == 4 else (d + "-01") if len(d) == 7 else d
+    return max(d, "2024-11-15")
+
+
+def log_submission(name, code):
+    """A complete retrieval log and fact sheet (Rule 16) for one subject: every entry final, every fact found in evidence item `code`."""
+    items = [{"id": it["id"], "status": "not_applicable" if it["id"] == "R5" else "found", "documents": [] if it["id"] == "R5" else [f"{it['id']} documents"],
+              "queries": [], "years": [2021, 2022, 2023, 2024, 2025] if it.get("needs_years") else [], "from": str(RT.months_before(AS_OF, 36)) if it["id"] == "R4" else "",
+              "to": str(AS_OF) if it["id"] == "R4" else "", "filings_reviewed": 40 if it["id"] == "R4" else -1, "feed": "SEC EDGAR" if it["id"] == "R4" else "",
+              "reason": "No pending transaction" if it["id"] == "R5" else ""} for it in RT.SPEC["retrieval_items"]]
+    regs = [{"id": r["id"], "status": "not_applicable" if r.get("applies_if") else "searched", "query": r["query"].replace("{company}", name),
+             "date": str(AS_OF), "hits": [], "reason": "Does not apply" if r.get("applies_if") else ""} for r in RT.pack_of("energy")["registers"]]
+    sweep = [{"id": q["id"], "query": q["query"].replace("{company}", name), "from": str(RT.months_before(AS_OF, 24)), "to": str(AS_OF),
+              "results_reviewed": 10, "hits": []} for q in RT.SPEC["event_sweep"]]
+    facts = [{"indicator": i, "field": f, "status": "found", "value": "recorded", "evidence": [code], "where_searched": ""}
+             for i in cfg.IND_IDS for f, _ in RT.SPEC["fact_sheet"][i]]
+    return {"retrieval_items": items, "registers": regs, "event_sweep": sweep, "facts": facts, "extra_registers": [], "extra_trade_press": []}
+
+
+def empty_patch():
+    return {"indicators": [], "evidence": [], "dimensions": [], "comparables": [], "documents_unavailable": [], "retrieval_items": [], "registers": [],
+            "event_sweep": [], "facts": [], "extra_registers": [], "extra_trade_press": []}
 
 
 def synthesis():
@@ -157,7 +185,7 @@ def test_outside_in_pause_turn_validation_retry_and_progress(fake):
     events, cb = recorder()
     run = G.run_outside_in(COMPANY["name"], "CVX", PEER_ARGS, "2026-Q4", "director_request", cb)
 
-    assert run["run"]["stage"] == "outside_in" and run["run"]["rule_version"] == "1.2" and run["run"]["simulated"] is False
+    assert run["run"]["stage"] == "outside_in" and run["run"]["rule_version"] == "1.3" and run["run"]["simulated"] is False
     assert [s["role"] for s in run["subjects"]] == ["company", "peer", "peer"]
     assert all(len(s["indicators"]) == 22 and "computed" in s for s in run["subjects"])
     assert run["scorecard_headline"]["7"] and len(run["actions"]) <= 5 and run["actions"][0]["id"] == "2026-Q4-A1"
@@ -510,7 +538,7 @@ def test_budgets_and_system_prompt_carry_the_skill():
     assert [t["max_uses"] for t in T.WEB_TOOLS] == [cfg.SEARCH_USES, cfg.FETCH_USES]
     sysmsg = T.system_blocks()[0]["text"]
     assert '<reference file="SKILL.md">' in sysmsg and "ignore the bash steps" in sysmsg and '<reference file="data_model.md">' in sysmsg
-    assert "ceilings, not targets" in T.render_prompt("subject.md", today="t", period="p", name="n", ticker="t", role="r", peerset="s", prefix="E",
+    assert "ceilings, not targets" in T.render_prompt("subject.md", today="t", as_of="2026-11-04", checklist="CHECKLIST", period="p", name="n", ticker="t", role="r", peerset="s", prefix="E",
                                                       behaviour_from="a", trend_from="b", search_budget=60, fetch_budget=60)
 
 
@@ -564,7 +592,15 @@ def test_review_leaves_a_well_read_subject_alone(monkeypatch):
 
 def test_review_asks_once_about_unavailable_documents_when_reads_are_enough(monkeypatch):
     monkeypatch.setattr(cfg, "REVIEW_ROUNDS", 2)
-    s = _subject("company", 25, ["ISS report"]); s.review(_StubBand(), 0); assert s.conv.submitted == 1
+    s = _subject("company", 25, ["Chevron 2025 proxy statement"]); s.review(_StubBand(), 0); assert s.conv.submitted == 1
+    # reports sold by subscription cannot be retrieved another way, so they do not send the agent back
+    t = _subject("company", 25, ["ISS report", "Moody's and Fitch full credit opinions"]); t.review(_StubBand(), 0); assert t.conv.submitted == 0
+
+
+def test_reads_of_supplied_documents_satisfy_the_review_floor(monkeypatch):
+    monkeypatch.setattr(cfg, "REVIEW_ROUNDS", 2)
+    s = _subject("company", 3, []); s.counts["doc_search"] = 18; s.counts["doc_page"] = 4  # 3 page fetches + 22 reads of the supplied documents
+    s.review(_StubBand(), 0); assert s.conv.submitted == 0
 
 
 def test_review_off(monkeypatch):
@@ -652,7 +688,7 @@ def test_a_reason_may_not_cite_an_unknown_code(monkeypatch):
 def test_two_model_run_reconciles_then_finishes_on_run_a(monkeypatch):
     monkeypatch.setattr(cfg, "CONSISTENCY_RUNS", 2)
     calls = []
-    def research(company, ticker, peers, period, mode, progress, documents, model):
+    def research(company, ticker, peers, period, mode, progress, documents, model, findings=None):
         calls.append(model)
         s = [_mk("company", "Chevron", "E", {"1.4": 4} if model == ST.MODEL_B else {}, url="https://x/" + model, excerpt=model)]
         return {"ctx": {**CTX, "prog": lambda *a: None}, "subjects": s}
@@ -718,3 +754,34 @@ def test_a_conversation_over_the_ceiling_is_pruned_before_the_next_request(monke
         conv.turn(); conv.say("more")
     stubbed = [b["content"]["content"]["source"]["data"].startswith(V.STUB) for m in sent[-1] if m["role"] == "assistant" for b in m["content"] if b["type"] == "web_fetch_tool_result"]
     assert stubbed == [True, False] and conv.ctx == 5000
+
+
+def test_narrative_averages_must_be_the_engines():
+    """A figure given as an average has to be one the engine computes from this run's scores (a peer's average once ended up in Chevron's summary)."""
+    sc = {i: 3 for i in cfg.IND_IDS}
+    assert K._check_averages(["The overall grade is C (average 3.00 across six dimensions)."], [sc]) == []
+    assert K._check_averages(["Grade C (average 3.17)."], [sc]) and K._check_averages(["It moved from B (3.67) to C."], [sc])
+    assert K._check_averages(["Liquidity headroom is 3.17x revenue."], [sc]) == []
+
+
+def test_dash_escapes_are_cleaned():
+    from app.agents.checks import _tidy
+    assert _tidy({"r": r"carry weight \ndash operating"}) == {"r": "carry weight — operating"}
+
+
+def test_a_dropped_connection_mid_stream_is_retried_not_fatal():
+    from app.agents import client as cl, settings as cfg
+
+    class RemoteProtocolError(Exception): ...  # the HTTP library's own error, as in the 5 Nov failure
+    class Other(Exception): ...
+    assert cl.is_busy(RemoteProtocolError("peer closed connection without sending complete message body"))
+    assert not cl.is_busy(Other())
+    calls = []
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3: raise RemoteProtocolError("incomplete chunked read")
+        return "ok"
+    old = cfg.RETRY_WAITS; cfg.RETRY_WAITS = (0, 0, 0)
+    try: assert cl.call_with_retry(flaky, "t") == "ok"
+    finally: cfg.RETRY_WAITS = old
+    assert len(calls) == 3

@@ -82,7 +82,12 @@ export interface UploadDoc {
   slot?: number
   name: string
   mime: string
-  data_b64: string
+  /** the file's id from POST /api/uploads (large files travel this way) */
+  upload_id?: string
+  /** who the file is about: 0 = the company, 1.. = a peer in the order given (omitted: matched by its folder name) */
+  subject?: number
+  /** or the file's bytes inline, for small files */
+  data_b64?: string
 }
 
 export interface ResearchBody {

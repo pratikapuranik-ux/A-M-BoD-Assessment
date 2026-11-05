@@ -4,7 +4,8 @@ import { currentPeriod } from '../lib/journey'
 /** Draft state for the Day 1 / Day 2 journey: files picked in the browser, the add-company form and runs in flight.
  *  Nothing here is persisted; files cannot be, and a reload ends the draft (as in the legacy app). */
 
-export interface Picked { name: string; file: File }
+/** path: where the file sat in a dropped or chosen folder; subject: 0 = the company, 1.. = a peer (manual = the director chose it) */
+export interface Picked { name: string; file: File; path?: string; subject?: number; manual?: boolean }
 export interface QFile { name: string; size: number; answers: string[]; ratings: Record<string, number>; n: number }
 export type AddTab = 'research' | 'file' | 'import'
 export interface Peer { name: string; ticker: string }
@@ -20,6 +21,8 @@ export interface AddDraft {
   problems: unknown[] | null
   /** busy while import files are being read or the job is being started */
   busy: boolean
+  /** what the page is doing while busy, e.g. 'Uploading your documents… 3 of 12 files' */
+  msg: string
   importOi: File | null
   importIo: File | null
   importPr: File[]
@@ -27,7 +30,7 @@ export interface AddDraft {
 
 export const newAdd = (tab: AddTab = 'research'): AddDraft => ({
   tab, company: '', ticker: '', period: currentPeriod(), peers: [{ name: '', ticker: '' }, { name: '', ticker: '' }],
-  files: [], err: '', problems: null, busy: false, importOi: null, importIo: null, importPr: [],
+  files: [], err: '', problems: null, busy: false, msg: '', importOi: null, importIo: null, importPr: [],
 })
 
 /** A research/import job started from the setup page. */

@@ -10,15 +10,16 @@ import threading
 import structlog
 
 from . import settings as cfg
-from .checks import (_assemble_io, _assemble_oi, _calibration, _cell, _check_cells, _check_evidence, _check_text, _digest,
-                     _drop, _evidence_item, _io_check, _io_inputs, _merge, _problem_text, _provided, _route, _synth_check)
+from .checks import (_assemble_io, _assemble_oi, _calibration, _cell, _check_averages, _check_cells, _check_evidence, _check_text, _digest,
+                     _drop, _evidence_item, _io_check, _io_inputs, _merge, _problem_text, _provided, _route, _synth_check, _synth_texts)
 from .client import ResearchError, ResearchInvalid
 from .conversation import Conv
 from .grading import grade_run
 from .progress import Band, MonotonicProgress, narrate, phases, short_name
 from .settings import DIMS, FW, IND_IDS, PEER_PREFIXES, PERIOD_RE
 from .state import InsideOutState, OutsideInState, SubjectTask
-from .tools import (IO_KEYS, IO_TOOL, SUBJECT_KEYS, SUBJECT_TOOL, SYNTH_KEYS, SYNTH_TOOL, WEB_TOOLS, render_prompt)
+from app.domain import retrieval
+from .tools import (IO_KEYS, IO_TOOL, READ_PAGE_TOOL, SEARCH_TOOL, SUBJECT_KEYS, SUBJECT_TOOL, SYNTH_KEYS, SYNTH_TOOL, WEB_TOOLS, render_prompt)
 
 log = structlog.get_logger("agents.nodes")
 
@@ -35,11 +36,12 @@ class Subject:
         self.data, self.draft, self.conv = None, None, None
         self.model = model        # None = BOARD_MODEL (Run A); Run B passes its own
         self.recon_note = ""      # set by the reconciliation: asks the next revision to bring the narrative in line with the final scores
-        self.counts = {"web_search": 0, "web_fetch": 0}
+        self.counts = {"web_search": 0, "web_fetch": 0, "doc_search": 0, "doc_page": 0}  # the last two: reads of the documents supplied
 
     def accept(self, inp):
         # merge into the latest submission even if it was rejected: Claude is told empty fields keep what it sent before,
         # so a correction that resends only the fixed indicators must still see the evidence list from the first try
+        inp = dict(inp, facts=[dict(f, _k=f"{f.get('indicator')}|{f.get('field')}") for f in inp.get("facts") or []])
         merged = self.draft = _merge(self.draft, inp, SUBJECT_KEYS)
         known = {e.get("code") for e in merged.get("evidence", [])}
         p = _check_evidence(merged.get("evidence", []), self.prefix) + _check_cells(merged.get("indicators", []), known, items={e.get("code"): e for e in merged.get("evidence", [])})
@@ -62,23 +64,50 @@ class Subject:
                                                       SUBJECT_TOOL["name"]: f"Writing up {self.short}'s scores on the 22 indicators"})
         content = render_prompt("subject.md", today=ctx["today"], period=ctx["period"], name=self.name, ticker=self.ticker or "n/a",
                                 role="the company being assessed" if self.role == "company" else "peer", peerset=ctx["peerset"],
-                                prefix=self.prefix, behaviour_from=ctx["meta"]["document_window"]["behaviour_from"],
+                                prefix=self.prefix, as_of=ctx["meta"]["as_of"], checklist=retrieval.checklist(self.name, ctx["today_date"], ctx["meta"]["sector"]),
+                                behaviour_from=ctx["meta"]["document_window"]["behaviour_from"],
                                 trend_from=ctx["meta"]["document_window"]["trend_from"], search_budget=cfg.SEARCH_BUDGET, fetch_budget=cfg.FETCH_BUDGET)
-        if self.role == "company" and ctx.get("provided"): content = [{"type": "text", "text": content}] + ctx["provided"]
-        self.conv = Conv(f"research on {self.short}", WEB_TOOLS + [SUBJECT_TOOL], content, on_block, on_phase, model=self.model)
+        if (ctx.get("provided") or {}).get(i): content = [{"type": "text", "text": content}] + ctx["provided"][i]
+        index = (ctx.get("search") or {}).get(i); handlers = {}
+        if index is not None:
+            used = [0]; spent = [0.0]  # searches made; tokens of text handed out by the search and page tools
+            used_up = "The budget for the supplied documents is used up; finish with what you have found."
+            def hand_out(text):
+                spent[0] += len(text) / 3.2
+                return text
+            def look(inp):
+                used[0] += 1
+                if used[0] > cfg.DOC_SEARCHES or spent[0] > cfg.DOC_TOOL_TOKENS: return used_up
+                self.counts["doc_search"] += 1
+                band.tick(i, f"Searching the documents supplied on {self.short}")
+                return hand_out(index.answer(str(inp.get("query") or ""), str(inp.get("file") or "")))
+            def page(inp):
+                try: n = int(inp.get("page") or 0)
+                except (TypeError, ValueError): n = 0
+                if spent[0] > cfg.DOC_TOOL_TOKENS: return used_up
+                self.counts["doc_page"] += 1
+                band.tick(i, f"Reading a page of the documents supplied on {self.short}")
+                return hand_out(index.page(str(inp.get("file") or ""), n))
+            handlers = {SEARCH_TOOL["name"]: look, READ_PAGE_TOOL["name"]: page}
+        self.conv = Conv(f"research on {self.short}", WEB_TOOLS + [SUBJECT_TOOL] + ([SEARCH_TOOL, READ_PAGE_TOOL] if handlers else []), content, on_block, on_phase,
+                         model=self.model, handlers=handlers)
         self.conv.stop = ctx.get("stop")
         band.tick(i, f"Starting research on {self.short}")
         self.conv.submit(SUBJECT_TOOL["name"], self.accept)
         self.review(band, i)
+        band.tick(i, f"{self.short}: {self.counts['doc_search']} searches and {self.counts['doc_page']} page reads of your documents, "
+                     f"{self.counts['web_search']} web searches and {self.counts['web_fetch']} web pages")
         band.tick(i, f"Scored {self.short}'s board on all 22 indicators", done=True)
 
     def review(self, band, i):
-        """Retrieval review. While this subject has read fewer pages than the floor (or still lists Rule 15 documents as
+        """Retrieval review. While this subject has read fewer pages than the floor (or still lists Rule 14 documents as
         unavailable in the first round), it is sent back to read more before its scores are accepted."""
         floor = min(cfg.MIN_FETCHES if self.role == "company" else cfg.MIN_FETCHES_PEER, max(1, cfg.FETCH_USES - 2))
         for rnd in range(cfg.REVIEW_ROUNDS):
-            reads, searches = self.counts["web_fetch"], self.counts["web_search"]
-            missing = list((self.data or {}).get("documents_unavailable") or [])
+            # a search of the supplied documents or a page read from them is a read of a primary document, like a web page fetch
+            reads, searches = self.counts["web_fetch"] + self.counts["doc_search"] + self.counts["doc_page"], self.counts["web_search"]
+            # reports sold by subscription (proxy advisers, rating agencies) cannot be retrieved by another route: do not send the agent after them
+            missing = [d for d in ((self.data or {}).get("documents_unavailable") or []) if not SUBSCRIPTION.search(d or "")]
             if reads >= floor and not (rnd == 0 and missing): return
             band.tick(i, f"Reviewing {self.short}'s retrieval: reading more primary documents")
             lines = "\n".join(f"- {d}" for d in missing[:12]) or "- (none listed)"
@@ -101,6 +130,7 @@ class Subject:
     def to_run(self, today):
         inds = {c["id"]: {"board": _cell(c)} for c in self.data["indicators"]}
         out = {"name": self.name, "ticker": self.ticker, "role": self.role, "indicators": {i: inds[i] for i in IND_IDS}}
+        out["retrieval_log"], out["facts"] = retrieval.log_from_lists(self.data)
         if self.role == "company":
             dims = {d["dimension"]: d for d in self.data["dimensions"]}
             out["assessment_text"] = {d: dims[d]["assessment_text"] for d in DIMS}
@@ -109,6 +139,9 @@ class Subject:
 
     def evidence(self, today):
         return {e["code"]: _evidence_item(e, today) for e in sorted(self.data["evidence"], key=lambda e: e["code"])}
+
+
+SUBSCRIPTION = re.compile(r"\b(ISS|Glass Lewis|Moody|Fitch|S&P|subscription|paywall)", re.I)
 
 
 def fix_jobs(subjects, by, extra=None):
@@ -141,6 +174,8 @@ class SynthSession:
     def accept(self, inp):
         merged = self.draft = _merge(self.draft, inp, SYNTH_KEYS)
         p = _synth_check(merged, self.subjects[1:], self.known, self.period)
+        maps = [{c["id"]: (c.get("score") or None) for c in s.data["indicators"]} for s in self.subjects]
+        p += _check_averages(_synth_texts(merged), maps)
         if not p: self.syn = merged
         return p
 
@@ -159,15 +194,17 @@ def plan(state: OutsideInState):
     t = today()
     meta = {"run_date": t.isoformat(), "period": period, "stage": "outside_in", "mode": mode, "rule_version": FW["rule_version"],
             "document_window": {"behaviour_from": f"{t.year - 2}-{t.month:02d}", "trend_from": f"FY{t.year - 5}"},
-            "consistency_run": 1, "simulated": False}
+            "consistency_run": 1, "simulated": False, "as_of": t.isoformat(), "extra_registers": [], "extra_trade_press": [],
+            "sector": retrieval.sector_for(company, *[p.get("name", "") for p in peers]),
+            "consistency": {"mode": "double" if cfg.CONSISTENCY_RUNS == 2 else "single"}}
     model = state.get("model")
     subjects = [Subject(company.strip(), ticker, "company", "E", model)] + [
         Subject(p["name"].strip(), p.get("ticker", ""), "peer", PEER_PREFIXES[n], model) for n, p in enumerate(peers)]
     documents = state.get("documents")
     ctx = state.get("shared") if state.get("shared") is not None else {}
+    provided, searchable = _provided(subjects, documents, ctx.get("findings")) if documents else ({}, {})
     ctx.update(today=t.isoformat(), today_date=t, period=period, meta=meta, prog=prog,
-               peerset="; ".join(f"{s.name} ({s.ticker or 'n/a'})" for s in subjects),
-               provided=_provided(subjects[0].name, documents) if documents else None)
+               peerset="; ".join(f"{s.name} ({s.ticker or 'n/a'})" for s in subjects), provided=provided, search=searchable)
     ctx.setdefault("stop", threading.Event())
     prog(2, f"Planning research on {subjects[0].short} and {len(peers)} peers")
     # the company and every peer are researched at the same time: no subject's research depends on another's
@@ -184,7 +221,7 @@ def _guarded(ctx, fn):
         raise
 
 
-_SLOTS = threading.BoundedSemaphore(cfg.SUBJECT_WORKERS)  # all subjects of all consistency runs share these model-call slots
+_SLOTS = threading.BoundedSemaphore(cfg.MODEL_CALL_SLOTS)  # all subjects of all consistency runs share these model-call slots
 
 
 def research_subject(task: SubjectTask):

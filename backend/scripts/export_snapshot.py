@@ -1,6 +1,6 @@
 """Data for the read-only HTML snapshot of one company: the API answers the screens read, plus Word and HTML files built fresh in memory.
 Reads only; nothing stored is changed (the files on disk are not touched). Survey invites (emails, tokens) are left out.
-Run from the backend folder:  python scripts/export_snapshot.py chevron out.json"""
+Run from the backend folder:  python scripts/export_snapshot.py <company-id> out.json"""
 from __future__ import annotations
 
 import base64

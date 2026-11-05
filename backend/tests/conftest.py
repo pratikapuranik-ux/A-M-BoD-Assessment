@@ -7,12 +7,12 @@ import pytest
 
 # Short temp path: Windows MAX_PATH. Set before any `app` module reads its settings.
 TMP = tempfile.mkdtemp(prefix="nx_")
-os.environ["NEXUS_SKIP_DOTENV"] = "1"
-os.environ["NEXUS_DATABASE_URL"] = "sqlite:///" + os.path.join(TMP, "test.db").replace("\\", "/")
-os.environ["NEXUS_STORAGE_DIR"] = os.path.join(TMP, "storage")
+os.environ["BOARD_SKIP_DOTENV"] = "1"
+os.environ["BOARD_DATABASE_URL"] = "sqlite:///" + os.path.join(TMP, "test.db").replace("\\", "/")
+os.environ["BOARD_STORAGE_DIR"] = os.path.join(TMP, "storage")
 os.environ["BOARD_MIN_RESPONSES"] = "3"  # test the real guardrail, whatever .env says for demos
 os.environ.pop("BOARD_PUBLIC_URL", None)
-os.environ.pop("NEXUS_PUBLIC_URL", None)
+os.environ.pop("BOARD_PUBLIC_URL", None)
 
 
 @pytest.fixture(scope="session")

@@ -14,16 +14,16 @@ Page breaks only after the cover, after the executive summary and before the app
 6. **Actions.** Up to five, numbered, each with description, measures and target quarter. Status of prior actions (six statuses, with evidence and metrics) when known; in Stage 1 a note that status is asked for in Stage 2.
 7. **Getting back on track.** Only when an action is behind or not started: what happened, impact, root cause, mechanism to prevent, measures to track.
 8. **Additional information that would sharpen the assessment.** Only when a specific document would change a grade or action.
-9. **Appendices.** Appendix 1: detailed indicator view (per dimension, assessment text, full rationale with linked codes, confidence). Appendix 2: one page per peer (grade strip, summary, 22-row indicator table). Stage 2 only, Appendix 3: data sources (one line each; origin public / inside-out / self-assessment; simulated yes/no; used for). Then: how to read; methodology and rules; sources consulted (bookmarked entries with excerpt, question for SA items, search log, link, SIMULATED flag); indicator definitions and anchors.
+9. **Appendices.** Appendix 1: detailed indicator view (per dimension, assessment text, full rationale with linked codes, confidence). Appendix 2: one page per peer (grade strip, summary, 22-row indicator table). Stage 2 only, Appendix 3: data sources (one line each; origin public / inside-out / self-assessment; used for). Then: how to read; methodology and rules; sources consulted (bookmarked entries with excerpt, question for SA items, search log, link); indicator definitions and anchors.
 
 ## Dashboard (`build_dashboard.py`)
 
-Same order: header band with run-mode label; executive summary (tiles with prior-quarter change, what moved, inside-vs-outside in Stage 2, key actions, metrics, peer position); scorecard and trend with the what-changed tables; evidence by indicator (one-line summaries; a dimension expands to the detailed rationale with evidence behind info icons; "?" opens definition and anchors); peer comparison with row summaries, peer trend and a collapsible indicator view per peer; actions with prior-action statuses; getting back on track; additional information; coverage and limitations (assessed / 22, split by cause, confidence, simulated items); evidence accordion (collapsed; filters by dimension, origin, indicator; free text); methodology footer.
+Same order: header band with run-mode label; executive summary (tiles with prior-quarter change, what moved, inside-vs-outside in Stage 2, key actions, metrics, peer position); scorecard and trend with the what-changed tables; evidence by indicator (one-line summaries; a dimension expands to the detailed rationale with evidence behind info icons; "?" opens definition and anchors); peer comparison with row summaries, peer trend and a collapsible indicator view per peer; actions with prior-action statuses; getting back on track; additional information; coverage and limitations (assessed / 22, split by cause, confidence); evidence accordion (collapsed; filters by dimension, origin, indicator; free text); methodology footer.
 
 ## Quality checks before delivering
 
 - Docx rendered to PDF: body within the page budget; only the three body page breaks; grade cells coloured; Appendix links resolve.
 - Dashboard: every dimension expands, both icons work, peer indicator views open, evidence accordion opens, nothing shows as missing.
 - Scores shown equal what grade.py reported as assessed, for each lens.
-- No named individual characterised; no quote over 15 words; run-mode label correct; everything simulated labelled SIMULATED.
+- No named individual characterised; no quote over 15 words; run-mode label correct.
 - run.json delivered with the report.

@@ -98,6 +98,17 @@ Tiers describe how hard a document is to obtain, **not** confidence. Confidence 
 
 **Indicators primarily served:** 1.3, 2.2 (board-process indicators where litigated)
 
+## How to run the retrieval (v1.3, Rule 16)
+
+The minimum set above says what to obtain; this section fixes how, so that two runs search the same things.
+
+1. **Start from `scripts/init_run.py`.** It writes a `retrieval_log` and `facts` skeleton for every subject from `assets/retrieval_spec.json`. Work through it; do not add or skip entries.
+2. **Sector pack.** Set `run.sector` (`energy`, or `general` with at least one register under `run.extra_registers`). Search every register in the pack for every subject with its query, and record searched or not applicable with a reason (for example, REG-E6 applies only where the subject sells retail fuel outside the US). An empty search is a `searched_record` evidence item.
+3. **Filing feed (R4).** List every 8-K / 6-K / RNS announcement from 36 months before `run.as_of` to `run.as_of`, not only those already in the upload pack, and record the count reviewed. Annual reports are a snapshot: anything after their date reaches the run only through this feed and the event sweep.
+4. **Event sweep.** Run all fourteen query templates (ES01-ES14) for every subject over the 24 months to `run.as_of`, review the results, and log the count and the evidence ids each produced. This is mandatory even when the user has uploaded a full document pack.
+5. **Fact sheet.** Read proxies, remuneration and governance reports section by section, not by keyword search, against the fact sheet for each indicator. For incentive downside (1.4) read both the corporate scorecard and each individual award narrative. Record each fact as found, with evidence, or not disclosed, with where it was searched.
+6. **Source typing.** Give every evidence item a `source_type` and, for news and trade press, the `outlet`. A syndicated copy of an approved outlet (for example a Bloomberg wire on another site) keeps the approved outlet and earns a warning; cite the original where reachable.
+
 ## Approved news list (direct evidence, no corroboration required)
 
 Bloomberg, Reuters, The Wall Street Journal, Financial Times, Forbes, AP, The New York Times, Barron's, The Economist, CNBC, Nikkei, Handelsblatt, Les Echos, The Economic Times, Mint. The Economic Times and Mint apply to Indian companies.
@@ -111,7 +122,7 @@ Recognised sector trade press (e.g. Food Business News, FoodNavigator, Supermark
 - Published market-share data from recognised panels (Circana, NielsenIQ) when cited through the company, a filing or approved press.
 - Sector regulator registers (e.g. FDA recalls, CFPB complaints); an empty search is itself a searched-record evidence item (Rule 5).
 
-## Minimum retrieval set before any indicator is marked not assessable (Rule 15)
+## Minimum retrieval set before any indicator is marked not assessable (Rule 14)
 
 1. Latest 10-K / annual report, plus five years of cash-flow statements.
 2. Five years of proxy statements, read in full, including the pay discussion and governance guidelines.
@@ -142,7 +153,7 @@ Recognised sector trade press (e.g. Food Business News, FoodNavigator, Supermark
 - Published market-share data from recognised panels (Circana, NielsenIQ) when cited through the company, a filing or approved press.
 - Sector regulator registers (e.g. FDA recalls, CFPB complaints); an empty search is itself a searched-record evidence item (Rule 5).
 
-## Minimum retrieval set before any indicator is marked not assessable (Rule 15)
+## Minimum retrieval set before any indicator is marked not assessable (Rule 14)
 
 1. Latest 10-K / annual report, plus five years of cash-flow statements.
 2. Five years of proxy statements, read in full, including the pay discussion and governance guidelines.

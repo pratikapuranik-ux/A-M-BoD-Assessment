@@ -18,7 +18,7 @@ _SUFFIX = re.compile(r"[\s,]+(corporation|corp\.?|incorporated|inc\.?|holdings?|
 
 
 def short_name(name: str) -> str:
-    """'Exxon Mobil (ExxonMobil Holdings Corporation)' -> 'ExxonMobil'; 'BP p.l.c.' -> 'BP'; 'Chevron Corporation' -> 'Chevron'."""
+    """'Acme Holdings Corporation' -> 'Acme'; 'Beta p.l.c.' -> 'Beta'."""
     m = re.search(r"\(([^)]+)\)", name or "")
     s = (m.group(1) if m else name or "").strip()
     while True:
@@ -119,10 +119,25 @@ def _io_ev(code: str, e: dict) -> dict:
 _DASH = Path(__file__).resolve().parents[1] / "services" / "templates" / "dashboard.html"
 
 
-def _guardrails() -> tuple[list[dict], str]:
+SINGLE_RUN = "This report is a single assessment run. The two-run consistency test described in the methodology was not applied to it."
+TWO_RUN = ("This report combines two independent assessment runs. Where they scored an indicator differently, the reconciled score stands "
+           "and the differences are listed in the reconciliation section.")
+
+
+def guardrail_text(text: str, n: int, two_run: bool) -> str:
+    """Fills the settings-dependent parts of the guardrail text: the configured minimum of director responses, and whether the
+    run was a single run or two reconciled runs."""
+    who = "1 director has" if n == 1 else f"{n} directors have"
+    return text.replace("__MIN__", who).replace("__RUNS__", TWO_RUN if two_run else SINGLE_RUN)
+
+
+def _guardrails(two_run: bool = False) -> tuple[list[dict], str]:
     """Guardrails text: one source, the JSON block in the dashboard template, so the dashboard and the React report cannot drift."""
     m = re.search(r'<script type="application/json" id="guardrails-data">(.*?)</script>', _DASH.read_text(encoding="utf-8"), re.S)
+    from app.config import get_settings
+    n = get_settings().min_responses
     g = json.loads(m.group(1).replace("<\\/", "</")) if m else {}
+    g = json.loads(guardrail_text(json.dumps(g), n, two_run)) if g else g
     return g.get("groups", []), g.get("intro", "")
 
 
@@ -263,7 +278,7 @@ def to_view(oi_run: dict, io_run: dict | None = None, prior_run: dict | None = N
     # synthesised director themes [{dimension, theme, summary}]; present only once the synthesis step has run
     D["self_assessment_themes"] = list((io_run or {}).get("self_assessment_themes") or [])
     D["self_assessment_responses"] = (io_run or {}).get("self_assessment_responses")  # director response count; None = unknown, 0 = documents-only run
-    D["guardrails"], D["guardrails_intro"] = _guardrails()
+    D["guardrails"], D["guardrails_intro"] = _guardrails(bool(oi_run.get("reconciliation")))
     D["documents_provided"] = {k: list((r.get("run") or {}).get("documents_provided") or []) for k, r in (("oi", oi_run), ("io", io_run or {}))}  # names the user supplied, per stage
     if oi_run.get("reconciliation"): D["reconciliation"] = oi_run["reconciliation"]  # Run A / Run B reconciliation, shown in the reports
     return D

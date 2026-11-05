@@ -77,7 +77,7 @@ class SurveyHash(Base):
 
 
 class Deliverable(Base):
-    """A built file (docx / dashboard html / questionnaire) under NEXUS_STORAGE_DIR/<company id>/out/."""
+    """A built file (docx / dashboard html / questionnaire) under BOARD_STORAGE_DIR/<company id>/out/."""
     __tablename__ = "deliverables"
     __table_args__ = (UniqueConstraint("company_id", "key", name="uq_deliverables_company_key"),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

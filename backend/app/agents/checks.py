@@ -7,12 +7,25 @@ import json
 import re
 from pathlib import Path
 
+from . import settings as cfg
 from .settings import FW, IND_IDS, DIMS, PEER_RELATIVE, PERIOD_RE, DATE_RE, CODE_RE, AM_RE, STYLE_RE
 
 # What stands in the run file where a director's answer would otherwise sit (anonymity: the answers are never persisted)
 SA_NOTE = "Synthesised from director responses"
 
+_ARTEFACT = re.compile(r"\s*\\[nm]dash\s*|\s*\\textendash\s*|\s*\\textemdash\s*")
+
+
+def _tidy(v):
+    """Typesetting escapes the model sometimes writes for a dash (\\ndash, \\mdash) become a dash; applied to everything it submits."""
+    if isinstance(v, str): return _ARTEFACT.sub(" — ", v)
+    if isinstance(v, list): return [_tidy(x) for x in v]
+    if isinstance(v, dict): return {k: _tidy(x) for k, x in v.items()}
+    return v
+
+
 def _merge(old, new, keys):
+    new = _tidy(new)
     if old is None: return copy.deepcopy(new)
     out = copy.deepcopy(old)
     for field, v in new.items():
@@ -60,7 +73,7 @@ def _check_cells(cells, known, ids=IND_IDS, items=None):
             if c.get("na_cause") == "retrieval-limited":
                 r = (c.get("rationale") or "").strip()
                 if len(r.split()) < 6 or not SEARCHED_RE.search(r):
-                    p.append(f"{w}: retrieval-limited needs a rationale that lists what was searched (Rule 15); search the Rule 15 set before marking it not assessable")
+                    p.append(f"{w}: retrieval-limited needs a rationale that lists what was searched (Rule 14); search the Rule 14 set before marking it not assessable")
         else:
             if c.get("confidence") == "None": p.append(f"{w}: a score needs confidence High, Medium or Low")
             if not c.get("evidence"): p.append(f"{w}: a score needs at least one evidence item")
@@ -112,6 +125,32 @@ def _check_text(fields, known):
     return p
 
 
+AVG_CLAIM_RE = re.compile(r"(?:average|avg)\b[^.;\d]{0,40}?(\d\.\d{1,2})\b|\b[A-F]\s*\((\d\.\d{1,2})\)", re.I)
+
+
+def _averages(score_maps, lenses=("board",)):
+    """Every average the engine will compute for these {indicator id: score} maps: each reported dimension and the overall."""
+    from app.domain.engine import compute_scores
+    out = set()
+    for sc in score_maps:
+        c = compute_scores(sc, FW["coverage_threshold"]["inside_out"])
+        out |= {round(d["average"], 2) for d in c["dimensions"].values() if d.get("average") is not None}
+        if c["overall"].get("numeric_average") is not None: out.add(round(c["overall"]["numeric_average"], 2))
+    return out
+
+
+def _check_averages(texts, score_maps):
+    """The model writes the narrative; the engine computes the grades. A figure given as an average must be one the engine produces
+    from the scores in this run (a different company's average is the usual slip), so the arithmetic in the prose cannot drift."""
+    ok = _averages(score_maps)
+    claimed = {float(g) for t in texts for m in AVG_CLAIM_RE.finditer(t or "") for g in m.groups() if g}
+    bad = sorted(c for c in claimed if round(c, 2) not in ok)
+    if not bad: return []
+    return [f"the narrative states averages {bad} that do not match the scores in this run. The averages computed from these scores are "
+            f"{sorted(ok)} (a dimension's average is the mean of its indicator scores; the overall average is the mean of the dimension letters, A=5 to F=1). "
+            "Quote only those figures, or leave the figure out."]
+
+
 def _recent(date, today):
     try:
         d = dt.date.fromisoformat(date if len(date) == 10 else (date + "-01" if len(date) == 7 else ""))
@@ -131,7 +170,9 @@ def _evidence_item(e, today):
     item = {"document": e.get("document", ""), "doc_type": e.get("doc_type") or "public", "date": e.get("date", ""), "url": e.get("url", ""),
             "excerpt": e.get("excerpt", ""), "evidence_class": e.get("evidence_class", "direct"),
             "source_origin": "provided" if (e.get("url") or "").startswith("provided:") else "public",
-            "simulated": False, "recent": _recent(e.get("date") or "", today)}
+            "simulated": False, "recent": _recent(e.get("event_date") or e.get("date") or "", today)}
+    for k in ("source_type", "outlet", "event_date", "underlying_source_type"):
+        if e.get(k): item[k] = e[k]
     if e.get("search_log"): item["search_log"] = e["search_log"]
     return item
 
@@ -160,10 +201,14 @@ def _synth_check(syn, peers, known, period):
     tickers = {(x.get("ticker") or "").upper() for x in syn.get("peer_summaries", [])}
     if missing := [s.ticker or s.name for s in peers if (s.ticker or s.name).upper() not in tickers]: p.append(f"peer_summaries missing for {missing}")
     p += _check_actions(syn.get("actions", []), period)
+    return p + _check_text(_synth_texts(syn), known)
+
+
+def _synth_texts(syn):
     texts = [syn.get(k) or "" for k in ("headline", "overall_summary", "what_moved", "peer_position")] + syn.get("headline_findings", []) \
         + syn.get("peer_summary_lines", []) + [x.get("text") or "" for x in syn.get("scorecard_headline", []) + syn.get("peer_row_summary", [])] \
         + [x.get("summary") or "" for x in syn.get("peer_summaries", [])] + [a.get("description") or "" for a in syn.get("actions", [])]
-    return p + _check_text([t for t in texts if isinstance(t, str)], known)
+    return [t for t in texts if isinstance(t, str)]
 
 
 def _retrieval_notes(subjects):
@@ -181,8 +226,12 @@ def _assemble_oi(ctx, subjects, syn):
         out["summary"] = summaries.get((s.ticker or s.name).upper(), "")
     unavailable = [f"{s.short}: {d}" for s in subjects for d in s.data.get("documents_unavailable", [])]
     period = ctx["period"]
+    meta = copy.deepcopy(ctx["meta"])
+    extra = {r.get("id"): r for s in subjects for r in (s.data or {}).get("extra_registers", []) if r.get("id")}
+    meta["extra_registers"] = list(extra.values())
+    meta["extra_trade_press"] = sorted({x for s in subjects for x in (s.data or {}).get("extra_trade_press", []) if x})
     return {
-        "run": copy.deepcopy(ctx["meta"]), "headline": syn.get("headline", ""), "subjects": subs, "evidence": evidence,
+        "run": meta, "headline": syn.get("headline", ""), "subjects": subs, "evidence": evidence,
         "actions": [{"id": f"{period}-A{n}", **a} for n, a in enumerate(syn.get("actions", []), 1)],
         "coverage": {"documents_unavailable": unavailable, "consistency_result": ctx.get("consistency_result") or "Outside-in run 1",
                      "notes": ctx.get("notes") or _retrieval_notes(subjects)},
@@ -221,20 +270,55 @@ def _route(problems, subjects):
     return by, rest
 
 
-def _provided(name, documents):
-    """Documents the A&M team supplied on the company: read alongside the public record, cited as 'provided: <file>'."""
-    blocks = [{"type": "text", "text": f"The A&M team has also supplied {len(documents)} document(s) on {name}, below. Read them alongside the public record. "
-               "Where one bears on an indicator, cite it as an evidence item like any other source, with doc_type 'provided document' and url "
-               "'provided: <file name>'; the excerpt rule (under 15 words verbatim) applies. They do not replace the web research, and they are "
-               "about the company only, not the peers."}]
-    for d in documents:
-        fname = d.get("name") or "document"
-        if d.get("pdf_b64"):
-            blocks += [{"type": "text", "text": f"Provided document: {fname}"},
-                       {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": d["pdf_b64"]}, "title": fname}]
-        elif d.get("text"):
-            blocks.append({"type": "text", "text": f'<provided_document file="{fname}">\n{d["text"]}\n</provided_document>'})
-    return blocks
+def _provided(subjects, documents, findings=None):
+    """The documents the A&M team supplied, per subject (0 = the company, 1.. = a peer): read alongside the public record, cited as
+    'provided: <file>'. Returns (blocks, indexes), each keyed by subject index.
+
+    How much goes into the request is worked out from the model's context limit (budget.doc_tokens). A subject whose documents fit
+    (or are PDFs sent as pages) gets them whole. Otherwise it gets the cross-document review and as many fact sheets as fit, plus
+    tools to search the full text and read a page exactly, so any figure can be checked against the source."""
+    from app.services.search import Index
+    from .budget import doc_tokens
+    blocks, indexes = {}, {}
+    room = doc_tokens()
+    cite = ("Where one bears on an indicator, cite it as an evidence item like any other source, with doc_type 'provided document' and url "
+            "'provided: <file name>' (the file name exactly as listed); the excerpt rule (under 15 words verbatim) applies. They do not replace the web research. ")
+    for i, s in enumerate(subjects):
+        docs = [d for d in documents if int(d.get("subject") or 0) == i and (d.get("text") or d.get("pdf_b64"))]
+        if not docs: continue
+        who = "the company being assessed" if i == 0 else f"the peer {s.name}"
+        size = sum(len(d.get("text") or "") for d in docs) / 3.2
+        if any(d.get("pdf_b64") for d in docs) or size <= room * 0.5:
+            b = [{"type": "text", "text": f"The A&M team has also supplied {len(docs)} document(s) on {s.name}, below. Read them alongside the public record. {cite}"
+                  f"They are about {who} only."}]
+            for d in docs:
+                fname = d.get("name") or "document"
+                if d.get("pdf_b64"):
+                    b += [{"type": "text", "text": f"Provided document: {fname}"},
+                          {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": d["pdf_b64"]}, "title": fname}]
+                else:
+                    b.append({"type": "text", "text": f'<provided_document file="{fname}">\n{d["text"]}\n</provided_document>'})
+            blocks[i] = b
+            continue
+        ix = Index(docs); indexes[i] = ix
+        left = room; parts = []
+        review = (findings or {}).get(i) or ""
+        if review:
+            review = review[: int(left * 0.4 * 3.2)]; left -= len(review) / 3.2
+            parts.append(f"Cross-document review of what was supplied (made from the fact sheets; check any figure you rely on against the source):\n{review}")
+        sheets = []
+        for d in sorted(docs, key=lambda d: d.get("name") or ""):  # fact sheets while they fit; a short document goes whole
+            body = d.get("facts") or (d["text"] if len(d["text"]) / 3.2 <= 4000 else "")
+            if body and len(body) / 3.2 <= left:
+                sheets.append(f'<fact_sheet file="{d.get("name")}">\n{body}\n</fact_sheet>'); left -= len(body) / 3.2
+        if sheets: parts.append("Key facts from each document:\n" + "\n".join(sheets))
+        blocks[i] = [{"type": "text", "text": (
+            f"The A&M team has also supplied {len(docs)} document(s) on {s.name} (about {who}, not other companies). They are too long to paste, so you have "
+            f"{'their key facts below and ' if parts else ''}two tools: search_provided_documents returns the best matching passages from the full text (with file and page), "
+            f"and read_provided_page returns one page exactly as extracted. Search for the topic of every indicator you score (board composition and "
+            f"refreshment, committees, pay, capital allocation, strategy, risk, adverse events and so on) with more than one wording, and read the page "
+            f"before you rely on a figure{' from a fact sheet or the review' if parts else ''}. {cite}Files:\n{ix.summary()}\n\n" + "\n\n".join(parts))}]
+    return blocks, indexes
 
 
 def _io_inputs(run, documents, answers, today):
@@ -278,8 +362,8 @@ def _io_check(io, oi_cells, known, io_items, sa, prior, period):
             p.append(f"{w}: a post inside-out score must cite an IO or SA item, or set carried_forward true")
         if ev and all(x.startswith("SA") for x in ev):
             oi = (oi_cells.get(c.get("id")) or {}).get("score")
-            if c["score"] > 3 and (oi is None or c["score"] > oi): p.append(f"{w}: self-assessment alone cannot lift a score above 3 (Rule 19)")
-            if c.get("confidence") == "High": p.append(f"{w}: a self-assessment-only cell cannot be High confidence (Rule 19)")
+            if c["score"] > 3 and (oi is None or c["score"] > oi): p.append(f"{w}: self-assessment alone cannot lift a score above 3 (Rule 22)")
+            if c.get("confidence") == "High": p.append(f"{w}: a self-assessment-only cell cannot be High confidence (Rule 22)")
     docs = {d.get("code"): d for d in io.get("documents", [])}
     if bad := [c for c in docs if c not in io_items]: p.append(f"documents lists unknown codes {bad}")
     if missing := [c for c in io_items if c not in docs]: p.append(f"documents needs a date and excerpt for {missing}")
@@ -295,7 +379,12 @@ def _io_check(io, oi_cells, known, io_items, sa, prior, period):
     texts = [io.get(k) or "" for k in ("headline", "overall_summary", "what_moved")] + io.get("better", []) + io.get("worse", []) \
         + io.get("headline_findings", []) + [x.get("note") or "" for x in io.get("io_change_notes", [])] \
         + [x.get("evidence_note") or "" for x in io.get("prior_actions_status", [])] + [a.get("description") or "" for a in io.get("actions", [])]
-    return p + _check_text([t for t in texts if isinstance(t, str)], known)
+    texts = [t for t in texts if isinstance(t, str)]
+    # the post inside-out scores as the engine will see them: the model's cell, or the outside-in score where it is carried forward
+    new = {c.get("id"): c for c in io.get("cells", [])}
+    io_sc = {i: ((oi_cells.get(i) or {}).get("score") if (i not in new or new[i].get("carried_forward")) else (new[i].get("score") or None)) for i in IND_IDS}
+    oi_sc = {i: (oi_cells.get(i) or {}).get("score") for i in IND_IDS}
+    return p + _check_averages(texts, [io_sc, oi_sc]) + _check_text(texts, known)
 
 
 def _assemble_io(base, io, io_items, sa, prior, ratings, period):
@@ -333,7 +422,7 @@ def _assemble_io(base, io, io_items, sa, prior, ratings, period):
                                        for t in io.get("self_assessment_themes", []) if str(t.get("dimension")) in DIMS],
                self_assessment_responses=run.get("self_assessment_responses", 0))
     run.setdefault("overall_summary", {})["board_io"] = io.get("overall_summary", "")
-    # Peers are never re-scored or re-written inside-out (Rule 17): their cells, page summary and the peer narrative are the
+    # Peers are never re-scored or re-written inside-out (Rule 20): their cells, page summary and the peer narrative are the
     # outside-in ones verbatim, whatever the model returns. Restoring them here keeps the two stages identical by construction.
     for i, src in enumerate(base.get("subjects", [])):
         if src.get("role") == "peer": run["subjects"][i] = copy.deepcopy(src)

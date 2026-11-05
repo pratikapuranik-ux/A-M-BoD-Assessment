@@ -285,7 +285,7 @@ export interface View {
   self_assessment_themes?: SaTheme[];
   guardrails?: GuardrailGroup[];
   /** names of the files the user supplied for each stage (the files themselves are not kept) */
-  documents_provided?: { oi?: { name: string; slot: number }[]; io?: { name: string; slot: number }[] };
+  documents_provided?: { oi?: { name: string; slot: number; subject?: number }[]; io?: { name: string; slot: number; subject?: number }[] };
   q: [string, string, string][] | string[][];
   modes: Record<string, string>;
   scale: ScaleBand[];

@@ -53,7 +53,7 @@ def can_generate(n: int, used: int | None) -> tuple[bool, str | None]:
 
 
 def _base_url(request: Request) -> str:
-    pub = (os.environ.get("BOARD_PUBLIC_URL") or os.environ.get("NEXUS_PUBLIC_URL") or "").strip().rstrip("/")
+    pub = (os.environ.get("BOARD_PUBLIC_URL") or "").strip().rstrip("/")
     # a public URL that points at this computer (e.g. an old Vite dev port) is no better than where the app is being served: use the request's own address
     return pub + "/" if pub and urlsplit(pub).hostname not in LOCAL_HOSTS else str(request.base_url)
 

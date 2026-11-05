@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-grade.py (rules v1.2, board-only) - compute grades from a run JSON and validate the scoring rules.
+grade.py (rules v1.3, board-only) - compute grades from a run JSON and validate the scoring rules.
 
 Usage:
     python grade.py run.json            # validate, compute, write "computed" back into run.json
@@ -9,10 +9,12 @@ Usage:
 Stage-aware: an outside-in run scores the "board" cell of every indicator; an inside-out run keeps the
 outside-in "board" cell untouched and adds a "board_io" cell (post inside-out). Both are graded and the
 outputs show them side by side. Peers are never re-scored in the inside-out stage.
-Enforces rules 2-7, 10, 16 and Part D (inside-out evidence) mechanically; exit 1 on blocking violations.
+Enforces rules 2-7, 10, 15-17 and Part D (inside-out evidence, rules 20-24) mechanically; exit 1 on blocking violations.
+Rules 16-17 (retrieval log, fact sheet, source eligibility, time windows) and the Rule 19 completion checks run on the outside-in board cells.
 """
 import json, sys
 from common import *
+from retrieval_checks import run_checks
 
 STRONG = set(FW["strong_classes"]); WEAK = {"searched_record", "silence"}
 CAPPED = dict(FW["silence_capped"]); CAPPED.update(FW["searched_record_capped"])
@@ -24,7 +26,7 @@ def validate_cell(name, iid, lens, cell, evidence, problems, warnings, stage):
         if (cell or {}).get("na_cause") not in FW["na_causes"]:
             problems.append((name, where, f"not assessable: na_cause must be one of {FW['na_causes']}"))
         if not ((cell or {}).get("rationale") or "").strip():
-            problems.append((name, where, "not assessable: rationale must list what was searched (Rule 15)"))
+            problems.append((name, where, "not assessable: rationale must list what was searched (Rule 14)"))
         return
     s = cell["score"]
     if s not in (1, 2, 3, 4, 5):
@@ -130,6 +132,7 @@ def main():
         if pa.get("status") not in FW["action_statuses"]: problems.append(("run", "prior_actions_status", f"status must be one of {FW['action_statuses']}"))
     for s in subs:
         validate_subject(s, evidence, lenses, problems, warnings, stage); s["computed"] = compute_subject(s, lenses, stage)
+    run_checks(run, problems, warnings)   # Rules 16-17 and 19 (retrieval log, fact sheet, sources, windows, reconciliation)
     # history consistency
     for h in run.get("history", []):
         if h.get("period") == meta.get("period"): problems.append(("run", "history", "history contains the current period"))

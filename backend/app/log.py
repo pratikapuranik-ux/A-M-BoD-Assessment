@@ -1,4 +1,4 @@
-"""structlog setup: console renderer by default, JSON with NEXUS_LOG_JSON=1."""
+"""structlog setup: console renderer by default, JSON with BOARD_LOG_JSON=1."""
 from __future__ import annotations
 
 import logging

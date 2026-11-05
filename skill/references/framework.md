@@ -91,6 +91,10 @@ Whether the board's attention stays on the end customer or drifts toward interna
 | 3 - Mixed | Customer or quality metrics included at low weight or with easily met targets. |
 | 5 - Day 1 | Meaningful customer or quality metric in incentives, with demonstrated reduction in payout when missed. |
 
+<!-- ruling-1.4:start -->
+**Scoring ruling (methodology owner):** "Quality" means the quality of the company's products or services as customers experience it: product quality, service levels or reliability delivered to customers, defect, complaint or recall rates. Safety, operating, production, cost, emissions and other internal performance measures are not customer or quality metrics, and a payout reduction applied for missing them is not downside on a quality metric. Score 1.4 as follows. Pay entirely financial: 1. No customer or product/service-quality measure, but other non-financial measures (safety, operating, climate) carry weight in pay: 2 (part of the 1 anchor and part of the 3 anchor). A customer or product/service-quality measure at low weight or with easily met targets: 3. A customer or product/service-quality measure at meaningful weight with a payout reduction shown for missing it: 5; 4 where only part of that is shown (meaningful weight with no reduction demonstrated, or a demonstrated reduction on a low weight).
+<!-- ruling-1.4:end -->
+
 **Board lens:** Has the compensation committee put a meaningful customer or quality metric into incentives, cascaded it below the C-suite, and enforced the downside when it was missed?
 
 **Time window:** most recent filing cycle plus events in the 24-month window

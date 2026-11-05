@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { AppDialog, Button, Card, GradeChip, KpiTile, PageHead, toast } from '../components/ui'
 import { useJourney } from '../lib/useJourney'
 import { addBusy, freshAssessment, openCompany } from '../lib/actions'
-import { coLabel, greeting, PATHS, todayLabel } from '../lib/journey'
+import { coLabel, greeting, PATHS, runLabels, savedAt, shownName, todayLabel } from '../lib/journey'
 import { useDeleteCompany } from '../api/queries'
 import { useInsideOut } from '../store/insideOut'
 import type { CompanySummary } from '../api/types'
@@ -17,6 +17,7 @@ export default function Home() {
   const [target, setTarget] = useState<CompanySummary | null>(null)
   const done = cs.filter((c) => c.stages?.outside_in).length
   const co = j?.meta.short || j?.meta.company || cur?.short || ''
+  const runs = runLabels(cs)
 
   const newAssessment = () => { freshAssessment(); nav(PATHS.setup) }
   const pick = async (id: string) => {
@@ -37,7 +38,7 @@ export default function Home() {
   return (
     <>
       <Band>
-        <PageHead eyebrow={todayLabel()} title={greeting() + (session.name ? ', ' + session.name.split(' ')[0] : '')}
+        <PageHead eyebrow={todayLabel()} title={greeting() + (shownName(session.name) ? ', ' + shownName(session.name).split(' ')[0] : '')}
           sub="Your board assessments, readouts and open actions in one place."
           right={<Button variant="inv" icon="plus" onClick={newAssessment}>New assessment</Button>} />
         <div className="kpis kband">
@@ -64,13 +65,14 @@ export default function Home() {
             {apiOn && <Button variant="sec" size="sm" icon="plus" onClick={() => { if (!addBusy()) useInsideOut.getState().resetAdd(); nav(PATHS.setup) }}>Add a company</Button>}
           </div>
           {cs.length ? (
-            <div className="scroll"><table className="tbl port"><thead><tr><th>Company</th><th>Peers</th><th>Period</th><th>Outside-in</th><th>After inside-out</th><th></th></tr></thead><tbody>
+            <div className="scroll"><table className="tbl port"><thead><tr><th>Assessment</th><th>Peers</th><th>Period</th><th>Outside-in</th><th>After inside-out</th><th>Saved</th><th></th></tr></thead><tbody>
               {cs.map((c) => { const g = c.grades || {}; return (
                 <tr key={c.id}>
-                  <td><b>{c.name}</b><div className="muted">{c.ticker || ''}{c.source === 'research' ? ' · researched' : c.source === 'imported' ? ' · imported' : ''}</div></td>
-                  <td>{(c.peers || []).join(', ')}</td><td>{c.period || ''}</td>
-                  <td>{g.oi ? <><GradeChip g={g.oi} /> <span className="muted">{c.labels?.oi || ''}</span></> : <span className="muted">–</span>}</td>
+                  <td><b>{c.name}</b><div className="tags">{c.ticker && <span className="tag">{c.ticker}</span>}{runs[c.id] && <span className="tag run">{runs[c.id]}</span>}{c.source === 'research' ? <span className="tag">Researched</span> : c.source === 'imported' ? <span className="tag">Imported</span> : null}</div></td>
+                  <td><div className="tags">{(c.peers || []).map((p) => <span className="tag" key={p}>{p}</span>)}</div></td><td className="nw">{c.period || ''}</td>
+                  <td>{g.oi ? <span className="gcell"><GradeChip g={g.oi} /> <span className="muted">{c.labels?.oi || ''}</span></span> : <span className="muted">–</span>}</td>
                   <td>{g.io ? <GradeChip g={g.io} /> : <span className="muted">Not yet</span>}</td>
+                  <td className="nw muted">{savedAt(c.updated) || '–'}</td>
                   <td className="ra"><div className="row nowrap" style={{ justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
                     <Button size="sm" variant={c.id === session.companyId ? '' : 'sec'} onClick={() => pick(c.id)} aria-label={`${c.id === session.companyId ? 'Continue' : 'Open'} ${coLabel(c)}`}>{c.id === session.companyId ? 'Continue' : 'Open'}</Button>
                     {apiOn && <Button size="sm" variant="sec" icon="trash" onClick={() => setTarget(c)} aria-label={`Delete ${c.name}`} title="Delete" />}

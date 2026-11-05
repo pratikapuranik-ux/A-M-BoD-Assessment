@@ -1,6 +1,6 @@
-# Scoring Rules v1.2 (outside-in)
+# Scoring Rules v1.3 (outside-in, then inside-out)
 
-Apply every rule on every run. `scripts/grade.py` enforces rules 2, 3, 4, 5, 6, 7, 10 and 16 mechanically from the run JSON and checks run mode and rule version; the others are applied while researching and scoring.
+Apply every rule on every run. `scripts/grade.py` enforces rules 2, 3, 4, 5, 6, 7, 10, 15, 16, 17 and the completion checks of 19 mechanically from the run JSON and checks the rule version; the others are applied while researching and scoring. Rules 20-24 govern the inside-out stage (Stage 2); the board-act and retrieval rules keep their v1.3 numbers (13 board acts, 14 minimum retrieval, 15 coverage).
 
 ## Rule 1: One lens: the board
 
@@ -28,7 +28,7 @@ Average of assessed indicator scores, mapped to A-F using the grade scale. A let
 
 ## Rule 7: Overall grades
 
-Map reported dimension letters A=5, B=4, C=3, D=2, F=1; average; round midpoints down (2.50 is a D); map back. Four or more dimensions reported: overall grade shown. Exactly three: shown as Provisional and excluded from cross-company comparisons. Fewer than three: no overall grade.
+Map reported dimension letters A=5, B=4, C=3, D=2, F=1; average; round halves down; map back. Four or more dimensions reported: overall grade shown. Exactly three: shown as Provisional and excluded from cross-company comparisons. Fewer than three: no overall grade.
 
 ## Rule 8: Time windows
 
@@ -46,47 +46,61 @@ Within each scoped pair (3.4/5.1, 5.4/6.3, 1.4/6.1, 2.3/3.3), an evidence item i
 
 Direct evidence, no corroboration required, from the approved list: Bloomberg, Reuters, The Wall Street Journal, Financial Times, Forbes, AP, The New York Times, Barron's, The Economist, CNBC, Nikkei, Handelsblatt, Les Echos, The Economic Times, Mint (The Economic Times and Mint for Indian companies). Recognised sector trade press (e.g. Food Business News, FoodNavigator, Supermarket News) is direct evidence for event facts (what was announced, when, at what value) and context for interpretation or opinion. Content through S&P Capital IQ, AlphaSense or PitchBook is treated according to its underlying source. Events in the last 90 days are marked RECENT.
 
-## Rule 12: Consistency test
-
-Each company is run at least twice on the same rule version. Tolerance: indicator scores within one point and dimension letters unchanged.
-
-## Rule 13: Output order
+## Rule 12: Output order
 
 Per dimension: the board grade, two or three evidence points with citations, confidence, and where public evidence limits the grade. Overall grades follow. Actions come last.
 
-## Rule 14: Formal board acts as Board-lens evidence
+## Rule 13: Formal board acts as Board-lens evidence
 
 Acts the board formally approves are Board evidence for the indicator they bear on and count as strong direct evidence under Rule 3: Dividend declarations, increases, cuts (5.1, 5.4, 6.3); Buyback authorisations (5.1, 6.2); M&A and divestiture approvals (incl. 'unanimously approved') (3.4, 4.2); Guidance-framework or long-term algorithm changes (2.1); CEO appointments, separations and succession announcements (5.2, 4.2); Committee creation, renaming or dissolution (2.4).
 
-## Rule 15: Minimum retrieval before 'not assessable'
+## Rule 14: Minimum retrieval before 'not assessable'
 
 An indicator may be marked not assessable only after the standard retrieval set for that indicator has been searched, and the rationale lists what was searched. The minimum set per subject: (1) Latest 10-K / annual report, plus five years of cash-flow statements. (2) Five years of proxy statements, read in full, including the pay discussion and governance guidelines. (3) Four to eight earnings call transcripts with analyst Q&A (CapIQ or AlphaSense preferred), including any call held on the day of a major transaction announcement. (4) A 24-month sweep of 8-Ks / exchange announcements, and a 36-month sweep for Item 5.02. (5) A merger proxy or registration statement for any pending transaction. (6) Sector regulator registers relevant to indicator 1.3 (e.g. FDA recalls for food, CFPB complaints for consumer finance). (7) Investor day materials and sector conference presentations (e.g. CAGNY for consumer staples). (8) Where accessible: ISS / Glass Lewis reports and Moody's / S&P / Fitch reports.
 
-## Rule 16: Coverage reporting
+## Rule 15: Coverage reporting
 
 Each run reports the coverage ratio (assessed / 22) per subject and splits the not-assessable cells into three causes: rule-limited, disclosure-limited and retrieval-limited, so a gap can be attributed to the company or to the run.
 
-## Rule 17: Inside-out stage is a re-score, not a new framework
+## Rule 16: Retrieval log and fact sheet
+
+Every subject carries a `retrieval_log` and a `facts` block, created by `scripts/init_run.py` and filled as research proceeds. The log records, per subject: each Rule 14 item (R1-R8) with a final status (found, searched_none, unavailable, or not_applicable for R5 only) and the documents or queries behind it; the filing-feed sweep with its from and to dates and the number of filings reviewed; every register in the sector pack (`assets/retrieval_spec.json`) as searched or not applicable with a reason; and every event-sweep query, run over the 24 months to `run.as_of`, with the number of results reviewed and the evidence ids it produced. The fact sheet records, for every indicator, each must-extract fact as found (value and evidence ids) or not disclosed (where it was searched). Uploaded documents do not exempt a subject from the web sweep: the sweep is what catches events after the latest filing. `grade.py` blocks while any entry is missing or not final.
+
+## Rule 17: Source eligibility and time windows (mechanical)
+
+Every evidence item declares a `source_type`; its `evidence_class` must be allowed for that type (strong_direct only from company filings, regulators, exchanges and courts; board_act only from company or exchange filings; news only from the approved list, by `outlet`; trade press only from the sector pack or `run.extra_trade_press`; rating agencies, proxy advisors, sell-side and anything else are indirect). Excluded domains (social media, forums, blogs, review sites) are blocked. Evidence cited in a scored cell must fall inside the indicator's window measured back from `run.as_of` (24 months for 3.2, 4.1, 4.2, 5.4, 6.3 and the default indicators; 36 months for 2.1, 4.3; five years for 3.4, 5.1, 5.2, 6.1, 6.2, and for 2.4 because committee structure is judged across five proxies), using `event_date` where the event predates the document; behaviour indicators require `event_date` on every item. `recent` is recomputed from `run.as_of`.
+
+## Rule 18: Consistency test (optional)
+
+When `run.consistency.mode` is `double`, the company and peers are researched and scored a second time, independently, from a fresh `init_run.py` file, and `scripts/compare_runs.py` compares the two. Tolerance: every indicator within one point, no cell flipping between assessed and not assessable, dimension letters unchanged; peer-relative indicators are excluded when the peer sets differ. A REVIEW verdict lists the cells to re-read against the fact sheet before either result stands; the verdict is recorded in `run.consistency`. The script may also be used to compare any two runs of the same company.
+
+## Rule 19: Reconciliation
+
+Two runs that differ are reconciled cell by cell, not by choosing one wholesale. `compare_runs.py --plan` gives each differing cell a basis and a recommendation: rule_check and evidence recommendations are mechanical; merge recommends re-research; judgement items carry an analyst recommendation with reasons. The user decides every cell; the analyst never records a decision on the user's behalf. Adopted cells carry their evidence and fact-sheet entries; re-research cells block grading until scored; synthesis text affected by any change is rewritten before delivery. The decisions, their basis and the person deciding are kept in `run.reconciliation` and shown in the report and dashboard.
+
+## Rule 20: Inside-out stage is a re-score, not a new framework
 
 The inside-out stage keeps every outside-in score unchanged in the `board` cell and adds a `board_io` cell (post inside-out) for the company only. The same 22 indicators and the level-neutral anchors apply (the outside-in overrides for 1.2 and 4.1 do not). Peers are never re-scored; peer comparisons use the company's outside-in grade.
 
-## Rule 18: Inside-out evidence weight
+## Rule 21: Inside-out evidence weight
 
 Board documents (minutes, agendas, packs, governance framework, strategy and capital papers, treasury reports, evaluation and succession documents, CEO reports, customer and risk reports, executive-session notes) are `inside_out` evidence and count as strong direct evidence: one item can support a 1 or 5. A post-inside-out score must cite at least one `inside_out` or `self_assessment` item; a cell may instead be carried forward unchanged with `carried_forward: true` when the documents add nothing on that indicator. A post-inside-out score may move in either direction.
 
-## Rule 19: Self-assessment evidence
+## Rule 22: Self-assessment evidence
 
 Questionnaire answers are `self_assessment` evidence, self-reported. Alone they support at most Medium confidence and cannot lift a score above 3 unless corroborated by an inside-out or public item; they can lower a score on their own. An answer is cited by its question and code only and is never quoted: the substance appears solely as themes grouped across respondents, so no individual can be identified. Self-ratings (1 / 3 / 5 per dimension) are shown as context in the sources appendix and are not scored.
 
-## Rule 20: Coverage threshold and gaps in the inside-out stage
+## Rule 23: Coverage threshold and gaps in the inside-out stage
 
 A dimension's post-inside-out grade is reported only if at least two-thirds of its indicators are assessed. A cell still not assessable after the documents are read is recorded with its cause, and the indicator is listed in the additional-information section only if a specific document would settle it.
 
-## Rule 21: Trend, actions and status
+## Rule 24: Trend, actions and status
 
 Prior quarters come only from prior run files produced by this skill (an inside-out run file supersedes an outside-in file for the same period); at most four quarters are shown. Indicator-level change is shown only where a score moved. Status of prior actions is recorded from inside-out evidence with one of: completed, cancelled, on track, behind, not started, no public evidence; in an outside-in run the status is not forced and is asked for in the inside-out stage. Actions behind or not started get a back-on-track entry (what happened, impact, root cause, mechanism to prevent, measures to track). New actions: at most five, each with measures and a target quarter.
 
 ## Grade scale (dimension level)
+
+Dimension score = average of assessed indicator scores, mapped to a letter:
 
 | Average indicator score | Grade | Classification |
 |---|---|---|
@@ -100,15 +114,16 @@ Prior quarters come only from prior run files produced by this skill (an inside-
 
 1. Map each reported dimension letter: A=5, B=4, C=3, D=2, F=1.
 2. Average across reported dimensions.
-3. Round to the nearest whole number; midpoints round down (3.50 -> 3, 2.50 -> 2).
+3. Round to the nearest whole number; exact halves round **down** (3.50 -> 3).
 4. Map back: 5=A, 4=B, 3=C, 2=D, 1=F.
 5. Four or more dimensions: full overall grade. Exactly three: provisional. Fewer: none.
 
 | Dimension grades | Average | Overall |
 |---|---|---|
 | B B B B C C | 3.67 | B |
-| B B B C C C | 3.50 | B |
-| B B B B C D | 3.50 | B |
+| B B B C C C | 3.50 | C |
+| B B B B C D | 3.50 | C |
+| A A B B B B | 4.33 | B |
+| A A A B B B | 4.50 | B |
 | B B C C C D | 3.17 | C |
-| A B B C C F | 3.33 | C |
 | B C C (3 reported) | 3.33 | C, provisional |

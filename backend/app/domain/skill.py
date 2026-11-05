@@ -1,4 +1,4 @@
-"""Skill reference data (framework.json, rules v1.2) and the small helpers shared by the engine and the view builder.
+"""Skill reference data (framework.json, rules v1.3) and the small helpers shared by the engine and the view builder.
 
 Pure logic: no web or DB imports. The framework file is bundled in app/data so the backend does not depend on skill/.
 """
@@ -46,19 +46,30 @@ READ = [
     "Overall grades are the rounded average of the dimension letters (A=5 … F=1; midpoints round down, so 2.5 is a D); provisional where only three dimensions are reported. Where evidence falls below the minimum, an indicator is marked not assessable and excluded rather than scored as Mixed, with the cause recorded (disclosure-limited, retrieval-limited, rule-limited). Peers are assessed on public information only.",
 ]
 RULES = [
-    "Every indicator is scored once, for the board; a cell with nothing to assess is marked not applicable.",
-    "Scores are 1, 3 or 5; 2 and 4 only where evidence meets parts of both adjacent anchors.",
+    "Every indicator is scored once, for the board; what the company did under the board's watch is attributed to the board.",
+    "Scores are 1, 3 or 5; 2 and 4 only where evidence meets parts of both adjacent anchors, with the parts named.",
     "A 1 or 5 requires two independent items from two documents, or one strong direct item (regulator or court record, formal board act, audited figure, or a board document); a 3 requires one.",
     "Confidence is assigned on the evidence: High = two direct sources or one strong source; Medium = one direct or two indirect; Low = a single indirect source, an inference, a silence-based score, or self-assessment alone.",
     "Below the minimum an indicator is not assessable and excluded, never defaulted to 3; silence is scorable in full on 1.4, 5.2, 5.3 and capped at 3 on 2.3, 2.4, 4.3; an empty register search supports up to 3 on 1.3.",
-    "A dimension grade is reported only if at least half (outside-in) or two-thirds (post inside-out) of its indicators are assessed.",
-    "Overall grade is the rounded average of dimension letters, with midpoints rounding down (for example, an average of 2.5 is a D); provisional at three dimensions; none below three.",
+    "A dimension grade is reported only if at least half of its indicators are assessed (two-thirds after inside-out documents are read; Rule 23).",
+    "Overall grade is the rounded average of dimension letters (A=5 to F=1), with midpoints rounding down (an average of 2.5 is a D); provisional at three dimensions; none below three.",
     "Behaviour indicators use 24 months (36 for 2.1 and 4.3); trend indicators five years of filings.",
     "3.2, 5.1, 6.1 and 6.2 are scored relative to the named peer set.",
     "Within scoped pairs an evidence item is primary for one indicator only.",
-    "Approved news and trade press (for event facts) are direct evidence; formal board acts are strong direct evidence.",
-    "Inside-out: board documents outrank public sources; the post inside-out score must cite at least one inside-out or self-assessment item; self-assessment alone is at most Medium confidence; peers are never re-scored.",
-    "Each company is run twice on the same rule version; indicator scores within one point and unchanged dimension letters are required for the result to stand.",
+    "Approved news and trade press (for event facts) are direct evidence; events in the last 90 days are marked RECENT.",
+    "Output order: per dimension the grade, evidence points with citations, confidence and where evidence limits the grade; overall grades; actions last.",
+    "Formal board acts (dividends, buyback authorisations, M&A approvals, guidance changes, CEO appointments, committee changes) are strong direct evidence for the indicator they bear on.",
+    "An indicator is marked not assessable only after the minimum retrieval set for it has been searched, and the rationale lists what was searched.",
+    "Each subject reports its coverage (assessed of 22) and splits the not-assessable cells into rule-limited, disclosure-limited and retrieval-limited.",
+    "Each subject carries a retrieval log (the minimum set, the sector registers, a filing sweep and fourteen event-sweep queries to the as-of date) and a fact sheet per indicator; grading waits until every entry is complete.",
+    "Every evidence item has a source type; its evidence class must be allowed for that type, news must come from approved outlets, and cited evidence must fall inside the indicator's time window measured from the as-of date.",
+    "Consistency test: two independent runs on the same rule version should score within one point on every indicator, with no assessed / not-assessable flips and unchanged dimension letters; it applies only where a second run is made.",
+    "Where two runs differ, each differing cell is reconciled on its evidence and reasons, and the differences are listed in the reconciliation section.",
+    "Inside-out stage: every outside-in score is kept and a post inside-out score is added for the company only; peers are never re-scored.",
+    "Inside-out: board documents outrank public sources and count as strong direct evidence; the post inside-out score must cite at least one inside-out or self-assessment item, or be carried forward unchanged.",
+    "Self-assessment answers are self-reported: alone they support at most Medium confidence, can lower a score but not lift it above 3, and are reported only as themes across respondents.",
+    "A post inside-out dimension grade is reported only if at least two-thirds of its indicators are assessed.",
+    "Prior quarters come only from prior run files of the same rule version (at most four); prior actions are given a status from inside-out evidence and new actions are limited to five.",
 ]
 METHOD = [f"{k:02d}  {t}" for k, t in enumerate(RULES, 1)]
 

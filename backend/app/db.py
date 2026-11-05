@@ -1,4 +1,4 @@
-"""SQLAlchemy engine and session factory. SQLite by default (WAL, foreign keys on); any SQLAlchemy URL via NEXUS_DATABASE_URL."""
+"""SQLAlchemy engine and session factory. SQLite by default (WAL, foreign keys on); any SQLAlchemy URL via BOARD_DATABASE_URL."""
 from __future__ import annotations
 
 from contextlib import contextmanager

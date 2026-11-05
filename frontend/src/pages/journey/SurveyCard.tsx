@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, ButtonLink, Card, Chip, DlButton, Meter, toast } from '../../components/ui'
+import { AddFiles, Button, ButtonLink, Card, Chip, DlButton, Meter, toast } from '../../components/ui'
 import { useInvite, useRemoveResponse, useSurvey, useUninvite } from '../../api/queries'
 import { EMAIL_RE } from '../../lib/journey'
 import { numWord } from '../../lib/constants'
@@ -63,7 +63,7 @@ export default function SurveyCard({ cid, j, apiOn }: { cid: string; j: JourneyV
     <Card className="acc" id="survey">
       <h3>3. Board self-assessment</h3>
       <p className="muted">Invite directors to answer {numWord(j.q.length)} short questions about how the board works. Each person receives a personal link. Answers are pooled and never attributed to anyone.</p>
-      {v.local && <p className="muted">These links open only on this computer. To invite directors on other devices, host the app and set BOARD_PUBLIC_URL.</p>}
+      {v.local && <p className="muted">These links work on this computer only. To send them to directors on other devices, your administrator needs to publish the app at an address they can reach (the BOARD_PUBLIC_URL setting).</p>}
       <div className="svmeter">
         <div style={{ flex: '0 0 min(220px, 40%)' }}><Meter pct={Math.min(100, (n / (v.min || 1)) * 100)} /></div>
         <span>{need ? <><b>{n} of {v.min}</b> responses · {need} more needed before the inside-out view can be prepared</> : <><b>{n} {n === 1 ? 'response' : 'responses'}</b> · enough to prepare the inside-out view (at least {v.min} needed)</>}</span>
@@ -111,8 +111,8 @@ export default function SurveyCard({ cid, j, apiOn }: { cid: string; j: JourneyV
       <p className="muted">Directors can also complete the Word questionnaire. Each returned file counts as one anonymous response.</p>
       <div className="row"><DlButton files={j.files} k="quest" label="Questionnaire (Word)" icon="doc" /></div>
       <div className="frow">
-        <input type="file" id="qfile" accept=".docx" multiple className="fileinput" aria-label="Returned questionnaires" value=""
-          onChange={(e) => { const fs = sizeOk(Array.from(e.target.files || [])); if (fs.length) void loadQuestionnaires(fs) }} />
+        <AddFiles label="Add returned questionnaires" icon="doc" accept=".docx" ariaLabel="Returned questionnaires"
+          onFiles={(fl) => { const fs = sizeOk(Array.from(fl || [])); if (fs.length) void loadQuestionnaires(fs) }} />
       </div>
       {qFiles.length > 0 && <div className="chips">{qFiles.map((f, k) => <Chip key={f.name + k} label={`Remove ${f.name}`} onRemove={() => useInsideOut.getState().removeQFile(k)}>{f.name} <span className="muted" style={{ marginLeft: 6 }}>{f.n} answers</span></Chip>)}</div>}
     </Card>

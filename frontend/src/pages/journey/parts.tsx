@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { useActionEdit } from '../../api/queries'
 import { Link } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
-import { Button, Card, Chip, DlButton, GradeChip, GradeSquare, NextButton } from '../../components/ui'
+import { Button, Card, Chip, Collapsible, DlButton, GradeChip, GradeSquare, NextButton } from '../../components/ui'
 import { DIMN, DIMS, DSHORT } from '../../lib/constants'
 import { dimGrades, fmtStatus, overallAvg, prevGradeArrow, priorActionsList, selectedPriors } from '../../lib/journey'
 import { useSession } from '../../store/session'
@@ -149,6 +149,11 @@ export function PriorCard({ j, fresh }: { j?: JourneyView; fresh: boolean }) {
   const co = j?.meta.short || j?.meta.company || ''
   const pr = fresh || !j ? [] : (j.priors || []).filter((p) => p.period !== j.meta.period).slice().sort((a, b) => (a.period < b.period ? 1 : -1))
   const n = fresh ? 0 : sel.length
+  if (!pr.length) {
+    return (
+      <div className="slimnote"><Icon name="clip" size={16} /><span><b>Earlier assessments (for trend)</b> · {fresh ? 'None yet. Enter a company that is already on file and its earlier assessments are listed here, so you can pick up to two to show the trend.' : `None for ${co} yet. Completed assessments are listed here, so in a later quarter you can pick up to two to show the trend.`}</span></div>
+    )
+  }
   return (
     <Card className="acc">
       <h3>Earlier assessments (for trend)</h3>
@@ -180,16 +185,40 @@ export function PriorCard({ j, fresh }: { j?: JourneyView; fresh: boolean }) {
   )
 }
 
-/** The documents already supplied for this stage's assessment (names only; the files are not kept), shown again on the input page. */
+/** The documents already supplied for this stage's assessment (names only; the files are not kept), in a section that opens on request:
+ *  outside-in files are grouped by the company or peer they are about, and a long list can be searched. */
 export function SubmittedDocs({ stage }: { stage: 'oi' | 'io' }) {
-  const { raw } = useJourney()
+  const { raw, j } = useJourney()
+  const [q, setQ] = useState('')
   const docs = raw?.documents_provided?.[stage] || []
   if (!docs.length) return null
+  const names = [j?.meta.company || 'The company', ...(j?.meta.peer_short || [])]
+  const label = (i: number) => names[i] || `Peer ${i}`
+  const grouped = stage === 'oi' && docs.some((d) => typeof d.subject === 'number')
+  const groups = new Map<number, typeof docs>()
+  docs.forEach((d) => { const k = grouped ? (d.subject ?? 0) : 0; groups.set(k, [...(groups.get(k) || []), d]) })
+  const order = [...groups.keys()].sort((a, b) => a - b)
+  const needle = q.trim().toLowerCase()
+  const base = (n: string) => n.split('/').pop() || n
+  const hit = (n: string) => !needle || n.toLowerCase().includes(needle)
+  const counts = grouped ? order.map((k) => `${label(k)} ${groups.get(k)!.length}`).join(' · ') : ''
   return (
-    <div className="muted" style={{ marginBottom: 10 }}>
-      <b>Already supplied ({docs.length}):</b>
-      <ul style={{ margin: '4px 0 0 18px' }}>{docs.map((d, i) => <li key={i}>{d.name}</li>)}</ul>
-    </div>
+    <Collapsible className="supplied" summary={<span><b>Documents supplied ({docs.length})</b>{counts && <span className="muted"> · {counts}</span>}</span>}>
+      {docs.length > 12 && <input type="search" className="supfind" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a file" aria-label="Find a supplied file" />}
+      <div className="supscroll">
+        {order.map((k) => {
+          const items = groups.get(k)!.filter((d) => hit(d.name))
+          if (!items.length) return null
+          return (
+            <div key={k}>
+              {grouped && <h4 className="suph">{label(k)} <span className="muted">({items.length})</span></h4>}
+              <ul className="suplist">{items.map((d, i) => <li key={i} title={d.name}>{base(d.name)}</li>)}</ul>
+            </div>
+          )
+        })}
+        {needle && !docs.some((d) => hit(d.name)) && <p className="muted">No supplied file matches.</p>}
+      </div>
+    </Collapsible>
   )
 }
 

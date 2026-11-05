@@ -35,24 +35,20 @@ class Settings:
     log_json: bool
     cors_origins: list[str] = field(default_factory=list)
 
-    @property
-    def max_body(self) -> int:
-        return 140 * 1024 * 1024  # ~100 MB of documents once base64-encoded, plus the rest of the request
-
 
 def load_settings() -> Settings:
-    if not os.environ.get("NEXUS_SKIP_DOTENV"):
+    if not os.environ.get("BOARD_SKIP_DOTENV"):
         _load_env(Path(os.environ.get("BOARD_ENV_FILE") or PROJECT_ROOT / ".env"))
-    db = os.environ.get("NEXUS_DATABASE_URL") or "sqlite:///./nexus.db"
-    cors = [o.strip() for o in (os.environ.get("NEXUS_CORS_ORIGINS") or "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
+    db = os.environ.get("BOARD_DATABASE_URL") or "sqlite:///./bod_assessment.db"
+    cors = [o.strip() for o in (os.environ.get("BOARD_CORS_ORIGINS") or "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
     return Settings(
         database_url=db,
-        storage_dir=Path(os.environ.get("NEXUS_STORAGE_DIR") or "./storage").resolve(),
-        min_responses=max(1, int(os.environ.get("BOARD_MIN_RESPONSES") or os.environ.get("NEXUS_MIN_RESPONSES") or 3)),
-        public_url=(os.environ.get("BOARD_PUBLIC_URL") or os.environ.get("NEXUS_PUBLIC_URL") or "").strip().rstrip("/"),
-        frontend_dist=Path(os.environ.get("NEXUS_FRONTEND_DIST") or PROJECT_ROOT / "frontend" / "dist"),
-        log_level=(os.environ.get("NEXUS_LOG_LEVEL") or "INFO").upper(),
-        log_json=(os.environ.get("NEXUS_LOG_JSON") or "").lower() in ("1", "true", "yes"),
+        storage_dir=Path(os.environ.get("BOARD_STORAGE_DIR") or "./storage").resolve(),
+        min_responses=max(1, int(os.environ.get("BOARD_MIN_RESPONSES") or 3)),
+        public_url=(os.environ.get("BOARD_PUBLIC_URL") or "").strip().rstrip("/"),
+        frontend_dist=Path(os.environ.get("BOARD_FRONTEND_DIST") or PROJECT_ROOT / "frontend" / "dist"),
+        log_level=(os.environ.get("BOARD_LOG_LEVEL") or "INFO").upper(),
+        log_json=(os.environ.get("BOARD_LOG_JSON") or "").lower() in ("1", "true", "yes"),
         cors_origins=cors,
     )
 

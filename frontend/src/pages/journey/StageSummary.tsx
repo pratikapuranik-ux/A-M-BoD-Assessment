@@ -53,8 +53,6 @@ export default function StageSummary({ stage }: { stage: 'oi' | 'io' }) {
           </div>
         </>
       )}
-      <h2 className="sech">Detailed report</h2>
-      {report}
       <NextCard title="Next: the board’s five actions" text="The outside-in actions, refined by what the board’s own material and the directors’ self-assessment showed." to={PATHS.actions} label="See the board’s five actions" />
       <div className="row" style={{ marginBottom: 20 }}><Link className="btn sec" to={PATHS.ioInput}><Icon name="upload" size={16} />Add more material and run again</Link></div>
       <p className="ks">Inputs: board documents and self-assessment responses are on the inside-out input page. This browser holds the files only until a run starts; the server keeps the response count and the report’s source list.</p>

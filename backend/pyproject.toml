@@ -1,7 +1,7 @@
 [project]
-name = "nexus-backend"
+name = "am-bod-assessment-backend"
 version = "0.1.0"
-description = "NEXUS board assessment backend (FastAPI + LangGraph + SQLAlchemy)"
+description = "A&M BoD Assessment backend (FastAPI + LangGraph + SQLAlchemy)"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]

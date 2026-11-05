@@ -1,4 +1,4 @@
-"""Grading engine (rules v1.2, board-only): port of skill/scripts/grade.py and load_history.py plus the js/engine.js and
+"""Grading engine (rules v1.3, board-only): port of skill/scripts/grade.py and load_history.py plus the js/engine.js and
 js/rules.js helpers (inside-out re-scoring, trend history, prior-action status, guardrail language scan).
 
 Pure logic, no I/O. `grade()` returns problem strings formatted "[<code>] <subject>: <text>", the format the legacy
@@ -10,6 +10,7 @@ import copy
 import re
 from typing import Any, Iterable
 
+from . import retrieval
 from .skill import (DIM_OF, DIMS, FW, IND_IDS, LV, VL, company_of, label_of, lenses_for, meets, period_label, peers_of,
                     round_midpoint_down, stage_of, to_grade)
 
@@ -19,6 +20,7 @@ CAPPED: dict[str, int] = dict(FW["silence_capped"])
 CAPPED.update(FW["searched_record_capped"])
 
 Issue = tuple[str, str, str]  # (code, subject, text)
+LEGACY_RULE_VERSIONS = ("1.2",)  # earlier runs stay viewable and re-gradable (not held to the v1.3 retrieval rules); they are never compared with v1.3 runs
 
 
 def _fmt(items: Iterable[Issue]) -> list[str]:
@@ -33,7 +35,7 @@ def validate_cell(name: str, iid: str, lens: str, cell: dict | None, evidence: d
         if (cell or {}).get("na_cause") not in FW["na_causes"]:
             problems.append((name, where, f"not assessable: na_cause must be one of {FW['na_causes']}"))
         if not ((cell or {}).get("rationale") or "").strip():
-            problems.append((name, where, "not assessable: rationale must list what was searched (Rule 15)"))
+            problems.append((name, where, "not assessable: rationale must list what was searched (Rule 14)"))
         return
     s = cell["score"]
     if s not in (1, 2, 3, 4, 5):
@@ -117,7 +119,7 @@ def validate_run(run: dict, evidence_only: bool = False) -> tuple[list[Issue], l
         problems.append(("run", "run.stage", f"must be one of {list(FW['stages'])}"))
     if meta.get("mode") not in FW["run_modes"]:
         problems.append(("run", "run.mode", f"must be one of {list(FW['run_modes'])}"))
-    if str(meta.get("rule_version")) != str(FW["rule_version"]):
+    if str(meta.get("rule_version")) not in (str(FW["rule_version"]), *LEGACY_RULE_VERSIONS):
         problems.append(("run", "run.rule_version", f"must be {FW['rule_version']}"))
     if not meta.get("period") or "-Q" not in str(meta.get("period")):
         problems.append(("run", "run.period", "must be set as YYYY-Qn"))
@@ -145,6 +147,7 @@ def validate_run(run: dict, evidence_only: bool = False) -> tuple[list[Issue], l
         if s.get("role") == "peer" and any("board_io" in (v or {}) for v in (s.get("indicators") or {}).values()):
             problems.append((s.get("name", "?"), "peer", "peers are never assessed with inside-out information"))
         validate_subject(s, evidence, lenses, problems, warnings, stage)
+    retrieval.check_run(run, problems, warnings)  # Rules 16-17: retrieval log, fact sheet, source types, time windows (v1.3 runs)
     for h in run.get("history", []) or []:
         if h.get("period") == meta.get("period"):
             problems.append(("run", "history", "history contains the current period"))

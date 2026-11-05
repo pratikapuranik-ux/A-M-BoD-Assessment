@@ -1,6 +1,6 @@
 # Inside-out documents
 
-The thirteen document types, in priority order for the Stage 2 offer (the first seven move the assessment most). Each line gives the indicators it settles. Ask for the whole Tier 1 set for the same 12-month window rather than minutes alone: US minutes are deliberately thin and the agenda and pack carry much of the signal. For the prototype, `scripts/simulate_inside_out.py` generates all thirteen plus an action tracker and a filled questionnaire.
+The thirteen document types, in priority order for the Stage 2 offer (the first seven move the assessment most). Each line gives the indicators it settles. Ask for the whole Tier 1 set for the same 12-month window rather than minutes alone: US minutes are deliberately thin and the agenda and pack carry much of the signal.
 
 | # | Document | Indicators settled |
 |---|---|---|

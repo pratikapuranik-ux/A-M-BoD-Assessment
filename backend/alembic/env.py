@@ -1,4 +1,4 @@
-"""Alembic environment: URL from NEXUS_DATABASE_URL (else alembic.ini), metadata from app.models."""
+"""Alembic environment: URL from BOARD_DATABASE_URL (else alembic.ini), metadata from app.models."""
 import os
 from logging.config import fileConfig
 
@@ -11,7 +11,7 @@ from app.db import Base
 config = context.config
 if config.config_file_name:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
-url = os.environ.get("NEXUS_DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+url = os.environ.get("BOARD_DATABASE_URL") or config.get_main_option("sqlalchemy.url")
 target_metadata = Base.metadata
 
 

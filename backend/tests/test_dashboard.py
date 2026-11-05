@@ -11,7 +11,7 @@ import pytest
 
 from app.services import deliverables as D
 
-EX = next(p for p in Path(__file__).resolve().parents if (p / "skill" / "example_runs").is_dir()) / "skill" / "example_runs"
+EX = Path(__file__).with_name("fixtures")
 CHECK_JS = Path(__file__).with_name("dashboard_dom_check.js")
 
 

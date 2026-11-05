@@ -17,7 +17,7 @@ PROMPTS = AGENTS_DIR / "prompts"
 
 
 def _skill_dir() -> Path:
-    for cand in (os.environ.get("NEXUS_SKILL_DIR"), PROJECT_ROOT / "skill", BACKEND_DIR / "skill"):
+    for cand in (os.environ.get("BOARD_SKILL_DIR"), PROJECT_ROOT / "skill", BACKEND_DIR / "skill"):
         if cand and (Path(cand) / "assets" / "framework.json").exists():
             return Path(cand)
     return PROJECT_ROOT / "skill"
@@ -31,6 +31,9 @@ REF_FILES = ["guardrails.md", "framework.md", "outside_in_overrides.md", "scorin
 
 MODEL = os.environ.get("BOARD_MODEL") or "claude-opus-5"  # Run A, the reconciliation and the final write-up
 MODEL_B = os.environ.get("BOARD_MODEL_B") or "claude-sonnet-5"  # Run B: the independent second run (a deployment of this name must exist on Foundry)
+DOC_INLINE_TOKENS = 60_000  # supplied documents on one subject up to this size are sent whole; more are searched instead
+DOC_SEARCHES = 80  # searches of the supplied documents one subject may make
+OCR_MODEL = os.environ.get("BOARD_OCR_MODEL") or MODEL_B  # reads scanned pages and images into text (services/ocr.py)
 # Microsoft Foundry (Azure) instead of the Claude API when its key and resource are set. Foundry has no server-side
 # fallback, and Azure-hosted deployments take only the basic web tools (BOARD_WEB_TOOLS=latest overrides).
 FOUNDRY = bool(os.environ.get("ANTHROPIC_FOUNDRY_API_KEY") and (os.environ.get("ANTHROPIC_FOUNDRY_RESOURCE") or os.environ.get("ANTHROPIC_FOUNDRY_BASE_URL")))
@@ -45,19 +48,22 @@ def _int_env(name, default, lo=1):
     except ValueError: return default
 
 
-# Per-subject ceilings on web_search / web_fetch; the Rule 15 retrieval set cannot be covered with fewer (BOARD_* override)
-SEARCH_USES, FETCH_USES, FETCH_TOKENS = _int_env("BOARD_SEARCH_USES", 60), _int_env("BOARD_FETCH_USES", 60), _int_env("BOARD_FETCH_TOKENS", 30000)
+# Per-subject ceilings on web_search / web_fetch; the Rule 14 retrieval set cannot be covered with fewer (BOARD_* override)
+SEARCH_USES, FETCH_USES, FETCH_TOKENS = _int_env("BOARD_SEARCH_USES", 90), _int_env("BOARD_FETCH_USES", 60), _int_env("BOARD_FETCH_TOKENS", 30000)
 SEARCH_BUDGET, FETCH_BUDGET = SEARCH_USES, FETCH_USES
 # Context ceiling (the model takes 1,000,000 tokens): once a conversation passes PRUNE_AT tokens, the text of fetched pages older than
 # the newest KEEP_RECENT pages is replaced by a stub that keeps the URL and title
 PRUNE_AT, KEEP_RECENT = _int_env("BOARD_CONTEXT_PRUNE_AT", 400000, lo=50000), _int_env("BOARD_CONTEXT_KEEP_RECENT", 8, lo=0)
-# Retrieval review: a subject that has read fewer pages than this floor (or still lists Rule 15 documents as unavailable) is sent
+DOC_TOOL_TOKENS = _int_env("BOARD_DOC_TOOL_TOKENS", 300000, lo=20000)  # text one subject may be given by the search and page tools in all
+KEEP_RECENT_DOCS = _int_env("BOARD_CONTEXT_KEEP_RECENT_DOCS", 10, lo=0)  # newest search and page results kept in view; older ones are cut like fetched web pages
+# Retrieval review: a subject that has read fewer pages than this floor (or still lists Rule 14 documents as unavailable) is sent
 # back to read more before its scores are accepted. REVIEW_ROUNDS=0 switches the review off.
 MIN_FETCHES, MIN_FETCHES_PEER = _int_env("BOARD_MIN_FETCHES", 20), _int_env("BOARD_MIN_FETCHES_PEER", 12)
-REVIEW_ROUNDS = _int_env("BOARD_REVIEW_ROUNDS", 2, lo=0)
-# Rule 12: every outside-in assessment is run this many times on the same rule version and the runs are compared (1 = no test)
-CONSISTENCY_RUNS = 1  # always one run; the Run A / Run B reconciliation path (graph._run_two) is not used
+REVIEW_ROUNDS = _int_env("BOARD_REVIEW_ROUNDS", 1, lo=0)  # one retrieval review: a second round cost minutes and rarely changed a score
+# Rule 18: every outside-in assessment is run this many times on the same rule version and the runs are compared (1 = no test)
+CONSISTENCY_RUNS = 2 if (os.environ.get("BOARD_CONSISTENCY_RUNS") or "1").strip() == "2" else 1  # 2: Run A / Run B in parallel, then reconciled (graph._run_two)
 MAX_CONTINUATIONS, MAX_JSON_RETRIES, MAX_FIX_ROUNDS, SUBJECT_WORKERS = 8, 2, 3, 6  # company and up to five peers at once
+MODEL_CALL_SLOTS = _int_env("BOARD_MODEL_CALLS", 8)  # subjects researching at once across both consistency runs (2 runs x 4 subjects = 8)
 CACHE = {"type": "ephemeral", "ttl": "1h"}
 PEER_PREFIXES = "XBKLN"
 BLOCKED = ["facebook.com", "glassdoor.com", "indeed.com", "instagram.com", "linkedin.com", "medium.com",

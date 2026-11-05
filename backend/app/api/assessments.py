@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 
 from app.api import survey as survey_api
 from app.api.errors import ApiError, read_body, submit
-from app.api.uploads import MAX_OI_DOCS, extract_documents
+from app.api.uploads import precheck_documents
 from app.domain import view as convert
 from app.log import get_logger
 from app.schemas import DeleteOut, ImportOut, JobOut, JobRef
@@ -45,6 +45,18 @@ def view(cid: str, mode: str | None = None):
     _company(cid)
     if mode and mode not in convert.FW["run_modes"]: raise ApiError(400, f"mode must be one of {list(convert.FW['run_modes'])}")
     return repo.view(cid, mode)
+
+
+@router.post("/api/companies/{cid}/anchor-audit")
+def anchor_audit(cid: str):
+    """A strict second reading of the company's saved outside-in scores against the anchors (services/audit.py). Nothing is changed or
+    saved: it returns, per indicator, the saved score, the audit's score and the reason."""
+    from app.services import audit
+    _company(cid)
+    items = [{"id": k, "name": d.get("name"), "score": d.get("score"), "rationale": d.get("rationale")} for k, d in (repo.view(cid, None).get("ind") or {}).items()]
+    try: rows = audit.audit(items, f"anchor audit of {cid}")
+    except audit.AuditError as e: raise ApiError(502, str(e)) from e
+    return {"audit": rows, "differs": sum(1 for r in rows if r["strict_score"] is not None and r["strict_score"] != r["score"])}
 
 
 @router.get("/api/companies/{cid}/files/{key}")
@@ -125,20 +137,22 @@ async def research(request: Request):
     if not PERIOD.match(period): probs.append("period must be YYYY-Qn")
     if mode not in convert.FW["run_modes"]: probs.append(f"mode must be one of {list(convert.FW['run_modes'])}")
     docs = b.get("documents") or []
-    if not isinstance(docs, list) or len(docs) > MAX_OI_DOCS: probs.append(f"documents: give a list of at most {MAX_OI_DOCS} files")
+    if not isinstance(docs, list): probs.append("documents: give a list of files")
     if probs: raise ApiError(400, "invalid research request", probs)
-    provided, probs = extract_documents(docs)
+    probs = precheck_documents(docs)  # quick checks only; the documents are read inside the job, with progress
     if probs: raise ApiError(400, "some documents could not be read", probs)
     st = runs.research_status()
     if not st["enabled"]: raise ApiError(503, "research is not available: " + st["reason"])
-    peers = [{"name": p["name"].strip(), "ticker": (p.get("ticker") or "").strip()} for p in peers]
+    from app.services.subjects import display_name
+    company = display_name(company)
+    peers = [{"name": display_name(p["name"]), "ticker": (p.get("ticker") or "").strip()} for p in peers]
 
     pending = convert.slug(convert.short_name(company), ticker)
     mid = repo.match_id(pending, company, ticker)
     try:
         if mid: repo.check_period(mid, period)
     except ValueError as e: raise ApiError(409, str(e))
-    return {"job_id": submit("research", runs.research_work(company, ticker, peers, period, mode, provided), mid or pending).id}
+    return {"job_id": submit("research", runs.research_work(company, ticker, peers, period, mode, docs), mid or pending).id}
 
 
 # ---------------- inside-out ----------------
@@ -156,14 +170,14 @@ async def inside_out(cid: str, request: Request):
     if probs: raise ApiError(400, "invalid inside-out request", probs)
     nd = len(convert.FW["inside_out_priority_docs"])
     s = repo.load_survey(cid); n = len(s["responses"]); answers, ratings = survey_api.combine(s["responses"])
-    extracted, probs = extract_documents(docs, max_slot=nd)
+    probs = precheck_documents(docs, max_slot=nd)
     if probs: raise ApiError(400, "some documents could not be read", probs)
     ok, why = survey_api.can_generate(n, s.get("used"))
     if not ok: raise ApiError(409, why)
-    if n == 0 and not extracted: raise ApiError(409, "add board documents or collect self-assessment responses")
+    if n == 0 and not docs: raise ApiError(409, "add board documents or collect self-assessment responses")
     st = runs.research_status()
     if not st["enabled"]: raise ApiError(503, "research is not available: " + st["reason"])
-    return {"job_id": submit("inside_out", runs.inside_out_work(cid, mode, extracted, answers, ratings, n), cid).id}
+    return {"job_id": submit("inside_out", runs.inside_out_work(cid, mode, docs, answers, ratings, n, nd), cid).id}
 
 
 # ---------------- jobs and delete ----------------

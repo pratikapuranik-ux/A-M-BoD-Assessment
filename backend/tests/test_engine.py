@@ -202,12 +202,15 @@ def test_load_history_inside_out_supersedes_and_caps(oi, io, prior):
 def test_history_from_run_strict(prior):
     p = copy.deepcopy(prior)
     p["run"].pop("simulated", None)
+    with pytest.raises(ValueError, match="rule version"):  # the fixture was made under v1.2: earlier versions are never compared with v1.3 runs
+        engine.history_from_run(p)
+    p["run"]["rule_version"] = skill.FW["rule_version"]
     e = engine.history_from_run(p)
     assert e["period"] == "2026-Q3" and e["overall"]["grade"] == "C"
     p["run"]["rule_version"] = "1.1"
     with pytest.raises(ValueError, match="rule version"):
         engine.history_from_run(p)
-    p["run"]["rule_version"] = "1.2"
+    p["run"]["rule_version"] = skill.FW["rule_version"]
     p["run"]["simulated"] = True
     with pytest.raises(ValueError, match="simulated"):
         engine.history_from_run(p)
@@ -280,7 +283,7 @@ def test_company_peers_ids(oi):
 
 def test_framework_keys():
     fw = view.framework()
-    assert set(fw) == set(skill.FW_KEYS) and fw["rule_version"] == "1.2"
+    assert set(fw) == set(skill.FW_KEYS) and fw["rule_version"] == "1.3"
 
 
 def test_base_view_shape():
@@ -301,14 +304,17 @@ def _missing_or_diff(want, got, path=""):
 
 
 def test_to_view_matches_example_view_fixture(oi, io, prior):
-    """tests/fixtures/example_view.js (converted to app/data/example_view.json) is the front end's golden view. The fixture
+    """tests/fixtures/example_view.js (converted to tests/fixtures/example_view.json) is the front end's golden view. The fixture
     predates `id`, `prefixes`, `priors`, `files`, `overall`, evidence `simulated` flags and carries full self-assessment
     answers where the example run keeps truncated excerpts, so those are excluded."""
-    want = load("example_view.json", DATA)
+    want = load("example_view.json")
     got = view.to_view(oi, io, prior)
-    diffs = [d for d in _missing_or_diff(want, got) if not d.endswith("/simulated") and d != "differs /io/sa"]
+    diffs = [d for d in _missing_or_diff(want, got) if not d.endswith("/simulated") and d != "differs /io/sa" and d != "differs /metrics"
+             and d != "differs /method"  # the printed rules now follow the v1.3 numbering (the golden fixture has the v1.2 list)
+             and not (d.startswith("differs /io/ev/SA") and d.endswith("/excerpt"))]  # metrics dropped from the reports; self-assessment excerpts blanked for anonymity
     assert diffs == []
-    assert len(got["io"]["sa"]) == len(want["io"]["sa"]) == len(skill.FW["questionnaire"])
+    assert got["method"] == skill.METHOD and len(skill.METHOD) == 24
+    assert got["io"]["sa"] == [] and len(want["io"]["sa"]) == len(skill.FW["questionnaire"])  # director answers are never exposed verbatim
 
 
 def test_to_view_outside_in_only(oi, prior):

@@ -100,8 +100,8 @@ def _config():
     return {"recursion_limit": 200, "max_concurrency": cfg.SUBJECT_WORKERS}
 
 
-def _run_once(company, ticker, peers, period, mode, progress, documents) -> dict:
-    shared: dict = {"stop": threading.Event()}
+def _run_once(company, ticker, peers, period, mode, progress, documents, findings=None) -> dict:
+    shared: dict = {"stop": threading.Event(), "findings": findings or {}}
     state = {"company": company, "ticker": ticker, "peers": peers, "period": period, "mode": mode, "documents": documents,
              "progress": progress, "shared": shared}
     try:
@@ -144,8 +144,8 @@ def build_finish():
     return g.compile()
 
 
-def _research_once(company, ticker, peers, period, mode, progress, documents, model) -> dict:
-    shared: dict = {"stop": threading.Event()}
+def _research_once(company, ticker, peers, period, mode, progress, documents, model, findings=None) -> dict:
+    shared: dict = {"stop": threading.Event(), "findings": findings or {}}
     state = {"company": company, "ticker": ticker, "peers": peers, "period": period, "mode": mode, "documents": documents,
              "progress": progress, "shared": shared, "model": model}
     try:
@@ -177,7 +177,7 @@ def _finish_progress(progress):
     return cb
 
 
-def _run_two(company, ticker, peers, period, mode, progress, documents) -> dict:
+def _run_two(company, ticker, peers, period, mode, progress, documents, findings=None) -> dict:
     """Run A (BOARD_MODEL) and Run B (BOARD_MODEL_B) research the whole peer set independently and in parallel; the model then
     reconciles every indicator they scored differently, and the reconciled subjects go through grading, synthesis and checks once."""
     from .reconcile import reconcile
@@ -195,8 +195,8 @@ def _run_two(company, ticker, peers, period, mode, progress, documents) -> dict:
 
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=2) as pool:
-        fa = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(0, "Run A"), documents, cfg.MODEL)
-        fb = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(1, "Run B"), documents, cfg.MODEL_B)
+        fa = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(0, "Run A"), documents, cfg.MODEL, findings)
+        fb = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(1, "Run B"), documents, cfg.MODEL_B, findings)
         errors = []
         outs = []
         for f in (fa, fb):
@@ -211,7 +211,7 @@ def _run_two(company, ticker, peers, period, mode, progress, documents) -> dict:
     gap = max([abs((r["a"] or 0) - (r["b"] or 0)) for r in block["rows"]] + [0])
     ctx["consistency_result"] = (f"Outside-in run A ({cfg.MODEL}) and run B ({cfg.MODEL_B}): {block['agreed']} of {block['total']} indicator scores identical; "
                                  f"{len(block['rows'])} reconciled by the model's recommendation (largest gap {gap} point{'s' if gap != 1 else ''}; "
-                                 f"{'within' if gap <= 1 else 'NOT within'} the one-point tolerance of Rule 12).")
+                                 f"{'within' if gap <= 1 else 'NOT within'} the one-point tolerance of Rule 18).")
     ctx["notes"] = (f"Run A ({cfg.MODEL}): {_notes(subjects_a)} | Run B ({cfg.MODEL_B}): {_notes(subjects_b)}")
     ctx["prog"] = MonotonicProgress(_finish_progress(progress))
     state = {"ctx": ctx, "subjects": subjects_a, "rnd": 0, "jobs": [], "rest": [], "calibrated": False, "done": False}
@@ -229,10 +229,10 @@ def _notes(subjects):
 
 
 def run_outside_in(company: str, ticker: str, peers: list[dict], period: str, mode: str, progress: Progress | None,
-                   documents: list[dict] | None = None) -> dict:
-    """One run: cfg.CONSISTENCY_RUNS is fixed at 1. _run_two (Run A and Run B with reconciliation, Rule 12) is kept but not used."""
-    if cfg.CONSISTENCY_RUNS <= 1: return _run_once(company, ticker, peers, period, mode, progress, documents)
-    return _run_two(company, ticker, peers, period, mode, progress, documents)
+                   documents: list[dict] | None = None, findings: dict[int, str] | None = None) -> dict:
+    """One run; with BOARD_CONSISTENCY_RUNS=2, two independent runs in parallel, reconciled where they differ (Rule 18)."""
+    if cfg.CONSISTENCY_RUNS <= 1: return _run_once(company, ticker, peers, period, mode, progress, documents, findings)
+    return _run_two(company, ticker, peers, period, mode, progress, documents, findings)
 
 
 def run_inside_out(oi_run: dict, documents: list[dict], answers: dict[str, str], ratings: dict[str, int], progress: Progress | None) -> dict:

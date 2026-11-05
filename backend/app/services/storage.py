@@ -1,4 +1,4 @@
-"""Binary files on disk under NEXUS_STORAGE_DIR/<company id>/{out,uploads}/. Retries while OneDrive / a scanner holds a file."""
+"""Binary files on disk under BOARD_STORAGE_DIR/<company id>/{out,uploads}/. Retries while OneDrive / a scanner holds a file."""
 from __future__ import annotations
 
 import os

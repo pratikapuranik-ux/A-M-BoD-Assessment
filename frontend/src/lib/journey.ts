@@ -17,9 +17,24 @@ export const PATHS = {
 export const currentPeriod = (d = new Date()) => `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`
 export const todayLabel = () => new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 export const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening' }
-export const nameFromEmail = (e: string) => e.split('@')[0].split(/[._-]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
+export const nameFromEmail = (e: string) => { const w = e.split('@')[0].split(/[._-]+/).filter(Boolean); return w.length > 1 ? w.map((x) => x[0].toUpperCase() + x.slice(1)).join(' ') : '' }
+/** A saved name counts only if it has a first and a last name (older sessions stored 'Ppuranik'). */
+export const shownName = (n: string) => (/\s/.test((n || '').trim()) ? n : '')
 export const initials = (n: string) => n.split(/\s+/).filter(Boolean).map((x) => x[0]).slice(0, 2).join('').toUpperCase()
 export const listJoin = (a: string[]) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1])
+/** "Run 3" for an assessment of the same company and period that was saved more than once (ids chevron, chevron-2, chevron-3); '' for the only one. */
+export function runLabels(companies: CompanySummary[]): Record<string, string> {
+  const groups: Record<string, CompanySummary[]> = {}
+  companies.forEach((c) => { const k = [c.id.replace(/-\d+$/, ''), c.period || '', (c.name || '').toLowerCase()].join('|'); (groups[k] ||= []).push(c) })
+  const out: Record<string, string> = {}
+  Object.values(groups).forEach((g) => { if (g.length > 1) g.forEach((c) => { const m = c.id.match(/-(\d+)$/); out[c.id] = `Run ${m ? m[1] : 1}` }) })
+  return out
+}
+/** "4 Nov, 17:46" for a saved-at timestamp, or ''. */
+export const savedAt = (s?: string | null) => {
+  const d = s ? new Date(s) : null
+  return d && !isNaN(+d) ? d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''
+}
 export const coLabel = (c: { name?: string; ticker?: string }) => (c.name || '') + (c.ticker ? ` (${c.ticker})` : '')
 export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 export const PERIOD_RE = /^\d{4}-Q[1-4]$/
@@ -76,12 +91,13 @@ export interface BriefItem { id: string; title: string; meta: string; grade: str
 
 export function briefItems(companies: CompanySummary[]): BriefItem[] {
   const out: BriefItem[] = []
+  const runs = runLabels(companies)
   companies.forEach((c) => {
     const g = c.grades || {}, f = c.files || {}
     if (c.stages?.outside_in) {
       out.push({
-        id: c.id, title: `${c.name} · ${c.period}`, urls: f,
-        meta: (g.oi ? 'Outside-in ' + g.oi : '') + (g.io ? ' · after inside-out ' + g.io : ' · inside-out not yet run'),
+        id: c.id, title: `${c.name} · ${c.period}${runs[c.id] ? ' · ' + runs[c.id] : ''}`, urls: f,
+        meta: (g.oi ? 'Outside-in ' + g.oi : '') + (g.io ? ' · after inside-out ' + g.io : ' · inside-out not yet run') + (savedAt(c.updated) ? ' · saved ' + savedAt(c.updated) : ''),
         grade: g.io || g.oi || 'NA',
         files: ([['io_docx', 'Report (Word)', 'doc'], ['io_html', 'Dashboard (HTML)', 'web'], ['oi_docx', 'Outside-in (Word)', 'doc']] as [FileKey, string, string][]).filter((x) => f[x[0]]),
       })

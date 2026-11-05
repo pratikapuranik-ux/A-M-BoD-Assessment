@@ -11,8 +11,7 @@ Status: **Done** = implemented and tested; **Example data** = works, but the wor
 | Listed companies only | **Done**: confirmation required before a run | `listed` checkbox, `start1` in `js/app.js` |
 | Approved sources only; social media, anonymous forums, employee-review sites excluded | **Done** (notice, sources appendix) | "Approved sources and guardrails" panel, `tMethod()` |
 | Trend against up to four prior quarters from earlier `run.json` | **Done**: files parsed in the browser, newest four kept, current period and wrong rule version rejected | `historyFromRun()` (port of `load_history.py`), `loadRunFiles()` |
-| If none exist, simulate one prior quarter | **Done** | `S.prior==='simulate'`, `D.prior` |
-| Word report and HTML dashboard per stage (light theme) | Pre-built with the skill's scripts for the example. The app offers Word and HTML only; `run.json` is not offered for download (the skill still writes it, see `skill/regenerate_outputs.py`) | `assets/downloads/`, `js/data/downloads.js` |
+| Word report and HTML dashboard per stage (light theme) | Built by the app for each run. The app offers Word and HTML only; `run.json` is not offered for download | `assets/downloads/`, `js/data/downloads.js` |
 
 ## Stage 2: inside-out (optional)
 | Requirement | Status | Where |
@@ -52,10 +51,9 @@ Management") are in `D.ind`, the heat map, the scorecard, the evidence tables an
 | Three run modes control labelling and circulation | **Done**: selector, labels on cover and draft box, circulation line | `FW.run_modes`, `RUN_CIRC`, `cover()` |
 | Draft notice on every output | **Done** | `DRAFT` constant |
 | Rule version recorded; different versions not compared | **Done** | `run.rule_version`, `historyFromRun()` |
+| Retrieval log, sector registers, event sweep and fact sheet complete before grading (Rule 16); source types, classes and time windows (Rule 17) | **Done** for v1.3 runs | `app/domain/retrieval.py`, `engine.validate_run()` |
 
 ## Known limits of the prototype
-- The Word reports and dashboards are pre-built for the Chevron example in *director request* mode; changing the
-  run mode relabels the in-app report but not those files. Regenerate them with `skill/regenerate_outputs.py`.
 - Reports, board documents and other uploads are listed, not read. Only `run.json` files and the returned questionnaire are parsed.
 - The research run is replayed; nothing is retrieved. A live run needs the skill behind an API.
 - The company and two peers are fixed to the example.

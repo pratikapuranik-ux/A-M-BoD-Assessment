@@ -64,7 +64,7 @@ def test_short_names():
 
 def test_api_smoke(client):
     h = client.get("/api/health").json(); assert h["ok"] is True and "enabled" in h["research"] and "reason" in h["research"]
-    assert client.get("/api/framework").json()["rule_version"] == "1.2"
+    assert client.get("/api/framework").json()["rule_version"] == "1.3"
     assert client.get("/api/companies").json() == [], "a fresh start must have no companies"
     r = client.get("/api/companies/nope/view"); assert r.status_code == 404 and "error" in r.json()
     assert client.get("/api/jobs/nope").status_code == 404 and client.delete("/api/companies/nope").status_code == 404
@@ -220,7 +220,7 @@ def test_research_is_fresh_by_default(client, mocked):
 
 
 def test_jobs_ids_and_refresh_via_research(client, mocked, monkeypatch):
-    monkeypatch.setenv("NEXUS_REUSE_HISTORY", "1")  # the legacy "new period of a company on file" behaviour is opt-in
+    monkeypatch.setenv("BOARD_REUSE_HISTORY", "1")  # the legacy "new period of a company on file" behaviour is opt-in
     gate = threading.Event(); mode = {"bad": False, "raise": None}
     def run_outside_in(company, ticker, peers, period, m, progress):
         gate.wait(30)
@@ -264,7 +264,7 @@ def test_failed_research_on_new_company_stores_nothing(client, mocked):
 
 def test_research_with_own_documents(client, mocked):
     got = {}
-    def run_outside_in(company, ticker, peers, period, m, progress, documents=None):
+    def run_outside_in(company, ticker, peers, period, m, progress, documents=None, findings=None):
         got["docs"] = documents; r = renamed(load("outside_in_run.json"), company, ticker); r["run"]["period"] = period; return r
     mocked(mock_research(run_outside_in=run_outside_in, run_inside_out=None))
     body = {"company": "Docco plc", "ticker": "DOC", "peers": [{"name": "A"}, {"name": "B"}], "period": "2026-Q4"}
@@ -274,6 +274,80 @@ def test_research_with_own_documents(client, mocked):
     r = client.post("/api/research", json=dict(body, documents=[{"name": "x.exe", "data_b64": "eA=="}]))
     assert r.status_code == 400 and "x.exe: unsupported file type" in r.json()["problems"][0]
     assert client.delete(f"/api/companies/{j['result']['company_id']}").status_code == 200
+
+
+def test_staged_uploads(client, mocked, monkeypatch):
+    """Files go up one at a time as raw bytes and are named by id in the request; nothing has to fit in one JSON body."""
+    from app.api import uploads as U
+    got = {}
+    def run_outside_in(company, ticker, peers, period, m, progress, documents=None, findings=None):
+        got["docs"] = documents; r = renamed(load("outside_in_run.json"), company, ticker); r["run"]["period"] = period; return r
+    mocked(mock_research(run_outside_in=run_outside_in, run_inside_out=None))
+    body = {"company": "Stagedco plc", "ticker": "STG", "peers": [{"name": "A"}, {"name": "B"}], "period": "2026-Q4"}
+    up = client.post("/api/uploads?name=notes.txt", content=b"Board met twice.", headers={"Content-Type": "application/octet-stream"})
+    assert up.status_code == 200 and up.json()["size"] == 16 and up.json()["name"] == "notes.txt"
+    uid = up.json()["upload_id"]; assert (U.staging_dir() / uid).is_file()
+    r = client.post("/api/research", json=dict(body, documents=[{"name": "notes.txt", "upload_id": uid}]))
+    j = wait_job(client, r.json()["job_id"]); assert j["status"] == "done", j
+    assert [(d["name"], d["text"]) for d in got["docs"]] == [("notes.txt", "Board met twice.")]
+    assert not (U.staging_dir() / uid).exists(), "a staged file is deleted once it has been read"
+    r = client.post("/api/research", json=dict(body, documents=[{"name": "notes.txt", "upload_id": uid}]))
+    assert r.status_code == 400 and "no longer on the server" in r.json()["problems"][0]
+    r = client.post("/api/research", json=dict(body, documents=[{"name": "x.txt", "upload_id": "../../etc/passwd"}]))
+    assert r.status_code == 400 and "no longer on the server" in r.json()["problems"][0]
+    before = sorted(p.name for p in U.staging_dir().iterdir())
+    monkeypatch.setattr(extract, "MAX_FILE", 5)
+    r = client.post("/api/uploads?name=big.txt", content=b"x" * 6, headers={"Content-Type": "application/octet-stream"})
+    assert r.status_code == 413 and "big.txt" in r.json()["error"] and sorted(p.name for p in U.staging_dir().iterdir()) == before
+    assert client.post("/api/uploads?name=e.txt", content=b"", headers={"Content-Type": "application/octet-stream"}).status_code == 400
+    monkeypatch.undo(); assert client.delete(f"/api/companies/{j['result']['company_id']}").status_code == 200
+
+
+def _zip_bytes(members: dict[str, bytes]) -> bytes:
+    import io, zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, b in members.items(): z.writestr(n, b)
+    return buf.getvalue()
+
+
+def test_zip_upload(client, mocked, monkeypatch):
+    """A zip is unpacked into documents; junk is ignored, unusable members are skipped and reported, a bad zip is refused."""
+    from app.api import uploads as U
+    got = {}
+    def run_outside_in(company, ticker, peers, period, m, progress, documents=None, findings=None):
+        got["docs"] = documents; r = renamed(load("outside_in_run.json"), company, ticker); r["run"]["period"] = period; return r
+    mocked(mock_research(run_outside_in=run_outside_in, run_inside_out=None))
+    body = {"company": "Zipco plc", "ticker": "ZIP", "peers": [{"name": "A"}, {"name": "B"}], "period": "2026-Q4"}
+    hdr = {"Content-Type": "application/octet-stream"}
+    pack = _zip_bytes({"Board/minutes.txt": b"Minutes: the board met monthly.", "Board/notes.md": b"# Notes\nChair rotates.",
+                       "__MACOSX/Board/._minutes.txt": b"junk", ".DS_Store": b"junk", "~$lock.docx": b"junk",
+                       "photo.png": b"png", "Board/empty.txt": b"   ", "inner.zip": b"PK"})
+    up = client.post("/api/uploads?name=pack.zip", content=pack, headers=hdr); assert up.status_code == 200
+    r = client.post("/api/research", json=dict(body, documents=[{"name": "pack.zip", "upload_id": up.json()["upload_id"]}]))
+    assert r.status_code == 200, r.text; j = wait_job(client, r.json()["job_id"]); assert j["status"] == "done", j
+    assert sorted(d["name"] for d in got["docs"]) == ["Board/minutes.txt", "Board/notes.md"] and all(d["slot"] == 0 for d in got["docs"])
+    notes = [w for w in j["result"]["warnings"] if str(w).startswith("pack.zip")]; assert len(notes) == 1 and notes[0].startswith("pack.zip: read 2 file(s); skipped 3")
+    assert "photo.png" in notes[0] and "empty.txt" in notes[0] and "inner.zip" in notes[0] and "MACOSX" not in notes[0] and "DS_Store" not in notes[0]
+    assert client.delete(f"/api/companies/{j['result']['company_id']}").status_code == 200
+    # a corrupt zip, a zip with nothing usable and an empty zip are refused with a reason
+    for name, data, msg in (("bad.zip", b"this is not a zip", "bad.zip: not a readable zip file"),
+                            ("pics.zip", _zip_bytes({"a.png": b"x"}), "pics.zip: none of the 1 files inside could be used"),
+                            ("none.zip", _zip_bytes({}), "none.zip: the zip holds no files")):
+        up = client.post(f"/api/uploads?name={name}", content=data, headers=hdr)
+        r = client.post("/api/research", json=dict(body, documents=[{"name": name, "upload_id": up.json()["upload_id"]}])); assert r.status_code == 200
+        j = wait_job(client, r.json()["job_id"]); assert j["status"] == "error" and j["problems"][0].startswith(msg), (name, j)
+    # inside-out: every file in a zip takes the zip's slot; inline (base64) zips work too
+    out, probs = U.extract_documents([{"name": "p.zip", "slot": 3, "data_b64": base64.b64encode(pack).decode()}], max_slot=13)
+    assert not probs and sorted((d["name"], d["slot"]) for d in out) == [("Board/minutes.txt", 3), ("Board/notes.md", 3)] and len(out.notes) == 1
+    _, probs = U.extract_documents([{"name": "p.zip", "slot": 99, "data_b64": base64.b64encode(pack).decode()}], max_slot=13)
+    assert probs and "slot must be 0-13" in probs[0]
+    # zips have their own, larger size limit; the contents are still limited per file
+    monkeypatch.setattr(extract, "MAX_ZIP", 10)
+    assert client.post("/api/uploads?name=big.zip", content=b"x" * 11, headers=hdr).status_code == 413
+    monkeypatch.undo(); monkeypatch.setattr(extract, "MAX_FILE", 5)
+    out, probs = U.extract_documents([{"name": "q.zip", "data_b64": base64.b64encode(_zip_bytes({"ok.txt": b"fine", "big.txt": b"toolong"})).decode()}])
+    assert [d["name"] for d in out] == ["ok.txt"] and "big.txt (over 0 MB)" in out.notes[0]
 
 
 def test_leftovers_are_never_adopted(client, monkeypatch):
@@ -338,15 +412,18 @@ def test_upload_limits(client, monkeypatch):
     w = PdfWriter()
     for _ in range(101): w.add_blank_page(72, 72)
     buf = io.BytesIO(); w.write(buf)
-    r = c.post(u, json={"documents": [{"slot": 1, "name": "pack.pdf", "data_b64": b64(buf.getvalue())}]})
-    assert r.status_code == 400 and any(p.startswith("pack.pdf: a scanned PDF (101 pages)") for p in r.json()["problems"])
+    from app.services import ocr
+    def no_key(*a, **k): raise ocr.OcrError("no key")
+    monkeypatch.setattr(ocr, "_ask", no_key)  # a scan that cannot be read as pages is transcribed; here the transcription fails
+    r = c.post(u, json={"documents": [{"slot": 1, "name": "pack.pdf", "data_b64": b64(buf.getvalue())}]}); assert r.status_code == 200  # read inside the job
+    j = wait_job(c, r.json()["job_id"]); assert j["status"] == "error" and any(p.startswith("pack.pdf: a scanned PDF (101 pages)") for p in j["problems"]), j
     buf = io.BytesIO(); Document().save(buf)
-    r = c.post(u, json={"documents": [{"slot": 1, "name": "empty.docx", "data_b64": b64(buf.getvalue())}]})
-    assert r.status_code == 400 and "no readable text in empty.docx; export it as PDF or text" in r.json()["problems"]
+    r = c.post(u, json={"documents": [{"slot": 1, "name": "empty.docx", "data_b64": b64(buf.getvalue())}]}); assert r.status_code == 200
+    j = wait_job(c, r.json()["job_id"]); assert j["status"] == "error" and "no readable text in empty.docx; export it as PDF or text" in j["problems"], j
     monkeypatch.setattr(extract, "MAX_FILE", 10)
-    r = c.post(u, json={"documents": [{"slot": 1, "name": "big.txt", "data_b64": b64(b"x" * 11)}]})
-    assert r.status_code == 400 and "big.txt: 0 MB; the limit is 0 MB per file" in r.json()["problems"]
-    monkeypatch.setattr(extract, "MAX_FILE", 25 * 2**20); monkeypatch.setattr(extract, "MAX_UPLOAD", 30)
+    r = c.post(u, json={"documents": [{"slot": 1, "name": "big.txt", "data_b64": b64(b"x" * 11)}]}); assert r.status_code == 200
+    j = wait_job(c, r.json()["job_id"]); assert j["status"] == "error" and "big.txt: 0 MB; the limit is 0 MB per file" in j["problems"], j
+    monkeypatch.setattr(extract, "MAX_FILE", 100 * 2**20); monkeypatch.setattr(extract, "MAX_UPLOAD", 30)
     r = c.post(u, json={"documents": [{"slot": 1, "name": "a.txt", "data_b64": b64(b"x" * 20)}, {"slot": 2, "name": "b.txt", "data_b64": b64(b"y" * 20)}]})
     assert r.status_code == 400 and r.json()["error"].startswith("b.txt: the documents together exceed")
     repo.delete_company(cid)

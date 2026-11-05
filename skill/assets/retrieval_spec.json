@@ -1,0 +1,727 @@
+{
+ "spec_version": "1.3",
+ "retrieval_items": [
+  {
+   "id": "R1",
+   "name": "Latest annual report / 10-K / 20-F plus five years of cash-flow statements",
+   "indicators": [
+    "1.1",
+    "2.1",
+    "2.2",
+    "3.1",
+    "3.4",
+    "4.2",
+    "5.1",
+    "6.1",
+    "6.2"
+   ],
+   "needs_years": 5
+  },
+  {
+   "id": "R2",
+   "name": "Five years of proxy statements / governance and remuneration reports, read section by section",
+   "indicators": [
+    "1.2",
+    "1.4",
+    "2.3",
+    "2.4",
+    "3.1",
+    "3.3",
+    "4.1",
+    "5.2",
+    "5.3",
+    "6.1"
+   ],
+   "needs_years": 5
+  },
+  {
+   "id": "R3",
+   "name": "Four to eight earnings call transcripts with analyst Q&A",
+   "indicators": [
+    "1.1",
+    "1.3",
+    "2.1",
+    "3.1",
+    "3.2",
+    "4.1",
+    "5.4",
+    "6.1",
+    "6.3"
+   ],
+   "min_count": 4
+  },
+  {
+   "id": "R4",
+   "name": "Filing feed: 24-month sweep of 8-K / 6-K / exchange announcements (RNS) and 36-month sweep for director departures (Item 5.02 or equivalent)",
+   "indicators": [
+    "2.1",
+    "3.2",
+    "4.2",
+    "4.3",
+    "5.2",
+    "5.4",
+    "6.3"
+   ],
+   "sweep_months": 36
+  },
+  {
+   "id": "R5",
+   "name": "Merger proxy or registration statement for any pending transaction",
+   "indicators": [
+    "3.4",
+    "4.2"
+   ],
+   "may_be_not_applicable": true
+  },
+  {
+   "id": "R6",
+   "name": "Sector customer-harm registers from the sector pack (indicator 1.3)",
+   "indicators": [
+    "1.3"
+   ]
+  },
+  {
+   "id": "R7",
+   "name": "Investor day and sector conference materials",
+   "indicators": [
+    "2.1",
+    "3.1",
+    "3.4",
+    "5.1"
+   ]
+  },
+  {
+   "id": "R8",
+   "name": "ISS / Glass Lewis and Moody's / S&P / Fitch reports where reachable",
+   "indicators": [
+    "5.2",
+    "5.3",
+    "6.2",
+    "6.3"
+   ]
+  }
+ ],
+ "event_sweep": [
+  {
+   "id": "ES01",
+   "query": "{company} chair",
+   "indicators": [
+    "4.2",
+    "4.3",
+    "5.2"
+   ]
+  },
+  {
+   "id": "ES02",
+   "query": "{company} CEO steps down OR appointed chief executive",
+   "indicators": [
+    "4.2",
+    "5.2"
+   ]
+  },
+  {
+   "id": "ES03",
+   "query": "{company} director resigns",
+   "indicators": [
+    "4.3",
+    "5.2"
+   ]
+  },
+  {
+   "id": "ES04",
+   "query": "{company} board committee created OR renamed OR disbanded",
+   "indicators": [
+    "2.4"
+   ]
+  },
+  {
+   "id": "ES05",
+   "query": "{company} annual general meeting results OR shareholder vote",
+   "indicators": [
+    "4.3",
+    "5.3"
+   ]
+  },
+  {
+   "id": "ES06",
+   "query": "{company} activist investor stake",
+   "indicators": [
+    "2.1",
+    "5.3"
+   ]
+  },
+  {
+   "id": "ES07",
+   "query": "{company} lawsuit consumers OR class action",
+   "indicators": [
+    "1.3"
+   ]
+  },
+  {
+   "id": "ES08",
+   "query": "{company} regulator fine OR charges OR settlement",
+   "indicators": [
+    "1.3",
+    "2.2"
+   ]
+  },
+  {
+   "id": "ES09",
+   "query": "{company} pauses OR cancels OR scraps project",
+   "indicators": [
+    "4.1",
+    "3.4",
+    "2.1"
+   ]
+  },
+  {
+   "id": "ES10",
+   "query": "{company} acquisition OR divestment OR asset sale",
+   "indicators": [
+    "3.4",
+    "4.2",
+    "6.3"
+   ]
+  },
+  {
+   "id": "ES11",
+   "query": "{company} restructuring OR job cuts OR cost reduction",
+   "indicators": [
+    "5.4",
+    "6.3"
+   ]
+  },
+  {
+   "id": "ES12",
+   "query": "{company} credit rating downgrade OR upgrade OR outlook",
+   "indicators": [
+    "6.2",
+    "6.3"
+   ]
+  },
+  {
+   "id": "ES13",
+   "query": "{company} dividend OR buyback suspended OR cut OR raised",
+   "indicators": [
+    "5.1",
+    "5.4",
+    "6.3"
+   ]
+  },
+  {
+   "id": "ES14",
+   "query": "{company} strategy reset OR capital markets day OR investor day",
+   "indicators": [
+    "2.1",
+    "3.1",
+    "3.2"
+   ]
+  }
+ ],
+ "event_sweep_months": 24,
+ "as_of_tolerance_days": 7,
+ "sector_packs": {
+  "energy": {
+   "label": "Oil, gas and integrated energy",
+   "registers": [
+    {
+     "id": "REG-E1",
+     "name": "US court dockets (CourtListener / PACER): consumer and pricing class actions",
+     "query": "{company} consumer class action",
+     "url": "https://www.courtlistener.com"
+    },
+    {
+     "id": "REG-E2",
+     "name": "State attorney-general actions (e.g. California, New York)",
+     "query": "attorney general sues {company}"
+    },
+    {
+     "id": "REG-E3",
+     "name": "FTC cases and proceedings",
+     "query": "{company} site:ftc.gov",
+     "url": "https://www.ftc.gov/legal-library/browse/cases-proceedings"
+    },
+    {
+     "id": "REG-E4",
+     "name": "EPA ECHO enforcement and compliance history",
+     "query": "{company} EPA enforcement",
+     "url": "https://echo.epa.gov"
+    },
+    {
+     "id": "REG-E5",
+     "name": "US Chemical Safety Board investigations",
+     "query": "{company} site:csb.gov",
+     "url": "https://www.csb.gov"
+    },
+    {
+     "id": "REG-E6",
+     "name": "Retail-fuel competition and consumer regulators where the company sells fuel (UK CMA, ACCC, NZ Commerce Commission, others)",
+     "query": "{company} fuel pricing regulator charges",
+     "applies_if": "company sells retail fuel outside the US"
+    },
+    {
+     "id": "REG-E7",
+     "name": "Energy-retail regulators where the company supplies households (e.g. Ofgem)",
+     "query": "{company} Ofgem",
+     "applies_if": "company supplies retail power or gas to households"
+    }
+   ],
+   "filing_feeds": [
+    "SEC EDGAR 8-K (US domestic filers) or 6-K (foreign private issuers)",
+    "London Stock Exchange RNS for UK-listed subjects"
+   ],
+   "trade_press": [
+    "Argus Media",
+    "S&P Global Commodity Insights",
+    "Platts",
+    "Energy Intelligence",
+    "Upstream",
+    "Hart Energy",
+    "Oil & Gas Journal",
+    "Offshore Engineer"
+   ],
+   "trade_press_domains": [
+    "argusmedia.com",
+    "spglobal.com",
+    "energyintel.com",
+    "upstreamonline.com",
+    "hartenergy.com",
+    "ogj.com",
+    "oedigital.com"
+   ]
+  },
+  "general": {
+   "label": "Any sector without its own pack",
+   "registers": [
+    {
+     "id": "REG-G1",
+     "name": "Court dockets: consumer and customer class actions",
+     "query": "{company} consumer class action"
+    },
+    {
+     "id": "REG-G2",
+     "name": "Attorney-general and consumer-protection actions",
+     "query": "attorney general sues {company}"
+    }
+   ],
+   "requires_extra_registers": 1,
+   "note": "Add at least one sector regulator register under run.extra_registers (e.g. FDA recalls for food, CFPB complaints for consumer finance, NHTSA recalls for autos).",
+   "filing_feeds": [
+    "SEC EDGAR 8-K / 6-K, or the local exchange announcement feed"
+   ],
+   "trade_press": [],
+   "trade_press_domains": []
+  }
+ },
+ "sources": {
+  "source_types": [
+   "company",
+   "regulator_exchange",
+   "court",
+   "approved_news",
+   "trade_press",
+   "rating_agency",
+   "proxy_advisor",
+   "sell_side",
+   "data_platform",
+   "other"
+  ],
+  "class_allowed": {
+   "company": [
+    "direct",
+    "strong_direct",
+    "board_act",
+    "silence",
+    "searched_record",
+    "indirect"
+   ],
+   "regulator_exchange": [
+    "direct",
+    "strong_direct",
+    "board_act",
+    "silence",
+    "searched_record",
+    "indirect"
+   ],
+   "court": [
+    "direct",
+    "strong_direct",
+    "searched_record",
+    "indirect"
+   ],
+   "approved_news": [
+    "direct",
+    "indirect"
+   ],
+   "trade_press": [
+    "direct",
+    "indirect"
+   ],
+   "rating_agency": [
+    "indirect"
+   ],
+   "proxy_advisor": [
+    "indirect"
+   ],
+   "sell_side": [
+    "indirect"
+   ],
+   "data_platform": [
+    "indirect"
+   ],
+   "other": [
+    "indirect"
+   ]
+  },
+  "approved_news": {
+   "Bloomberg": [
+    "bloomberg.com",
+    "bnnbloomberg.ca"
+   ],
+   "Reuters": [
+    "reuters.com"
+   ],
+   "The Wall Street Journal": [
+    "wsj.com"
+   ],
+   "Financial Times": [
+    "ft.com"
+   ],
+   "Forbes": [
+    "forbes.com"
+   ],
+   "AP": [
+    "apnews.com"
+   ],
+   "The New York Times": [
+    "nytimes.com"
+   ],
+   "Barron's": [
+    "barrons.com"
+   ],
+   "The Economist": [
+    "economist.com"
+   ],
+   "CNBC": [
+    "cnbc.com"
+   ],
+   "Nikkei": [
+    "nikkei.com",
+    "asia.nikkei.com"
+   ],
+   "Handelsblatt": [
+    "handelsblatt.com"
+   ],
+   "Les Echos": [
+    "lesechos.fr"
+   ],
+   "The Economic Times": [
+    "economictimes.indiatimes.com"
+   ],
+   "Mint": [
+    "livemint.com"
+   ]
+  },
+  "blocked_domains": [
+   "twitter.com",
+   "x.com",
+   "facebook.com",
+   "instagram.com",
+   "tiktok.com",
+   "reddit.com",
+   "quora.com",
+   "glassdoor.com",
+   "indeed.com",
+   "medium.com",
+   "substack.com",
+   "blogspot.com",
+   "wordpress.com"
+  ]
+ },
+ "fact_sheet": {
+  "1.1": [
+   [
+    "customer_metrics_reported",
+    "Customer outcome measures in results, annual report KPIs"
+   ],
+   [
+    "customer_in_call_qa",
+    "Whether analysts or management raise customer outcomes in Q&A"
+   ],
+   [
+    "customer_problems_acknowledged",
+    "Customer issues acknowledged publicly"
+   ]
+  ],
+  "1.2": [
+   [
+    "director_site_or_market_visits",
+    "Disclosed board or director visits and who was met"
+   ],
+   [
+    "customer_facing_programme",
+    "Customer advisory board or director market visits"
+   ],
+   [
+    "findings_returned_to_board",
+    "Whether visit findings are reported to the board"
+   ],
+   [
+    "customer_side_board_experience",
+    "Directors with recent customer-facing executive roles"
+   ]
+  ],
+  "1.3": [
+   [
+    "customer_litigation_or_enforcement",
+    "Register results (sector pack) and legal-proceedings note"
+   ],
+   [
+    "customer_harm_acknowledged",
+    "How the company acknowledged or remediated"
+   ],
+   [
+    "early_warning_disclosure",
+    "Disclosed watch list or escalation process"
+   ]
+  ],
+  "1.4": [
+   [
+    "quality_or_customer_metrics_and_weights",
+    "Incentive scorecard categories and weights"
+   ],
+   [
+    "discretion_or_reduction_applied",
+    "Any reduction for a missed quality metric, at corporate AND individual award level (read the individual award narrative)"
+   ],
+   [
+    "cascade_below_csuite",
+    "Whether the scorecard applies below the C-suite"
+   ]
+  ],
+  "2.1": [
+   [
+    "core_assumption_revisions",
+    "Material revisions in 36 months, with dates"
+   ],
+   [
+    "external_pressure_events",
+    "Activist stakes, low votes, guidance misses, underperformance, with dates"
+   ]
+  ],
+  "2.2": [
+   [
+    "kpi_definition_changes",
+    "KPI or non-GAAP definition changes and explanations"
+   ],
+   [
+    "regulator_or_analyst_metric_challenge",
+    "SEC comment letters, short-seller or analyst critiques"
+   ],
+   [
+    "metric_testing_practice",
+    "How the board tests metrics against reality"
+   ]
+  ],
+  "2.3": [
+   [
+    "access_to_management_policy",
+    "Governance-guideline wording on access to management and advisors"
+   ],
+   [
+    "below_csuite_sessions",
+    "Regular sessions with leaders below the C-suite"
+   ],
+   [
+    "board_appointed_advisors",
+    "Advisors appointed by the board or committees"
+   ]
+  ],
+  "2.4": [
+   [
+    "committee_changes_5y",
+    "Committees created, renamed, merged or dissolved over five years"
+   ],
+   [
+    "charter_or_reserved_matters_reviews",
+    "Reviews of charters, terms of reference, reserved matters"
+   ]
+  ],
+  "3.1": [
+   [
+    "named_shifts_with_positions",
+    "Two or three named structural shifts and the company position on each"
+   ],
+   [
+    "targets_and_oversight",
+    "Targets and the board body overseeing each"
+   ]
+  ],
+  "3.2": [
+   [
+    "sector_shocks",
+    "The two or three sector shocks in the 24-month window, with dates"
+   ],
+   [
+    "timing_vs_peers",
+    "Company move dates against each peer's move dates"
+   ]
+  ],
+  "3.3": [
+   [
+    "skills_matrix_coverage",
+    "Skills matrix against the named shifts"
+   ],
+   [
+    "recent_appointments_and_sourcing",
+    "Appointments in window and how sourced"
+   ],
+   [
+    "external_voices",
+    "Outside experts, customers or investors brought into the board"
+   ]
+  ],
+  "3.4": [
+   [
+    "capital_to_named_shifts",
+    "Capex, R&D and M&A behind each stated position over five years"
+   ],
+   [
+    "mna_approvals",
+    "Board-approved deals and their dates"
+   ]
+  ],
+  "4.1": [
+   [
+    "delegation_disclosure",
+    "Delegation of authority and matters reserved"
+   ],
+   [
+    "initiatives_scaled_paused_stopped",
+    "Initiatives announced, scaled, paused or stopped in 24 months, with dates and months elapsed"
+   ]
+  ],
+  "4.2": [
+   [
+    "major_irreversible_decisions",
+    "Large M&A, CEO selection, leverage decisions in 24 months"
+   ],
+   [
+    "impairments_or_losses",
+    "Impairments, write-offs or loss-making exits following those decisions"
+   ],
+   [
+    "deferred_or_declined",
+    "Deals or decisions deferred or declined"
+   ]
+  ],
+  "4.3": [
+   [
+    "director_departures_36m",
+    "Departures and stated reasons (Item 5.02 or equivalent)"
+   ],
+   [
+    "disputes_or_failed_resolutions",
+    "Proxy contests, publicly disputed departures, failed board resolutions"
+   ]
+  ],
+  "5.1": [
+   [
+    "capex_vs_depreciation_5y",
+    "Five-year capex and depreciation (audited)"
+   ],
+   [
+    "shareholder_returns_5y",
+    "Five-year dividends and buybacks"
+   ],
+   [
+    "growth_mna_5y",
+    "Growth acquisitions over five years"
+   ]
+  ],
+  "5.2": [
+   [
+    "tenure_and_new_directors",
+    "Average tenure, directors added over five years"
+   ],
+   [
+    "limits_and_waivers",
+    "Age or term limits and any waivers"
+   ],
+   [
+    "ceo_succession",
+    "CEO succession disclosure and transitions"
+   ]
+  ],
+  "5.3": [
+   [
+    "evaluation_type",
+    "Internal or externally facilitated; date of last external review"
+   ],
+   [
+    "shareholder_engagement_scope",
+    "Meetings held and share of capital engaged"
+   ],
+   [
+    "shareholder_rights_and_protections",
+    "Proxy access, special meetings, classified board, auto-vote programmes, redomiciliation"
+   ],
+   [
+    "votes_and_responses",
+    "Low votes and the board's response"
+   ]
+  ],
+  "5.4": [
+   [
+    "pressure_episodes",
+    "Revenue or margin pressure episodes in 24 months, with dates"
+   ],
+   [
+    "first_levers",
+    "First levers pulled: cost, reinvestment, pricing, portfolio, guidance"
+   ]
+  ],
+  "6.1": [
+   [
+    "cash_metric_weight_in_pay",
+    "Weight of cash metrics in annual and long-term incentives"
+   ],
+   [
+    "cfo_vs_net_income_5y",
+    "Five-year operating cash flow or FCF against net income"
+   ],
+   [
+    "cash_in_messaging",
+    "Cash framing in investor communications"
+   ]
+  ],
+  "6.2": [
+   [
+    "leverage_vs_peers",
+    "Leverage measure, date and peer comparison on the same basis"
+   ],
+   [
+    "ratings",
+    "Current ratings and outlooks"
+   ],
+   [
+    "maturities_liquidity_working_capital",
+    "Maturity profile, committed liquidity, working-capital trend"
+   ]
+  ],
+  "6.3": [
+   [
+    "actions_with_dates",
+    "Refinancing, divestment and cost actions with dates"
+   ],
+   [
+    "stress_signals_with_dates",
+    "Downgrades, misses, leverage peaks with dates"
+   ],
+   [
+    "stated_policy_or_triggers",
+    "Stated liquidity or leverage policy and triggers"
+   ]
+  ]
+ }
+}

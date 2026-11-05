@@ -30,6 +30,8 @@ def echo(content):
 
 
 STUB = "[Page text removed to keep the conversation within the context window. Source:"
+DOC_STUB = "[Passage text removed to keep the conversation within the context window; run the search or read the page again if you need it.]"
+SHRINK = [(2, 3), (0, 0)]  # (web pages, document results) kept after a 'prompt is too long' rejection, tried in turn
 
 
 def stub_fetch(b):
@@ -55,24 +57,41 @@ def scrub(x):
 
 
 class Conv:
-    def __init__(self, label, tools, content, on_block=None, on_phase=None, model=None):
+    def __init__(self, label, tools, content, on_block=None, on_phase=None, model=None, handlers=None):
         self.label, self.tools, self.on_block, self.on_phase = label, tools, on_block, on_phase
+        self.handlers = handlers or {}  # tool name -> fn(input) -> text: client tools answered here, not by the submit loop
+        self.served: set[str] = set()  # ids of the tool calls answered by those handlers (their results can be cut when the context grows)
+        self.shrink = 0  # how many of SHRINK have been used since the last accepted request
         self.model = model  # None = the default model (BOARD_MODEL); Run B and the reconciliation name theirs
         self.stop = None  # threading.Event shared by parallel steps: set when one fails, so the others stop calling Claude
         self.messages, self.pending, self.strict = [{"role": "user", "content": content}], [], True
         self.ctx = 0  # prompt size in tokens at the last turn
 
-    def prune(self, keep=None) -> int:
-        """Stubs every fetched page except the newest `keep`, whichever turn it is in (one turn can hold dozens); returns how many it cut."""
+    def prune_served(self, keep: int) -> int:
+        """Cuts the text of every search and page result from the supplied documents except the newest `keep`; returns how many it cut."""
+        spots = [(i, j) for i, m in enumerate(self.messages) if m["role"] == "user" and isinstance(m["content"], list)
+                 for j, b in enumerate(m["content"])
+                 if isinstance(b, dict) and b.get("type") == "tool_result" and b.get("tool_use_id") in self.served and b.get("content") != DOC_STUB]
+        cut = 0
+        for i, j in spots[:max(0, len(spots) - keep)]:
+            content = list(self.messages[i]["content"]); content[j] = {**content[j], "content": DOC_STUB}
+            self.messages[i] = {**self.messages[i], "content": content}; cut += 1
+        return cut
+
+    def prune(self, keep=None, keep_docs=None) -> int:
+        """Stubs every fetched page except the newest `keep`, and every document search or page result except the newest `keep_docs`,
+        whichever turn it is in (one turn can hold dozens); returns how many it cut."""
         keep = cfg.KEEP_RECENT if keep is None else keep
+        keep_docs = cfg.KEEP_RECENT_DOCS if keep_docs is None else keep_docs
         pages = [(i, j) for i, m in enumerate(self.messages) if m["role"] == "assistant"
                  for j, b in enumerate(m["content"]) if stub_fetch(b) is not b]
         cut = 0
         for i, j in pages[:max(0, len(pages) - keep)]:
             content = list(self.messages[i]["content"]); content[j] = stub_fetch(content[j])
             self.messages[i] = {**self.messages[i], "content": content}; cut += 1
-        if cut: log.info("context_pruned", step=self.label, pages=cut, was=self.ctx, kept_pages=keep)
-        return cut
+        docs = self.prune_served(keep_docs)
+        if cut or docs: log.info("context_pruned", step=self.label, pages=cut, doc_results=docs, was=self.ctx, kept_pages=keep, kept_doc_results=keep_docs)
+        return cut + docs
 
     def say(self, text, error=False):
         if self.pending:
@@ -113,7 +132,9 @@ class Conv:
             return cl.call_with_retry(self._stream, self.label, self.stop, getattr(self.on_phase, "say", None))
         except Exception as e:
             if anthropic is None or not isinstance(e, anthropic.APIError): raise
-            if "prompt is too long" in cl._err(e).lower() and self.prune(keep=2):  # estimate was off: cut harder and try once more
+            if "prompt is too long" in cl._err(e).lower() and self.shrink < len(SHRINK):  # estimate was off: cut harder, up to twice, and try again
+                keep, keep_docs = SHRINK[self.shrink]; self.shrink += 1
+                self.prune(keep=keep, keep_docs=keep_docs)
                 return self._request()
             if isinstance(e, anthropic.BadRequestError) and self.strict and "too complex" in cl._err(e).lower():
                 log.warning("strict_schema_rejected", error=cl._err(e))
@@ -124,7 +145,7 @@ class Conv:
     def turn(self):
         """One model turn, continuing server-side pauses; returns the final message of the turn."""
         for _ in range(cfg.MAX_CONTINUATIONS):
-            msg = self._request()
+            msg = self._request(); self.shrink = 0
             u = getattr(msg, "usage", None)
             self.ctx = sum(getattr(u, k, None) or 0 for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
             log.info("turn", step=self.label, stop=msg.stop_reason, input=getattr(u, "input_tokens", None),
@@ -147,6 +168,15 @@ class Conv:
             calls = [b for b in msg.content if getattr(b, "type", "") == "tool_use"]
             self.pending = [b.id for b in calls]
             call = next((b for b in reversed(calls) if b.name == tool), None)
+            served = [b for b in calls if b.name in self.handlers]
+            self.served.update(b.id for b in served)
+            if served and call is None and msg.stop_reason != "max_tokens":
+                self.messages.append({"role": "user", "content": [
+                    {"type": "tool_result", "tool_use_id": b.id, "content": self.handlers[b.name](b.input if isinstance(b.input, dict) else {})}
+                    for b in calls if b.name in self.handlers] + [
+                    {"type": "tool_result", "tool_use_id": b.id, "content": "Not a tool you can use here.", "is_error": True}
+                    for b in calls if b.name not in self.handlers]})
+                self.pending = []; continue
             if msg.stop_reason == "max_tokens":
                 problems = ["The response hit the output limit before the submission was complete. Submit again, keeping text fields short."]
             elif call is None:

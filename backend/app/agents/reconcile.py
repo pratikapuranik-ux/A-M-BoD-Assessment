@@ -1,4 +1,4 @@
-"""Reconciliation of Run A and Run B (Rule 12).
+"""Reconciliation of Run A and Run B (Rules 18-19).
 
 Two independent runs score the same subjects. Where they gave an indicator different scores, the model (Run A's, Opus) is shown
 both rationales with their evidence and recommends which run's score and rationale stands. Run A's subjects are changed in place:
@@ -83,6 +83,22 @@ class Merger:
         return c
 
 
+def _adopt_facts(a, b, ind, merger) -> set:
+    """Copies Run B's fact-sheet entries for an adopted indicator into Run A's sheet where Run B found a fact that Run A did not (absent or not disclosed);
+    their evidence codes are mapped onto Run A's list. Returns the evidence codes now cited."""
+    mine = {(f.get("indicator"), f.get("field")): f for f in a.data.get("facts") or []}
+    out: set = set()
+    for f in b.data.get("facts") or []:
+        if f.get("indicator") != ind or f.get("status") != "found": continue
+        have = mine.get((ind, f.get("field")))
+        if have and have.get("status") == "found": continue
+        ev = [merger.code_for(x) or x for x in f.get("evidence") or []]
+        new = dict(f, evidence=ev, value=merger.text(f.get("value")))
+        mine[(ind, f.get("field"))] = new; out |= set(ev)
+    a.data["facts"] = list(mine.values())
+    return out
+
+
 def _items(codes, evidence, mapper=None):
     out = []
     by = {e["code"]: e for e in evidence}
@@ -139,6 +155,7 @@ def _adjudicate(a, b, ids, ctx):
             new = merger.adopt(cb)
             a.data["indicators"] = [new if c["id"] == ind else c for c in a.data["indicators"]]
             keep |= set(new["evidence"]) | set(CITE.findall(new["rationale"])) | set(CITE.findall(new.get("summary") or ""))
+            keep |= _adopt_facts(a, b, ind, merger)  # the fact-sheet entries behind the adopted cell come with it (Rule 19)
             changed.append(f"{ind} {_shown(_score(ca)) or 'n/a'} -> {_shown(final) or 'n/a'}")
         keep |= set(CITE.findall(x["reason"]))
         rows.append({"subject": a.short, "role": a.role, "indicator": ind, "name": IND[ind]["name"], "a": _shown(_score(ca)),

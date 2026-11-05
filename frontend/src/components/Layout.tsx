@@ -9,7 +9,7 @@ import { useJourney } from '../lib/useJourney'
 import { useSession } from '../store/session'
 import { useInsideOut } from '../store/insideOut'
 import { DRAFT } from '../lib/constants'
-import { initials, PATHS } from '../lib/journey'
+import { initials, PATHS, shownName } from '../lib/journey'
 
 export function Brand({ to = '/home' }: { to?: string }) {
   return (
@@ -46,7 +46,7 @@ function Topbar() {
         </nav>
         <div className="tr">
           <Tip text="Actions"><Link to="/home" className="bell" aria-label={`Actions, ${actions.length} open`}><Icon name="clip" size={19} /><b>{actions.length}</b></Link></Tip>
-          <div className="uchip2"><div className="av">{initials(session.name)}</div><div><span>{session.name}</span><small>{session.email}</small></div></div>
+          <div className="uchip2"><div className="av">{initials(shownName(session.name) || session.email)}</div><div><span>{shownName(session.name) || session.email}</span>{shownName(session.name) && <small>{session.email}</small>}</div></div>
           <Button variant="ghost" size="sm" onClick={signOut}>Sign out</Button>
         </div>
       </div>

@@ -9,7 +9,7 @@ from pypdf import PdfReader
 from app.services import deliverables as D
 from app.services.pdf_summary import build_pdf_summary
 
-EX = next(p for p in Path(__file__).resolve().parents if (p / "skill" / "example_runs").is_dir()) / "skill" / "example_runs"
+EX = Path(__file__).with_name("fixtures")
 
 
 def load(name):
@@ -56,7 +56,7 @@ def test_removed_and_added_sections(run, tmp_path):
     assert heads.index("Evidence behind each indicator") > heads.index("Appendix 1")
     assert ("Outside-in to post inside-out: indicators that moved" in heads) == io
     if io: assert heads.index("Outside-in to post inside-out: indicators that moved") > heads.index("Appendix 1")
-    order = [heads.index(h) for h in ("Executive summary", "Peer comparison", "Coverage and limitations", "Appendix 1", "Guardrails")]  # Guardrails is an appendix, after the body
+    order = [heads.index(h) for h in ("Executive summary", "Peer comparison", "Appendix 1", "Coverage and limitations", "Guardrails")]  # Coverage and Guardrails are appendices, after the body
     assert order == sorted(order)
 
 
@@ -126,10 +126,14 @@ def test_questionnaire_roundtrip(tmp_path):
     assert "Director self-assessment: Acme Corp" in txt and "Q12." in txt and "DRAFT ONLY" in txt
     res = D.parse_questionnaire(blank)
     assert len(res["answers"]) == 12 and not any(res["answers"]) and res["evidence"] == {} and not res["simulated"]
-    sim = D.build_questionnaire("Acme Corp", str(tmp_path / "qs.docx"), simulate=True)
-    res = D.parse_questionnaire(sim, run_date="2026-10-23")
-    assert res["simulated"] and len(res["evidence"]) == 12 and res["evidence"]["SA01"]["source_origin"] == "self_assessment"
-    assert set(res["ratings"]) == {"1", "2", "3", "4", "5", "6"} and set(res["ratings"].values()) <= {1, 2, 3, 4, 5}
+    filled = Document(blank)  # a returned questionnaire: fill the first answer box and tick one rating
+    filled.tables[1].rows[0].cells[0].text = "Answer typed into the box"
+    rt = next(t for t in filled.tables if len(t.columns) == len(D.RATING_LABELS) + 1)
+    rt.rows[0].cells[3].text = "☒ " + D.RATING_LABELS[2]
+    returned = str(tmp_path / "returned.docx"); filled.save(returned)
+    res = D.parse_questionnaire(returned, run_date="2026-10-23")
+    assert res["answers"][0] == "Answer typed into the box" and set(res["evidence"]) == {"SA01"} and res["evidence"]["SA01"]["source_origin"] == "self_assessment"
+    assert res["ratings"] == {"1": 3} and not res["simulated"]
 
 
 def test_file_names():

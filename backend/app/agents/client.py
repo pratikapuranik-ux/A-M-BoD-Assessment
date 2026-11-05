@@ -70,10 +70,16 @@ def _err(e):
     return getattr(e, "message", None) or str(e)
 
 
+_DROPPED = {"TransportError", "RemoteProtocolError", "ReadError", "ReadTimeout", "ConnectError", "ConnectTimeout", "WriteError", "PoolTimeout"}
+
+
 def is_busy(e) -> bool:
     """A rate limit, overload, server or connection error: worth waiting for."""
     if anthropic is None: return False
-    kinds = tuple(getattr(anthropic, n) for n in ("RateLimitError", "OverloadedError", "InternalServerError", "APIConnectionError") if hasattr(anthropic, n))
+    # A connection dropped while a streamed answer was being read surfaces as the HTTP library's own error (httpx RemoteProtocolError,
+    # ReadError, ConnectError, timeouts), not as an anthropic error; it is the same kind of interruption, so it is waited out and retried.
+    if any(c.__name__ in _DROPPED for c in type(e).__mro__): return True
+    kinds =tuple(getattr(anthropic, n) for n in ("RateLimitError", "OverloadedError", "InternalServerError", "APIConnectionError") if hasattr(anthropic, n))
     if isinstance(e, kinds): return True
     body = getattr(e, "body", None); err = body.get("error") if isinstance(body, dict) else None
     return isinstance(e, anthropic.APIStatusError) and (e.status_code in cfg.BUSY_STATUS or (isinstance(err, dict) and err.get("type") == "overloaded_error"))

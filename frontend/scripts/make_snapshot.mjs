@@ -1,5 +1,5 @@
 // Builds one self-contained, read-only HTML file of the app for a company already on file.
-// Run from the frontend folder:  node scripts/make_snapshot.mjs [company-id]   (default: chevron)
+// Run from the frontend folder:  node scripts/make_snapshot.mjs <company-id>
 // Needs the backend's Python environment (backend/.venv); reads the stored results and changes nothing.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -8,7 +8,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url)), web = resolve(here, '..'), root = resolve(web, '..')
-const cid = process.argv[2] || 'chevron'
+const cid = process.argv[2]
+if (!cid) { console.error('Usage: node scripts/make_snapshot.mjs <company-id>'); process.exit(2) }
 const tmp = mkdtempSync(join(tmpdir(), 'am_snap_'))
 const outFile = join(root, 'exports', 'AM_Board_Assessment_Snapshot.html')
 try {

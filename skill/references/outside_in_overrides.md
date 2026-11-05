@@ -1,6 +1,6 @@
 # Outside-in anchor overrides
 
-These anchors apply **only when the assessment is outside-in**. They restate two indicators around signals that are visible from public sources. The level-neutral anchors in `framework.md` are unchanged and remain the reference for self-assessment and inside-out levels. Scripts read these overrides from `assets/framework.json` (`outside_in_overrides`) and show them in the dashboard info button and in Appendix D.
+These anchors apply **only when the assessment is outside-in**. They restate two indicators around signals that are visible from public sources. The level-neutral anchors in `framework.md` are unchanged and remain the reference for self-assessment and inside-out levels. Scripts read these overrides from `assets/framework.json` (`outside_in_overrides`) and show them in the dashboard info button and in the anchors appendix.
 
 ## 1.2 Unmediated customer and frontline exposure
 

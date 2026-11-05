@@ -7,9 +7,10 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.log import get_logger
-from app.services import documents, jobs
+from app.services import jobs
 
 log = get_logger(__name__)
+MAX_JSON_BODY = 400 * 1024 * 1024
 
 
 class ApiError(Exception):
@@ -23,8 +24,8 @@ def submit(kind: str, work, *keys: str) -> jobs.Job:
 
 
 async def read_body(request: Request) -> dict:
-    if int(request.headers.get("content-length") or 0) > 140 * 1024 * 1024:
-        raise ApiError(413, f"the upload is too large; at most {documents.MAX_FILE // 2**20} MB per file and {documents.MAX_UPLOAD // 2**20} MB in total")
+    if int(request.headers.get("content-length") or 0) > MAX_JSON_BODY:  # files do not travel in JSON bodies; only small inline files do
+        raise ApiError(413, f"the request is too large (over {MAX_JSON_BODY // 2**20} MB); add documents through the upload step, one file at a time")
     try: b = await request.json()
     except Exception: raise ApiError(400, "request body must be JSON")
     if not isinstance(b, dict): raise ApiError(400, "request body must be a JSON object")
@@ -39,6 +40,18 @@ def register(app: FastAPI) -> None:
     @app.exception_handler(PermissionError)
     async def _locked(_r: Request, e: PermissionError):
         return JSONResponse({"error": "a file is in use by OneDrive or another program; try again in a moment", "problems": []}, status_code=503)
+
+    @app.exception_handler(Exception)
+    async def _unexpected(request: Request, e: Exception):
+        import time, traceback
+        text = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+        try:  # keep the trace where it can be read after the BACKEND window is closed
+            from app.services import storage
+            d = storage.root() / "logs"; d.mkdir(parents=True, exist_ok=True)
+            with open(d / "errors.log", "a", encoding="utf-8") as fh: fh.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {request.method} {request.url.path}\n{text}\n")
+        except Exception:  # noqa: BLE001
+            pass
+        return JSONResponse({"error": f"unexpected server error ({type(e).__name__}: {str(e)[:160]}); the details are in backend/storage/logs/errors.log", "problems": []}, status_code=500)
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(_r: Request, e: StarletteHTTPException):

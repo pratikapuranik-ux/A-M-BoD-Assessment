@@ -1,4 +1,4 @@
-# NEXUS backend (Python 3.12). Install: pip install -r backend/requirements.txt
+# A&M BoD Assessment backend (Python 3.12). Install: pip install -r backend/requirements.txt
 fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.7

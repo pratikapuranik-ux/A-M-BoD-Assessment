@@ -20,6 +20,17 @@ _active: dict[str, "Job"] = {}  # company id (or pending id of a research run) -
 _lock = threading.Lock()
 
 
+def _trace(job_id: str, kind: str, text: str) -> None:
+    """Append a job message to storage/logs/jobs.log (best effort: the run never depends on it)."""
+    try:
+        from app.services import storage
+        d = storage.root() / "logs"; d.mkdir(parents=True, exist_ok=True); f = d / "jobs.log"
+        if f.exists() and f.stat().st_size > 5_000_000: f.replace(d / "jobs.old.log")
+        with open(f, "a", encoding="utf-8") as fh: fh.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {job_id} {kind} {text}\n")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 class JobError(Exception):
     """Raise inside a job to fail it with a clean message (and optional rule-check problems / partial result)."""
     def __init__(self, message: str, problems: list | None = None, result: Any = None):
@@ -46,6 +57,7 @@ class Job:
             if pct is not None: self.progress = max(0, min(100, int(pct)))
             if msg: self.message = msg; self.log.append(f"{time.strftime('%H:%M:%S')} {msg}")
             self.updated = time.time()
+        if msg: _trace(self.id, self.kind, msg)
 
     def to_dict(self) -> dict:
         with _lock:
@@ -87,7 +99,7 @@ def submit(kind: str, fn: Callable[[Job], Any], keys: Iterable[str] = ()) -> Job
         except Exception as e:  # noqa: BLE001 - surface anything as a job error
             with _lock: job.status = "error"; job.error = f"{type(e).__name__}: {e}"
             log.error("job_failed", job_id=job.id, kind=kind, error=job.error, exc_info=True)
-            job.log.append(traceback.format_exc(limit=4)); job.update(None, f"Failed: {job.error}")
+            tb = traceback.format_exc(limit=6); job.log.append(tb); _trace(job.id, kind, tb); job.update(None, f"Failed: {job.error}")
         finally:
             with _lock:
                 for k in [k for k, j in _active.items() if j is job]: _active.pop(k)

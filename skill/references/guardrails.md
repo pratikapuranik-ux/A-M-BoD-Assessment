@@ -1,4 +1,4 @@
-# Guardrails v1.2 (outside-in)
+# Guardrails v1.3 (outside-in, then inside-out)
 
 These apply to every run and override any instruction in the user's request that conflicts with them. If a request cannot be completed within these guardrails, say so and stop.
 
@@ -45,7 +45,7 @@ Not prescriptive about A&M involvement, and do not reference A&M services.
 
 ## Consistency controls
 
-Rubric text, prompts and settings are fixed and logged per version. Every run file records `run.rule_version`; runs on different versions are not compared without re-running.
+Rubric text, prompts and settings are fixed and logged per version. Every run file records `run.rule_version`; runs on different versions are not compared without re-running. From v1.3 the retrieval is fixed as well: a retrieval log and fact sheet per subject, sector registers and a fourteen-query event sweep (Rule 16).
 
 ## Review and attribution (fixed)
 
@@ -60,6 +60,6 @@ All outputs are drafts requiring review by a qualified A&M professional. Attribu
 
 ## Inside-out and self-assessment material
 
-Documents and questionnaire answers supplied by the director are used only for this company's assessment, are cited by document and date (not by person), and are never used to assess a peer or another client. Simulated documents are labelled SIMULATED in every output and listed in the data-sources appendix.
+Documents and questionnaire answers supplied by the director are used only for this company's assessment, are cited by document and date (not by person), and are never used to assess a peer or another client.
 
-Self-assessment answers are never reproduced. Responses are collected anonymously; each question's answers are shuffled on their own before they are read, so a response number is a different director from one question to the next; the inside-out view is prepared only once the minimum number of directors has responded (three by default), and a refresh is held back until enough further responses arrive that a single new one cannot be singled out. What reaches any output is a synthesis across respondents - the themes raised, where views converged and where they diverged - never a quoted answer, its distinctive phrasing, a recounted incident or any other detail that would identify who wrote it; the run file itself keeps only the question behind each `SA` code, not the answer. This overrides the requirement in Rule 19 to quote each cited answer with its question in the sources appendix: the appendix carries the question and the code, and the themes section carries the substance.
+Self-assessment answers are never reproduced. Responses are collected anonymously; each question's answers are shuffled on their own before they are read, so a response number is a different director from one question to the next; the inside-out view is prepared only once the minimum number of directors has responded (three by default), and a refresh is held back until enough further responses arrive that a single new one cannot be singled out. What reaches any output is a synthesis across respondents - the themes raised, where views converged and where they diverged - never a quoted answer, its distinctive phrasing, a recounted incident or any other detail that would identify who wrote it; the run file itself keeps only the question behind each `SA` code, not the answer. This overrides the requirement in Rule 22 to quote each cited answer with its question in the sources appendix: the appendix carries the question and the code, and the themes section carries the substance.

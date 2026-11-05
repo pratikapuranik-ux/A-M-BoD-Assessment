@@ -1,4 +1,4 @@
-Today is $today. Assessment period: $period. Stage: inside-out update for $company (rules 17-21 apply; the outside-in overrides for 1.2 and 4.1 do not).
+Today is $today. Assessment period: $period. Stage: inside-out update for $company (rules 20-24 apply; the outside-in overrides for 1.2 and 4.1 do not).
 
 The board documents supplied by the director are attached above, each labelled with its evidence code. The self-assessment answers, the outside-in result and the prior actions are below. Re-score the company only; peers are never re-scored and the outside-in board cells stay unchanged.
 
@@ -6,6 +6,7 @@ For each of the 22 indicators submit a cell for the post inside-out score:
 - If the documents or answers bear on the indicator: score it against the level-neutral anchors with the rationale written as "Outside-in showed X; the board documents add Y", citing at least one IO or SA code (outside-in E codes may be cited alongside). carried_forward false. The score may move either way.
 - If they add nothing: carried_forward true, with a one-line rationale saying so; the outside-in score is kept as it is (repeat it in score, or 0 if it was not assessable).
 - Self-assessment alone (SA codes without any IO or E code) can lower a score but cannot lift it above 3, and is never High confidence. One IO item is strong direct evidence and can support a 1 or 5.
+- Where a board document and a public source give different figures for the same measure, the board document stands (Rule 21) and the rationale says that the two differ and by how much.
 - Score 0 means still not assessable: give na_cause and say what is missing.
 
 Also submit:

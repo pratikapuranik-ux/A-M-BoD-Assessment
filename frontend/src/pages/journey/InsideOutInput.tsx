@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Card, Chip, Meter, Notice, PageHead, NextButton } from '../../components/ui'
+import { AddFiles, Card, Chip, Meter, Notice, PageHead, NextButton } from '../../components/ui'
 import { useJourney } from '../../lib/useJourney'
 import { sizeOk, startInsideOutRun } from '../../lib/actions'
 import { FILE_ACCEPT } from '../../lib/constants'
@@ -26,6 +26,7 @@ export default function InsideOutInput() {
   /* Documents alone are enough (no responses); otherwise the anonymity minimum applies, and 1 to min-1 responses is refused
      because they could identify respondents. */
   const hasDocs = provided > 0 || other.length > 0
+  const nFiles = Object.values(docs).reduce((a, fs) => a + fs.length, 0)
   const okCount = n >= v.min || (n === 0 && hasDocs)
   const base = apiOn && research.enabled && okCount
   /* The server says whether the inside-out view can be prepared (can_generate, with its reason). Returned questionnaires are
@@ -36,6 +37,9 @@ export default function InsideOutInput() {
   const start = () => {
     if (!okCount) return setMsg(n === 0 ? 'Add board documents or collect self-assessment responses first.' : `At least ${v.min} self-assessment responses are needed, or none at all; ${n} so far.`)
     setMsg('')
+    /* The files live only in this browser tab until the run starts: a reload empties the list without a word. Never start a run
+       that scores from answers alone unless the director has seen that is what will happen. */
+    if (!hasDocs && !window.confirm('No board documents are attached, so this will be scored from the directors’ answers alone. Answers can lower a grade but cannot raise it above 3.\n\nContinue without documents?')) return
     void startInsideOutRun(cid, j.meta.company, session.mode)
     nav(PATHS.ioRun)
   }
@@ -56,7 +60,7 @@ export default function InsideOutInput() {
         <h3>1. Board documents</h3>
         <SubmittedDocs stage="io" />
         <div id="meter"><Meter pct={(provided / (j.docs.length || 1)) * 100} /><div className="muted">{provided} of {j.docs.length} documents provided</div></div>
-        <p className="ks">PDF, Word or text files, up to 25 MB each.</p>
+        <p className="ks">PDF, Word, Excel, PowerPoint, text, web pages or images, up to 100 MB each (scanned pages are read for you): add several at once, or one .zip of them (up to 500 MB). A zip you add to a row counts as that document type.</p>
         <div className="scroll"><table className="tbl"><thead><tr><th style={{ width: 70 }}>Provided</th><th>Document</th><th>Indicators it informs</th><th>File</th></tr></thead><tbody>
           {j.docs.map((d, i) => {
             const slot = i + 1, files = docs[slot] || []
@@ -66,8 +70,8 @@ export default function InsideOutInput() {
                 <td>{slot}. {d[0]}{slot <= 7 && <> <span className="chip">priority</span></>}</td>
                 <td>{String(d[1] || '').split(' ').filter(Boolean).map((x) => <span className="chip" key={x}>{x}</span>)}</td>
                 <td>
-                  <input type="file" accept={FILE_ACCEPT} multiple className="fileinput" aria-label={`Add files for document ${slot}`} value=""
-                    onChange={(e) => useInsideOut.getState().addDocFiles(slot, sizeOk(Array.from(e.target.files || [])).map((f) => ({ name: f.name, file: f })))} />
+                  <AddFiles label={files.length ? 'Add more' : 'Add files'} accept={FILE_ACCEPT} ariaLabel={`Add files for document ${slot}`}
+                    onFiles={(fl) => useInsideOut.getState().addDocFiles(slot, sizeOk(Array.from(fl || [])).map((f) => ({ name: f.name, file: f })))} />
                   <FileChips files={files} onRemove={(k) => useInsideOut.getState().removeDocFile(slot, k)} />
                 </td>
               </tr>)
@@ -77,14 +81,18 @@ export default function InsideOutInput() {
 
       <Card className="acc">
         <h3>2. Other information</h3>
-        <p className="muted">Anything else that bears on how the board works: committee papers, advisor reports, investor correspondence. Listed in the report’s sources. Up to 25 MB per file.</p>
-        <div className="frow"><input type="file" id="otherfiles" multiple accept={FILE_ACCEPT} className="fileinput" aria-label="Other information" value=""
-          onChange={(e) => useInsideOut.getState().addOther(sizeOk(Array.from(e.target.files || [])).map((f) => ({ name: f.name, file: f })))} /></div>
+        <p className="muted">Anything else that bears on how the board works: committee papers, advisor reports, investor correspondence. Listed in the report’s sources. Add several files, or one .zip of them (files up to 100 MB each, the zip up to 500 MB).</p>
+        <div className="frow"><AddFiles label="Add files" accept={FILE_ACCEPT} ariaLabel="Other information"
+          onFiles={(fl) => useInsideOut.getState().addOther(sizeOk(Array.from(fl || [])).map((f) => ({ name: f.name, file: f })))} /></div>
         <div className="chips">{other.map((f, i) => <Chip key={f.name + i} label="Remove" onRemove={() => useInsideOut.getState().removeOther(i)}>{f.name}</Chip>)}</div>
       </Card>
 
       <SurveyCard cid={cid} j={j} apiOn={apiOn} />
 
+      <Notice kind={hasDocs ? 'ok' : undefined}>
+        <b>This run will use:</b> {nFiles} board document file{nFiles === 1 ? '' : 's'} ({provided} of {j.docs.length} document types), {other.length} other file{other.length === 1 ? '' : 's'} and {n} director response{n === 1 ? '' : 's'}.
+        {!hasDocs && <> No board documents are attached. If you added some and they are not listed above, the page was reloaded; add them again.</>}
+      </Notice>
       {n === 0 && hasDocs && <Notice><b>No self-assessment responses yet.</b> The inside-out assessment will run from the board documents alone; the directors’ view will be missing from it. You can run it again once at least {v.min} responses are in.</Notice>}
       <div className="row sb">
         <Link className="btn sec" to={PATHS.oi}>Back to outside-in readout</Link>

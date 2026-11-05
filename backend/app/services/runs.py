@@ -50,7 +50,7 @@ def prepare(cid: str, progress: Progress | None = None) -> dict:
 
 
 def build_all(cid: str, parts: set[str] | None = None, progress: Progress | None = None) -> dict:
-    """Render deliverables into NEXUS_STORAGE_DIR/<id>/out and record them. parts: subset of oi, io, prior, quest."""
+    """Render deliverables into BOARD_STORAGE_DIR/<id>/out and record them. parts: subset of oi, io, prior, quest."""
     from app.services import deliverables as D
     p = progress or (lambda *_: None)
     with repo.lock(cid):
@@ -116,6 +116,52 @@ def job_error(e: Exception) -> jobs.JobError:
 
 # ---------------- job bodies ----------------
 
+def read_documents(job, docs: list[dict], *, max_slot: int | None = None, search: dict | None = None) -> list[dict]:
+    """Read the uploaded documents (slow for long PDFs, so it happens here, with progress, not while the request waits).
+    search={'company': {...}, 'peers': [...]}: outside-in. Every PDF becomes text, each file is assigned to the company or a peer
+    (by its folder, unless the page said which) and kept for reuse by this assessment; the agents then search the text instead of
+    receiving it. Without it (inside-out) the documents go to the model whole, condensed when they are over one request."""
+    if not docs: return []
+    from app.api.errors import ApiError
+    from app.api.uploads import extract_documents
+    from app.services import library, subjects
+    job.update(2, f"Reading {len(docs)} uploaded file(s)")
+    kw = {}
+    if search:
+        kw = dict(as_text=True, scope=library.scope(search["company"].get("ticker", ""), search.get("period", "")),
+                  who=lambda name: subjects.assign(name, search["company"], search["peers"]))
+    try: out, probs = extract_documents(docs, max_slot=max_slot, progress=lambda m: job.update(2, m), **kw)
+    except ApiError as e: raise jobs.JobError(e.error) from e
+    if probs: raise jobs.JobError("some documents could not be read", probs)
+    for note in out.notes: job.update(2, note)  # skipped files inside zips go to the job's log
+    if search: return out  # searched, so the size of the upload does not matter (see analyse_documents)
+    from app.services import digest
+    try: notes = digest.fit(out, lambda m: job.update(3, m))  # one request holds about a million tokens: condense what does not fit
+    except digest.DigestError as e: raise jobs.JobError(f"the documents are too large to research: {e}") from e
+    for note in notes: job.update(3, note)
+    return out
+
+
+def analyse_documents(job, docs: list[dict], names: list[str], period: str, ticker: str) -> dict[int, str]:
+    """Fact sheets for the long documents (kept with each file for reuse) and a cross-document review per subject. A failure here
+    never stops the run: the documents can still be searched."""
+    import os
+    from app.services import factsheet, library
+    mode = (os.environ.get("BOARD_DOC_ANALYSIS") or "company").strip().lower()  # company: only the company's own documents; all: peers too; off: search only
+    if not docs or mode == "off": return {}
+    if mode != "all":  # peers' documents are searched, not summarised: the company is the subject of the assessment
+        docs = [d for d in docs if int(d.get("subject") or 0) == 0]; names = names[:1]
+        if not docs: return {}
+    scope = library.scope(ticker, period)
+    def keep(d):  # stored the moment it is complete: a stall or restart does not lose it
+        if d.get("sha"): library.update(scope, d["sha"], facts=d["facts"])
+    try: findings, notes = factsheet.prepare(docs, names, lambda m: job.update(4, m), on_sheet=keep)
+    except Exception as e:  # noqa: BLE001
+        job.update(4, f"Key facts could not be extracted ({type(e).__name__}: {str(e)[:200]}); the documents will be searched instead"); return {}
+    for n in notes: job.update(4, n)
+    return findings
+
+
 def build_work(cid: str, parts: set[str] | None = None):
     def work(job: jobs.Job):
         res = prepare(cid, job.update)
@@ -126,22 +172,26 @@ def build_work(cid: str, parts: set[str] | None = None):
     return work
 
 
-def research_work(company: str, ticker: str, peers: list[dict], period: str, mode: str, provided: list[dict]):
+def research_work(company: str, ticker: str, peers: list[dict], period: str, mode: str, docs: list[dict]):
     def work(job: jobs.Job):
         mod = research_module()
         if mod is None: raise jobs.JobError("the research module (app.agents.graph) is not available")
-        job.update(2, f"Researching {company} and {len(peers)} peers" + (f", with {len(provided)} document(s) you supplied" if provided else ""))
-        kw = {"documents": provided} if provided else {}
+        from app.agents import tools as agent_tools
+        job.update(2, "Scoring ruling for 1.4 (quality means product and service quality): " + ("on" if agent_tools.ruling_1_4_on() else "off, so 1.4 is read as before"))
+        provided = read_documents(job, docs, search={"company": {"name": company, "ticker": ticker}, "peers": peers, "period": period})
+        findings = analyse_documents(job, provided, [company] + [p["name"] for p in peers], period, ticker)
+        job.update(6, f"Researching {company} and {len(peers)} peers" + (f", with {len(provided)} document(s) you supplied" if provided else ""))
+        kw = {"documents": provided, "findings": findings} if provided else {}
         try: run = mod.run_outside_in(company, ticker, peers, period, mode, lambda pct, msg="": job.update(2 + int(pct * 0.8), msg), **kw)
         except research_errors(mod) as e: raise job_error(e) from e
         if not isinstance(run, dict) or not isinstance(run.get("subjects"), list): raise jobs.JobError("research returned no run file")
         run.setdefault("run", {}).setdefault("mode", mode); run["run"].setdefault("period", period); run["run"].setdefault("stage", "outside_in")
-        run["run"]["documents_provided"] = [{"name": d.get("name", ""), "slot": 0} for d in provided]  # names only, so the inputs can be shown again later
+        run["run"]["documents_provided"] = [{"name": d.get("name", ""), "slot": 0, "subject": d.get("subject", 0)} for d in provided]  # names only, so the inputs can be shown again later
         comp = convert.company_of(run); backup = None
         try:
             # Every research run is a fresh, standalone assessment: nothing saved for the same company (earlier quarters, inside-out
-            # runs, survey answers) is attached to it. NEXUS_REUSE_HISTORY=1 restores the legacy "new period of a company on file".
-            reuse = (os.environ.get("NEXUS_REUSE_HISTORY") or "").lower() in ("1", "true", "yes")
+            # runs, survey answers) is attached to it. BOARD_REUSE_HISTORY=1 restores the legacy "new period of a company on file".
+            reuse = (os.environ.get("BOARD_REUSE_HISTORY") or "").lower() in ("1", "true", "yes")
             cid = repo.match_id(convert.company_id(comp), comp["name"], comp.get("ticker", "")) if reuse else None
             if cid: jobs.hold(cid, job); backup = repo.new_period(cid, run)
             else: cid = repo.create(run, source="research"); jobs.hold(cid, job)
@@ -160,16 +210,18 @@ def research_work(company: str, ticker: str, peers: list[dict], period: str, mod
             raise jobs.JobError(f"the research run failed {len(g['problems'])} rule check(s); stored as '{cid}' for review", g["problems"], {"company_id": cid})
         build_all(cid, None, lambda p, m: job.update(86 + int((p - 40) * 0.2), m))
         cons = ((run.get("coverage") or {}).get("consistency_result") or "")
-        warnings = list(g["warnings"]) + ([f"Consistency test (Rule 12): {cons}"] if ("FAIL" in cons or "NOT within" in cons) else [])
+        warnings = list(g["warnings"]) + list(getattr(provided, "notes", [])) + ([f"Consistency test (Rule 18): {cons}"] if ("FAIL" in cons or "NOT within" in cons) else [])
         return {"company_id": cid, "warnings": warnings}
     return work
 
 
-def inside_out_work(cid: str, mode: str, extracted: list[dict], answers: dict, ratings: dict, n: int):
+def inside_out_work(cid: str, mode: str, docs: list[dict], answers: dict, ratings: dict, n: int, max_slot: int):
     def work(job: jobs.Job):
         mod = research_module()
         if mod is None: raise jobs.JobError("the research module (app.agents.graph) is not available")
         oi = repo.read_run(cid, "outside_in")
+        extracted = read_documents(job, docs, max_slot=max_slot)
+        if n == 0 and not extracted: raise jobs.JobError("none of the documents could be used, and there are no self-assessment responses")
         job.update(2, f"Reading {len(extracted)} document(s) and {sum(1 for a in answers.values() if a)} answer(s)")
         try: io = mod.run_inside_out(oi, extracted, answers, ratings, lambda pct, msg="": job.update(2 + int(pct * 0.8), msg))
         except research_errors(mod) as e: raise job_error(e) from e
@@ -188,5 +240,5 @@ def inside_out_work(cid: str, mode: str, extracted: list[dict], answers: dict, r
             repo.set_problems(cid, g["problems"])
             raise jobs.JobError(f"the inside-out run failed {len(g['problems'])} rule check(s); stored for review", g["problems"], {"company_id": cid})
         build_all(cid, {"io"}, lambda p, m: job.update(86 + int((p - 40) * 0.2), m))
-        return {"company_id": cid, "warnings": g["warnings"]}
+        return {"company_id": cid, "warnings": list(g["warnings"]) + list(getattr(extracted, "notes", []))}
     return work

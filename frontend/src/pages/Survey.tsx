@@ -233,7 +233,7 @@ export default function SurveyPage(): JSX.Element {
                       </h3>
                       {qs.map((q) => (
                         <div key={q.n} className="mb-1.5">
-                          <label htmlFor={`ra${q.n}`} className="mb-1.5 mt-3.5 block text-[0.95rem] font-bold">
+                          <label htmlFor={`ra${q.n}`} className="mb-1.5 mt-3.5 block text-[0.95rem] font-bold normal-case leading-snug tracking-normal text-[#002B49]">
                             {q.n}. {typo(q.text)}
                           </label>
                           <textarea
@@ -253,7 +253,7 @@ export default function SurveyPage(): JSX.Element {
                         <legend className="mb-1.5 text-[0.95rem] font-bold">Overall, how would you describe the board on this theme?</legend>
                         <div className="flex flex-wrap gap-6">
                           {RATING_OPTIONS.map(([v, l]) => (
-                            <label key={v} className="inline-flex cursor-pointer items-center gap-2">
+                            <label key={v} className="inline-flex cursor-pointer items-center gap-2 text-[0.95rem] font-normal normal-case tracking-normal text-[#002B49]">
                               <input type="radio" name={`rr${d}`} value={v} checked={ratings[d] === v} onChange={() => setRatings((r) => ({ ...r, [d]: v }))} className="h-4 w-4 accent-[#002B49]" /> {l}
                             </label>
                           ))}

@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import db
-from app.api import actions, assessments, errors, reference, survey
+from app.api import actions, assessments, errors, reference, survey, uploads
 from app.api.errors import ApiError
 from app.config import get_settings
 from app.log import configure_logging, get_logger
@@ -20,24 +20,27 @@ from app.log import configure_logging, get_logger
 def create_app() -> FastAPI:
     st = get_settings()
     configure_logging(st.log_level, st.log_json)
-    log = get_logger("nexus")
+    log = get_logger("bod")
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         st.storage_dir.mkdir(parents=True, exist_ok=True)
+        uploads.sweep_stale()
+        from app.services import library; library.sweep()
         db.init_engine()
-        if os.environ.get("NEXUS_AUTO_CREATE_TABLES", "1") != "0":
+        if os.environ.get("BOARD_AUTO_CREATE_TABLES", "1") != "0":
             db.create_all()  # no-op when `alembic upgrade head` has already built the schema
         log.info("startup", database=st.database_url.split("///")[0], storage=str(st.storage_dir))
         yield
 
-    app = FastAPI(title="NEXUS Board Assessment", lifespan=lifespan)
+    app = FastAPI(title="A&M BoD Assessment", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=st.cors_origins, allow_methods=["*"], allow_headers=["*"])
     errors.register(app)
     app.include_router(reference.router)
     app.include_router(survey.router)
     app.include_router(actions.router)
     app.include_router(assessments.router)
+    app.include_router(uploads.router)
 
     @app.api_route("/api/{rest:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
     def api_404(rest: str):
@@ -57,7 +60,7 @@ def create_app() -> FastAPI:
     else:
         @app.get("/", include_in_schema=False)
         def index():
-            return JSONResponse({"app": "NEXUS Board Assessment API", "frontend": "not built (run `npm run build` in frontend/); API docs at /docs", "health": "/api/health"})
+            return JSONResponse({"app": "A&M BoD Assessment API", "frontend": "not built (run `npm run build` in frontend/); API docs at /docs", "health": "/api/health"})
     return app
 
 

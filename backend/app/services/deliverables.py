@@ -10,7 +10,6 @@ import html
 import json
 import math
 import os
-import random
 import re
 from fractions import Fraction
 from pathlib import Path
@@ -264,22 +263,27 @@ def two_lines(text):
     return " ".join(re.split(r"(?<=[.!?])\s+", (text or "").strip())[:2]) if text else ""
 
 
-_DOC_KINDS = (("proxy statements", r"proxy|def 14a"), ("annual reports and filings", r"annual report|10-k|10-q|form |filing|accounts"),
-              ("earnings calls and results", r"earnings|conference call|transcript|results|cash flow|capex"), ("credit ratings", r"rating|moody|s&p|fitch"),
-              ("governance policies and charters", r"charter|guideline|policy|code of|bylaw"))
+_DOC_KINDS = (("proxy statements", r"proxy|def[ _-]?14a"),
+              ("board minutes, packs and papers", r"minutes|agenda|board (and committee )?pack|pre-read|capital and investment|strategy papers|treasury|liquidity report|evaluation report|skills matrix|succession plan|ceo reports?|internal audit|key-account|governance framework"),
+              ("governance and remuneration reports", r"governance report|remuneration|directors.? report|corporate governance"),
+              ("annual reports and filings", r"annual report|\b10 ?k\b|\b10 ?q\b|\b20 ?f\b|\b8 ?k\b|\b6 ?k\b|form |filing|accounts|\.xlsx"),
+              ("earnings calls and results", r"earnings|conference call|transcript|results|presentation|release|prepared remarks|cash flow|capex"),
+              ("credit ratings", r"rating|moody|s&p|fitch"),
+              ("governance policies and charters", r"charter|guideline|policy|code of|bylaw|terms of reference"))
 
 
 def doc_summary(names: list[str]) -> str:
     """Two sentences on a set of documents: how many, of what kinds, and over which years. Counts only; nothing is composed from the text."""
     n = len(names); kinds: dict[str, int] = {}
     for x in names:
-        k = next((label for label, pat in _DOC_KINDS if re.search(pat, x.lower())), "news, analyst and other sources")
+        k = next((label for label, pat in _DOC_KINDS if re.search(pat, re.sub(r"[_\-]+", " ", x.lower()))), "news, analyst and other sources")
         kinds[k] = kinds.get(k, 0) + 1
     top = sorted(kinds.items(), key=lambda kv: -kv[1])
-    mix = ", ".join(f"{c} {k}" for k, c in top[:3]) + (f" and {sum(c for _, c in top[3:])} other" if len(top) > 3 else "")
+    if len(top) == 1: mix = f"all {top[0][0]}"
+    else: mix = "mainly " + ", ".join(f"{c} {k}" for k, c in top[:3]) + (f" and {sum(c for _, c in top[3:])} other" if len(top) > 3 else "")
     years = sorted({int(y) for x in names for y in re.findall(r"\b(20\d\d)\b", x)})
     span = f" Dated {years[0]} to {years[-1]}." if len(years) > 1 else f" Dated {years[0]}." if years else ""
-    return f"{n} document{'s' if n != 1 else ''}, mainly {mix}.{span}"
+    return f"{n} document{'s' if n != 1 else ''}, {mix}.{span}"
 
 
 def hist_grade(h, d=None):
@@ -344,7 +348,7 @@ def build_docx(run: dict, out_path: str) -> str:
         pv = prev["overall"].get(l if l in prev["overall"] else "board", {}).get("grade") if prev else None
         dl = grade_delta(o.get("grade"), pv)
         para(cell, f"{o['dimensions_reported']} of {len(DIMS)} dimensions reported" + (f"  ·  prior quarter {pv} ({'+' if dl > 0 else ''}{dl} step{'s' if abs(dl) != 1 else ''})" if pv and dl is not None else ""), size=7.5, color=GREY, after=0)
-        c2 = tiles.rows[1].cells[k]; c2.text = ""; cell_margins(c2, 60, 60, 200, 200); rich(c2.paragraphs[0], two_lines(run.get("what_moved")) if io else (run.get("overall_summary") or {}).get(l, ""), 8.5)  # inside-out: only what changed, from the run's own text
+        c2 = tiles.rows[1].cells[k]; c2.text = ""; cell_margins(c2, 60, 60, 200, 200); rich(c2.paragraphs[0], ((run.get("overall_summary") or {}).get(l) or (two_lines(run.get("what_moved")) if io else "")), 8.5)  # each tile carries its own lens's summary sentence; the full 'what moved' paragraph follows below and is not repeated here
     kicker(doc, "What moved the rating" if (hist or io) else "What drives the rating"); para(doc, run.get("what_moved") or " ".join(run.get("headline_findings", [])), size=9)
     if io and run.get("inside_vs_outside"):
         ivo = run["inside_vs_outside"]; kicker(doc, "Inside view against the public record")
@@ -557,6 +561,24 @@ def build_docx(run: dict, out_path: str) -> str:
             set_cell(row[k + 1], " / ".join((ind.get(l) or {}).get("confidence") or "–" for l in lenses), size=7.5, align="center")
         lim = (comp.get("limitations") or {}).get(d)
         if lim: para(doc, "Where this grade is limited: " + lim, size=7.5, italic=True, color=GREY)
+    # indicator-level comparison: moved here from the body, which keeps to the narrative
+    app_title("Indicator-level comparison")
+    if io:
+        kicker(doc, "Outside-in to post inside-out: indicators that moved")
+        tc = table(doc, ["Indicator", "OI", "IO", "Δ", "Outside-in evidence, then what the board documents added"], [4.6, 1.0, 1.0, 0.9, 9.9])
+        for i in IND_IDS:
+            a = ((comp["indicators"].get(i) or {}).get("board") or {}).get("score"); b = ((comp["indicators"].get(i) or {}).get("board_io") or {}).get("score")
+            if b is None or a == b: continue
+            ind = next(x for x in IND if x["id"] == i); row = new_row(tc); set_cell(row[0], f"{i} {ind['name']}", bold=True, color=NAVY)
+            score_cell(row[1], a, 8); score_cell(row[2], b, 8); set_cell(row[3], ("+" if a is None else ("+" if b > a else "")) + (str(b) if a is None else str(b - a)), align="center", bold=True, color=TEAL if a is None or b > a else "A6192E")
+            p = row[4].paragraphs[0]; text_with_links(p, (run.get("io_change_notes") or {}).get(i) or first_sentence(((comp["indicators"][i].get("board_io") or {}).get("rationale"))), size=7.5)
+    kicker(doc, "Evidence behind each indicator")
+    hdr = ["Indicator"] + ([labels[l] for l in lenses] if io else ["Score"]) + ["Summary of the evidence"]; widths = [4.4] + [1.2] * len(lenses) + [17.4 - 4.4 - 1.2 * len(lenses)]
+    te = table(doc, hdr, widths); summ = run.get("indicator_summary") or {}
+    for i in IND:
+        ind = comp["indicators"].get(i["id"], {}); row = new_row(te); set_cell(row[0], f"{i['id']} {i['name']}", bold=True, color=NAVY); k = 1
+        for l in lenses: score_cell(row[k], (ind.get(l) or {}).get("score"), 8); k += 1
+        p = row[k].paragraphs[0]; text_with_links(p, summ.get(i["id"]) or first_sentence((ind.get(lenses[-1]) or {}).get("rationale")) or "Not assessable.", size=7.5)
     # peer one-pagers
     appn += 1
     for n, p_ in enumerate(peers):
@@ -587,7 +609,7 @@ def build_docx(run: dict, out_path: str) -> str:
         p = doc.add_paragraph(); run_fmt(p.add_run(f"{k:02d}  "), 8, bold=True, color=BLUE); run_fmt(p.add_run(rt), 8); p.paragraph_format.space_after = Pt(2)
     app_title("Guardrails")
     from app.domain.view import _guardrails  # one source with the dashboard and the React report
-    groups, intro = _guardrails()
+    groups, intro = _guardrails(bool(run.get("reconciliation")))
     if intro: para(doc, intro, size=8.5, after=4)
     for g in groups:
         kicker(doc, g["group"])
@@ -640,6 +662,9 @@ def build_dashboard(run: dict, out_path: str) -> str:
     tpl = (_HERE / "templates" / "dashboard.html").read_text(encoding="utf-8")
     page = (tpl.replace("__TITLE__", html.escape(f"{comp['name']} - Day 1 / Day 2 Board Assessment"))
             .replace("__RUN__", json.dumps(run).replace("</", "<\\/")).replace("__FW__", json.dumps(FW).replace("</", "<\\/")))
+    from app.config import get_settings
+    from app.domain.view import guardrail_text
+    page = guardrail_text(page, get_settings().min_responses, bool(run.get("reconciliation")))  # the guardrail text states the configured minimum and the run type
     Path(out_path).write_text(page, encoding="utf-8")
     return out_path
 
@@ -664,28 +689,18 @@ def _qp(doc, text, size=10, bold=False, color=None, italic=False, after=6):
     para_.paragraph_format.space_after = Pt(after); return para_
 
 
-SIM = {
- "1": ["Yes, a lost-contract debrief in Q2 changed our pricing posture; it reached us through the CEO's summary rather than directly. Most customer input arrives via management.", "Customer satisfaction sits in the annual bonus at about 10%; it has never reduced a payout to my knowledge."],
- "2": ["We revised our volume assumptions after a guidance miss last year; outside pressure prompted it, although the board had asked questions earlier.", "I trust the pipeline conversion number least. We have not retired a report in two years; the pack has grown."],
- "3": ["Electrification and channel shift. We hold a position on the first with capex targets; the second is discussed but without targets. Two external speakers in the past year.", "On tariffs we moved with peers; on the channel shift, after them. Management initiated both."],
- "4": ["Informally yes. A pricing pilot took one meeting; the divestiture took four. We deferred one acquisition for a further independent view.", "Minority views are not formally recorded. Decisions generally stay settled; one was revisited twice."],
- "5": ["Cost first, then buybacks to support EPS. Reinvestment was raised by two directors but not developed as an alternative.", "The last evaluation added a technology skills matrix; the last appointment brought digital experience. Owners would say we are slow to refresh."],
- "6": ["More time on earnings. No formal trigger; we would act on a rating warning. We refinanced early in 2025 before stress.", "Leverage policy is 2.0-2.5x net debt/EBITDA, reviewed annually, stress-tested at budget. Working capital is owned by the audit committee chair."]}
-
-
-
-def build_questionnaire(company: str, out_path: str, simulate: bool = False) -> str:
-    """Director self-assessment questionnaire (.docx) with editable answer boxes; simulate=True pre-fills synthetic answers."""
-    out = out_path; sim = simulate; rnd = random.Random(7)
+def build_questionnaire(company: str, out_path: str) -> str:
+    """Director self-assessment questionnaire (.docx) with empty, editable answer boxes."""
+    out = out_path
     company = clean(company or "the company")
     doc = Document(); st = doc.styles["Normal"]; st.font.name = "Arial"; st.font.size = Pt(10)
     sec = doc.sections[0]; sec.left_margin = sec.right_margin = Cm(2)
     _qp(doc, "ALVAREZ & MARSAL  |  DAY 1 / DAY 2 BOARD ASSESSMENT", 8, True, BLUE)
     _qp(doc, f"Director self-assessment: {company}", 18, True, NAVY, after=2)
-    _qp(doc, "Twelve questions, two per dimension, about 30 minutes. Answer in the shaded boxes in your own words; specific examples matter more than complete sentences. Your answers are read alongside the outside-in evidence and treated as self-reported. Nothing you write is attributed to you by name in the output." + ("  THIS COPY CONTAINS SIMULATED ANSWERS FOR PROTOTYPE TESTING." if sim else ""), 9, color=GREY, after=10)
+    _qp(doc, "Twelve questions, two per dimension, about 30 minutes. Answer in the shaded boxes in your own words; specific examples matter more than complete sentences. Your answers are read alongside the outside-in evidence and treated as self-reported. Nothing you write is attributed to you by name in the output.", 9, color=GREY, after=10)
     meta = doc.add_table(rows=2, cols=2); _light_borders(meta)
     for r_, (k, v) in enumerate((("Your role on the board (optional)", ""), ("Date completed", ""))):
-        meta.rows[r_].cells[0].text = k; meta.rows[r_].cells[1].text = v if not sim else ("Independent director (SIMULATED)" if r_ == 0 else "2026-10-23 (SIMULATED)")
+        meta.rows[r_].cells[0].text = k; meta.rows[r_].cells[1].text = v
         _qshade(meta.rows[r_].cells[0], TINT)
     doc.add_paragraph()
     n = 0; cur = None
@@ -696,18 +711,16 @@ def build_questionnaire(company: str, out_path: str, simulate: bool = False) -> 
         _qp(doc, f"Q{n}. {q}", 10, True, after=3)
         t = doc.add_table(rows=1, cols=1); _light_borders(t); cell = t.rows[0].cells[0]; _qshade(cell, "F7F9FB")
         cell.text = ""
-        ans = SIM[d][(n - 1) % 2] if sim else ""
-        rr = cell.paragraphs[0].add_run(f"[SIMULATED] {ans}" if sim else "Your answer:"); rr.font.size = Pt(9); rr.font.italic = not sim; rr.font.name = "Arial"
-        if not sim: rr.font.color.rgb = rgb("9AA3B2")
-        for _ in range(4 if not sim else 0): cell.add_paragraph()
+        rr = cell.paragraphs[0].add_run("Your answer:"); rr.font.size = Pt(9); rr.font.italic = True; rr.font.name = "Arial"
+        rr.font.color.rgb = rgb("9AA3B2")
+        for _ in range(4): cell.add_paragraph()
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
         if n % 2 == 0:
             rt = doc.add_table(rows=1, cols=len(RATING_LABELS) + 1); _light_borders(rt)
             rt.rows[0].cells[0].text = f"{dname} rating (optional): mark one"
             _qshade(rt.rows[0].cells[0], TINT)
-            pick = rnd.choice([2, 3, 3, 4])  # one rating per dimension (legacy drew once per cell)
             for k, lab in enumerate(RATING_LABELS, 1):
-                rt.rows[0].cells[k].text = ("☒ " if sim and k == pick else "☐ ") + lab
+                rt.rows[0].cells[k].text = "☐ " + lab
             doc.add_paragraph()
     _qp(doc, "Thank you. Return this file to the A&M team. " + DRAFT, 8, italic=True, color=GREY)
     doc.save(out)
@@ -729,12 +742,12 @@ def parse_questionnaire(path: str, run_date: str = "") -> dict:
             d = qs[qi - 1][0]
             for k in range(1, len(RATING_LABELS) + 1):
                 if "☒" in t.rows[0].cells[k].text: ratings[d] = k
-    sim = any("[SIMULATED]" in a for a in answers); evidence = {}
+    evidence = {}
     for n, ((d, dname, q_), a) in enumerate(zip(qs, answers), 1):
         if not a: continue
         evidence[f"SA{n:02d}"] = {"document": f"Director self-assessment, Q{n} (Dimension {d}: {dname})", "doc_type": "self-assessment", "date": run_date,
-                                  "url": "", "excerpt": a[:200], "evidence_class": "self_assessment", "source_origin": "self_assessment", "simulated": sim, "question": q_}
-    return {"answers": answers, "ratings": ratings, "simulated": sim, "evidence": evidence}
+                                  "url": "", "excerpt": a[:200], "evidence_class": "self_assessment", "source_origin": "self_assessment", "simulated": False, "question": q_}
+    return {"answers": answers, "ratings": ratings, "simulated": False, "evidence": evidence}
 
 
 
