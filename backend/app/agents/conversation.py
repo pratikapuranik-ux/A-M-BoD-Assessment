@@ -10,6 +10,7 @@ from . import client as cl
 from . import settings as cfg
 from .client import ResearchError, ResearchInvalid, ResearchRefused
 from .tools import system_blocks
+from app.services import usage
 
 log = structlog.get_logger("agents.conversation")
 
@@ -32,6 +33,14 @@ def echo(content):
 STUB = "[Page text removed to keep the conversation within the context window. Source:"
 DOC_STUB = "[Passage text removed to keep the conversation within the context window; run the search or read the page again if you need it.]"
 SHRINK = [(2, 3), (0, 0)]  # (web pages, document results) kept after a 'prompt is too long' rejection, tried in turn
+SHRINK_SEARCHES = [15, 3]  # and the newest web searches that keep their full result list (older ones keep their top TRIM_RESULTS results)
+TRIM_RESULTS = 3
+
+
+def schema_too_big(msg: str) -> bool:
+    """The service refuses the strict tool schemas as too complex or too large to compile (the wording has varied)."""
+    m = (msg or "").lower()
+    return "too complex" in m or "compiled grammar is too large" in m or "simplify your tool schemas" in m
 
 
 def stub_fetch(b):
@@ -48,6 +57,26 @@ def stub_fetch(b):
     return {**d, "content": {**res, "content": note}}
 
 
+def trim_search(b, keep=TRIM_RESULTS):
+    """A web_search_tool_result cut to its first `keep` results (each result stays whole and valid); anything else comes back unchanged."""
+    d = b if isinstance(b, dict) else b.model_dump(exclude_none=True) if hasattr(b, "model_dump") else None
+    if not d or d.get("type") != "web_search_tool_result" or not isinstance(d.get("content"), list) or len(d["content"]) <= keep: return b
+    return {**d, "content": d["content"][:keep]}
+
+
+def context_tokens(u, prev=0) -> int:
+    """The prompt size of the last model iteration in a turn. A turn that runs server tools loops several times, and the usage totals add
+    up every iteration (that is what is billed), so the totals are several times the real context: use the last iteration's own figures,
+    or, when the service gives none, estimate it from the totals (the context grows about evenly from `prev` to the last iteration)."""
+    keys = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+    its = [i for i in (getattr(u, "iterations", None) or []) if getattr(i, "type", "message") == "message"]
+    if its: return sum(getattr(its[-1], k, None) or 0 for k in keys)
+    total = sum(getattr(u, k, None) or 0 for k in keys)
+    tool = getattr(u, "server_tool_use", None)
+    n = 1 + sum(v for v in (getattr(tool, "web_search_requests", 0), getattr(tool, "web_fetch_requests", 0)) if isinstance(v, int))
+    return int(max(total / n, 2 * total / n - prev)) if n > 1 else total
+
+
 def scrub(x):
     """Drops control characters from every string (python-docx and the dashboards cannot take them)."""
     if isinstance(x, str): return cfg.CTRL_RE.sub("", x)
@@ -57,12 +86,13 @@ def scrub(x):
 
 
 class Conv:
-    def __init__(self, label, tools, content, on_block=None, on_phase=None, model=None, handlers=None):
+    def __init__(self, label, tools, content, on_block=None, on_phase=None, model=None, handlers=None, effort=None):
         self.label, self.tools, self.on_block, self.on_phase = label, tools, on_block, on_phase
         self.handlers = handlers or {}  # tool name -> fn(input) -> text: client tools answered here, not by the submit loop
         self.served: set[str] = set()  # ids of the tool calls answered by those handlers (their results can be cut when the context grows)
         self.shrink = 0  # how many of SHRINK have been used since the last accepted request
         self.model = model  # None = the default model (BOARD_MODEL); Run B and the reconciliation name theirs
+        self.effort = effort  # None = BOARD_EFFORT
         self.stop = None  # threading.Event shared by parallel steps: set when one fails, so the others stop calling Claude
         self.messages, self.pending, self.strict = [{"role": "user", "content": content}], [], True
         self.ctx = 0  # prompt size in tokens at the last turn
@@ -76,6 +106,17 @@ class Conv:
         for i, j in spots[:max(0, len(spots) - keep)]:
             content = list(self.messages[i]["content"]); content[j] = {**content[j], "content": DOC_STUB}
             self.messages[i] = {**self.messages[i], "content": content}; cut += 1
+        return cut
+
+    def prune_searches(self, keep: int) -> int:
+        """Cuts every web search result list except the newest `keep` searches to its first TRIM_RESULTS results; returns how many it cut."""
+        spots = [(i, j) for i, m in enumerate(self.messages) if m["role"] == "assistant"
+                 for j, b in enumerate(m["content"]) if trim_search(b) is not b]
+        cut = 0
+        for i, j in spots[:max(0, len(spots) - keep)]:
+            content = list(self.messages[i]["content"]); content[j] = trim_search(content[j])
+            self.messages[i] = {**self.messages[i], "content": content}; cut += 1
+        if cut: log.info("searches_trimmed", step=self.label, searches=cut, kept_full=keep, was=self.ctx)
         return cut
 
     def prune(self, keep=None, keep_docs=None) -> int:
@@ -110,7 +151,7 @@ class Conv:
         self._check_stop()
         tools = self.tools if self.strict else [{k: v for k, v in t.items() if k != "strict"} for t in self.tools]
         kw = dict(model=self.model or cfg.MODEL, max_tokens=cfg.MAX_TOKENS, system=system_blocks(), tools=tools,
-                  messages=self.messages, thinking={"type": "adaptive"}, output_config={"effort": cfg.EFFORT}, cache_control=cfg.CACHE)
+                  messages=self.messages, thinking={"type": "adaptive"}, output_config={"effort": self.effort or cfg.EFFORT}, cache_control=cfg.CACHE)
         if not cfg.FOUNDRY: kw.update(betas=cfg.BETAS, fallbacks="default")
         with cl.get_client().beta.messages.stream(**kw) as stream:
             beat = time.monotonic()
@@ -133,10 +174,10 @@ class Conv:
         except Exception as e:
             if anthropic is None or not isinstance(e, anthropic.APIError): raise
             if "prompt is too long" in cl._err(e).lower() and self.shrink < len(SHRINK):  # estimate was off: cut harder, up to twice, and try again
-                keep, keep_docs = SHRINK[self.shrink]; self.shrink += 1
+                keep, keep_docs = SHRINK[self.shrink]; self.prune_searches(SHRINK_SEARCHES[self.shrink]); self.shrink += 1
                 self.prune(keep=keep, keep_docs=keep_docs)
                 return self._request()
-            if isinstance(e, anthropic.BadRequestError) and self.strict and "too complex" in cl._err(e).lower():
+            if isinstance(e, anthropic.BadRequestError) and self.strict and schema_too_big(cl._err(e)):
                 log.warning("strict_schema_rejected", error=cl._err(e))
                 self.strict = False
                 return self._request()
@@ -147,7 +188,8 @@ class Conv:
         for _ in range(cfg.MAX_CONTINUATIONS):
             msg = self._request(); self.shrink = 0
             u = getattr(msg, "usage", None)
-            self.ctx = sum(getattr(u, k, None) or 0 for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+            self.ctx = context_tokens(u, self.ctx)
+            usage.record(self.label, self.model, u)
             log.info("turn", step=self.label, stop=msg.stop_reason, input=getattr(u, "input_tokens", None),
                      cache_read=getattr(u, "cache_read_input_tokens", None), cache_write=getattr(u, "cache_creation_input_tokens", None),
                      output=getattr(u, "output_tokens", None))

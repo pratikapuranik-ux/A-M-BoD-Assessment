@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import re
 import threading
+from concurrent.futures import TimeoutError as FutureTimeout
 
 import structlog
 
@@ -19,7 +20,9 @@ from .progress import Band, MonotonicProgress, narrate, phases, short_name
 from .settings import DIMS, FW, IND_IDS, PEER_PREFIXES, PERIOD_RE
 from .state import InsideOutState, OutsideInState, SubjectTask
 from app.domain import retrieval
-from .tools import (IO_KEYS, IO_TOOL, READ_PAGE_TOOL, SEARCH_TOOL, SUBJECT_KEYS, SUBJECT_TOOL, SYNTH_KEYS, SYNTH_TOOL, WEB_TOOLS, render_prompt)
+from . import tasks
+from .tools import (IO_KEYS, IO_TOOL, READ_PAGE_TOOL, SEARCH_TOOL, SUBJECT_KEYS, SUBJECT_TOOL, SYNTH_KEYS, SYNTH_TOOL, WEB_TOOLS, render_prompt,
+                    scoring_prompt, web_tools)
 
 log = structlog.get_logger("agents.nodes")
 
@@ -36,15 +39,34 @@ class Subject:
         self.data, self.draft, self.conv = None, None, None
         self.model = model        # None = BOARD_MODEL (Run A); Run B passes its own
         self.recon_note = ""      # set by the reconciliation: asks the next revision to bring the narrative in line with the final scores
+        self.locked: dict[str, int] = {}  # indicator id -> score fixed by the anchor recheck: a later revision of the narrative cannot move it
         self.counts = {"web_search": 0, "web_fetch": 0, "doc_search": 0, "doc_page": 0}  # the last two: reads of the documents supplied
+        self.docs: list[dict] = []  # readable files supplied on this subject: {label (what to cite it as), file} (set when its research starts)
 
     def accept(self, inp):
         # merge into the latest submission even if it was rejected: Claude is told empty fields keep what it sent before,
         # so a correction that resends only the fixed indicators must still see the evidence list from the first try
         inp = dict(inp, facts=[dict(f, _k=f"{f.get('indicator')}|{f.get('field')}") for f in inp.get("facts") or []])
         merged = self.draft = _merge(self.draft, inp, SUBJECT_KEYS)
+        for c in merged.get("indicators", []):
+            if c.get("id") in self.locked: c["score"] = self.locked[c["id"]]
         known = {e.get("code") for e in merged.get("evidence", [])}
         p = _check_evidence(merged.get("evidence", []), self.prefix) + _check_cells(merged.get("indicators", []), known, items={e.get("code"): e for e in merged.get("evidence", [])})
+        if self.docs:  # a citation of a supplied document is written the one way: url 'provided: <Cite as label>', whether the model gave the label or the file name
+            for e in merged.get("evidence", []):
+                u = (e.get("url") or "")
+                if u.lower().startswith("provided:"):
+                    ref = u.split(":", 1)[1].strip().lower()
+                    hit = next((d for d in self.docs if ref in (d["label"].lower(), d["file"].lower()) or d["file"].lower() in ref), None)
+                    if hit: e["url"] = f"provided: {hit['label']}"
+        if self.docs and cfg.MIN_DOC_CITES:  # the supplied documents are evidence too: some must be cited, not only web pages
+            cited = {d["label"] for d in self.docs if any(f"provided: {d['label']}".lower() == (e.get("url") or "").lower() for e in merged.get("evidence", []))}
+            need = min(cfg.MIN_DOC_CITES, len(self.docs))
+            if len(cited) < need:
+                rest = "; ".join(d["label"] for d in self.docs if d["label"] not in cited)[:900]
+                p.append(f"documents: only {len(cited)} of the {len(self.docs)} documents supplied on {self.name} are cited and at least {need} are required. Search the supplied "
+                         f"documents (search_provided_documents, read_provided_page) for the indicators they bear on and add each as an evidence item with document "
+                         f"'<Cite as label>, <section> p.<page>', doc_type what it is (10-K, proxy, transcript, ...) and url 'provided: <Cite as label>'. Not yet cited: {rest}")
         dims = [d.get("dimension") for d in merged.get("dimensions", [])]
         if missing := [d for d in DIMS if d not in dims]: p.append(f"dimensions missing assessment_text and limitations: {missing}")
         for d in merged.get("dimensions", []):
@@ -62,11 +84,25 @@ class Subject:
                 band.tick(i, narrate(self.short, b.name, getattr(b, "input", None)))
         on_phase = phases(lambda m: band.tick(i, m), {"thinking": f"Weighing the evidence on {self.short}",
                                                       SUBJECT_TOOL["name"]: f"Writing up {self.short}'s scores on the 22 indicators"})
-        content = render_prompt("subject.md", today=ctx["today"], period=ctx["period"], name=self.name, ticker=self.ticker or "n/a",
-                                role="the company being assessed" if self.role == "company" else "peer", peerset=ctx["peerset"],
-                                prefix=self.prefix, as_of=ctx["meta"]["as_of"], checklist=retrieval.checklist(self.name, ctx["today_date"], ctx["meta"]["sector"]),
-                                behaviour_from=ctx["meta"]["document_window"]["behaviour_from"],
-                                trend_from=ctx["meta"]["document_window"]["trend_from"], search_budget=cfg.SEARCH_BUDGET, fetch_budget=cfg.FETCH_BUDGET)
+        seed = None
+        if cfg.PIPELINE == "tasks":  # the retrieval first, as short independent tasks; this conversation then scores from what they found
+            docs_ready(ctx, wait=False)  # the documents are used for the retrieval hints only if they happen to be ready already
+            seed = tasks.run_subject(self, ctx, band, i)
+            for k in ("web_search", "web_fetch"): self.counts[k] += seed["counts"][k]
+        docs_ready(ctx, band, i)  # scoring needs them
+        self.docs = list((ctx.get("readable") or {}).get(i) or [])
+        args = dict(today=ctx["today"], period=ctx["period"], name=self.name, ticker=self.ticker or "n/a",
+                    role="the company being assessed" if self.role == "company" else "peer", peerset=ctx["peerset"],
+                    prefix=self.prefix, as_of=ctx["meta"]["as_of"], behaviour_from=ctx["meta"]["document_window"]["behaviour_from"],
+                    trend_from=ctx["meta"]["document_window"]["trend_from"])
+        if seed is None:
+            content = render_prompt("subject.md", checklist=retrieval.checklist(self.name, ctx["today_date"], ctx["meta"]["sector"]),
+                                    search_budget=cfg.SEARCH_BUDGET, fetch_budget=cfg.FETCH_BUDGET, **args)
+        else:
+            n = len(seed["evidence"])
+            content = scoring_prompt(ledger=tasks.ledger_text(seed), ledger_count=n, ledger_n=f"{n:02d}", next_n=f"{n + 1:02d}", factlist=retrieval.fact_fields(),
+                                     search_budget=cfg.SCORER_SEARCHES, fetch_budget=cfg.SCORER_FETCHES, **args)
+            self.draft = {k: v for k, v in seed.items() if k != "counts"}
         if (ctx.get("provided") or {}).get(i): content = [{"type": "text", "text": content}] + ctx["provided"][i]
         index = (ctx.get("search") or {}).get(i); handlers = {}
         if index is not None:
@@ -89,8 +125,9 @@ class Subject:
                 band.tick(i, f"Reading a page of the documents supplied on {self.short}")
                 return hand_out(index.page(str(inp.get("file") or ""), n))
             handlers = {SEARCH_TOOL["name"]: look, READ_PAGE_TOOL["name"]: page}
-        self.conv = Conv(f"research on {self.short}", WEB_TOOLS + [SUBJECT_TOOL] + ([SEARCH_TOOL, READ_PAGE_TOOL] if handlers else []), content, on_block, on_phase,
-                         model=self.model, handlers=handlers)
+        web = WEB_TOOLS if seed is None else web_tools(cfg.SCORER_SEARCHES, cfg.SCORER_FETCHES)
+        self.conv = Conv(f"research on {self.short}" if seed is None else f"scoring of {self.short}", web + [SUBJECT_TOOL] + ([SEARCH_TOOL, READ_PAGE_TOOL] if handlers else []),
+                         content, on_block, on_phase, model=self.model, handlers=handlers)
         self.conv.stop = ctx.get("stop")
         band.tick(i, f"Starting research on {self.short}")
         self.conv.submit(SUBJECT_TOOL["name"], self.accept)
@@ -184,6 +221,37 @@ class SynthSession:
 
 # ---------------------------------------------------------------- outside-in: nodes
 
+def _doc_context(subjects, documents, findings) -> dict:
+    """What the research needs from the supplied documents: the blocks and search indexes per subject, the names and the readable files."""
+    provided, searchable = _provided(subjects, documents, findings) if documents else ({}, {})
+    names: dict[int, list[str]] = {}; readable: dict[int, list[dict]] = {}
+    for d in documents or []:
+        lab = (d.get("ident") or {}).get("cite_as") or d.get("name") or "document"
+        names.setdefault(int(d.get("subject") or 0), []).append(f"{lab} (file {d.get('name')})" if lab != d.get("name") else lab)
+        if d.get("text") or d.get("pdf_b64"): readable.setdefault(int(d.get("subject") or 0), []).append({"label": lab, "file": d.get("name") or "document"})
+    return {"doc_names": names, "readable": readable, "provided": provided, "search": searchable}
+
+
+def docs_ready(ctx, band=None, i=0, wait=True) -> None:
+    """Brings the prepared documents into the context. They are read, identified and summarised in a background thread while the web research runs; the
+    scoring step needs them and waits here only if they are not ready yet (wait=False: take them if they are, carry on if not). If the preparation failed,
+    the run stops with that reason: the web research is saved, so a rerun does not pay for it again."""
+    if ctx.get("docs_later") is None: return
+    with ctx["docs_lock"]:
+        later = ctx.get("docs_later")
+        if later is None or (not wait and not later.done()): return
+        if wait and not later.done() and band is not None: band.note(i, "Waiting for the documents to finish being prepared")
+        while True:
+            try: documents, findings = later.result(timeout=2); break
+            except FutureTimeout:
+                if ctx["stop"].is_set(): raise ResearchError("The run was stopped while the documents were being prepared.")
+            except Exception as e:  # noqa: BLE001
+                if not wait: return  # a peek never fails the run: the retrieval goes ahead, and scoring reports it
+                raise ResearchError(f"The documents you supplied could not be prepared: {str(e)[:300]}") from e
+        ctx["findings"] = findings or ctx.get("findings") or {}
+        ctx.update(_doc_context(ctx["subjects"], documents, ctx["findings"])); ctx["docs_later"] = None
+
+
 def plan(state: OutsideInState):
     company, ticker, peers, period, mode = state["company"], state.get("ticker", ""), state["peers"], state["period"], state["mode"]
     if not (company or "").strip(): raise ValueError("company is required")
@@ -201,10 +269,12 @@ def plan(state: OutsideInState):
     subjects = [Subject(company.strip(), ticker, "company", "E", model)] + [
         Subject(p["name"].strip(), p.get("ticker", ""), "peer", PEER_PREFIXES[n], model) for n, p in enumerate(peers)]
     documents = state.get("documents")
+    later = documents if hasattr(documents, "result") else None  # a Future: the documents are still being read and summarised while the web research runs
+    if later is not None: documents = None
     ctx = state.get("shared") if state.get("shared") is not None else {}
-    provided, searchable = _provided(subjects, documents, ctx.get("findings")) if documents else ({}, {})
-    ctx.update(today=t.isoformat(), today_date=t, period=period, meta=meta, prog=prog,
-               peerset="; ".join(f"{s.name} ({s.ticker or 'n/a'})" for s in subjects), provided=provided, search=searchable)
+    ctx.update(_doc_context(subjects, documents, ctx.get("findings")))
+    ctx.update(today=t.isoformat(), today_date=t, period=period, meta=meta, prog=prog, subjects=subjects, docs_later=later, docs_lock=threading.Lock(),
+               peerset="; ".join(f"{s.name} ({s.ticker or 'n/a'})" for s in subjects))
     ctx.setdefault("stop", threading.Event())
     prog(2, f"Planning research on {subjects[0].short} and {len(peers)} peers")
     # the company and every peer are researched at the same time: no subject's research depends on another's
@@ -243,12 +313,72 @@ def calibrate_and_grade(state: OutsideInState):
     if rnd == 0: prog(73, "Comparing the company with its peers on the peer-relative indicators")
     problems, graded = grade_run(_assemble_oi(ctx, subjects, {}))
     if rnd > 0 and not problems: return {"graded": graded, "jobs": [], "calibrated": True}
-    if rnd == cfg.MAX_FIX_ROUNDS:
-        raise ResearchInvalid(f"The scores still break {len(problems)} rule(s) after {cfg.MAX_FIX_ROUNDS} fix rounds: "
-                              + "; ".join(f"{n} {w}: {m}" for n, w, m in problems[:5]), problems)
+    if rnd == cfg.MAX_FIX_ROUNDS:  # out of rounds: the research is paid for, so it goes on and is stored with its problems for review (runs.py), not thrown away
+        ctx["unresolved"] = problems; prog(77, f"{len(problems)} rule issue(s) could not be fixed; the assessment will be stored for review")
+        return {"graded": graded, "jobs": [], "calibrated": True}
     if problems: prog(74 + 3 * rnd, f"Fixing {len(problems)} rule issue(s) flagged by the grade check")
-    by, _ = _route(problems, subjects)
+    by, rest = _route(problems, subjects)
+    by[subjects[0].name] += rest  # nothing blocking is dropped: a problem with no owner goes to the company's researcher
     return {"graded": graded, "jobs": fix_jobs(subjects, by, _calibration(subjects) if rnd == 0 else None), "rnd": rnd + 1}
+
+
+def _apply_recheck(s: Subject, checked: dict[str, dict], keys: dict[str, str], by_id: dict[str, dict]) -> list[dict]:
+    """Moves the scores the second reading changed: score (and the rationale and summary rewritten for it) in the subject's cells; returns the table rows."""
+    rows = []
+    for key, iid in keys.items():
+        r = checked.get(key); cells = [c for d in (s.data, s.draft) if d for c in d["indicators"] if c["id"] == iid]
+        if not r or not cells or r["strict_score"] == cells[0]["score"]: continue
+        first = cells[0]["score"]
+        ok = r["rationale"] and not cfg.STYLE_RE.search(r["rationale"]) and len(r["rationale"].split()) >= 8
+        for c in cells:
+            c["score"] = r["strict_score"]
+            if ok: c["rationale"] = r["rationale"]
+            if r["summary"] and c.get("summary") and not cfg.STYLE_RE.search(r["summary"]): c["summary"] = r["summary"]
+        s.locked[iid] = r["strict_score"]
+        rows.append({"subject": s.name, "role": s.role, "indicator": iid, "name": by_id[iid]["name"], "first": first, "final": r["strict_score"], "reason": r["reason"]})
+    return rows
+
+
+def anchor_recheck(state: OutsideInState):
+    """Reads every score in cfg.RECHECK_SCORES again, strictly, against the anchors (one call per subject). Where the second reading differs,
+    its score replaces the first (with the rationale rewritten for it) and the change goes to the report's table. The company's narrative is then
+    brought in line with the final scores by the usual revision step, and the scores are graded again."""
+    from app.services import audit
+    ctx, subjects, prog = state["ctx"], state["subjects"], state["ctx"]["prog"]
+    if ctx.get("failed"): raise ctx["failed"]
+    prog(78, "Rechecking scores of " + ", ".join(map(str, cfg.RECHECK_SCORES)) + " against the anchors")
+    by_id = {i["id"]: i for i in FW["indicators"]}; rows: list[dict] = []; reviewed = 0; error = ""
+
+    def one(n):
+        s = subjects[n]
+        keys = {f"{n}:{c['id']}": c["id"] for c in s.data["indicators"] if c.get("score") in cfg.RECHECK_SCORES}
+        items = [{"key": k, "id": i, "score": c["score"], "rationale": c.get("rationale"), "summary": c.get("summary") if s.role == "company" else ""}
+                 for k, i in keys.items() for c in s.data["indicators"] if c["id"] == i]
+        return n, keys, audit.recheck(items, f"anchor recheck of {s.short}", cfg.RECHECK_MODEL)
+    from app.services.usage import Pool
+    results = []
+    with Pool(max_workers=len(subjects)) as pool:
+        for fut in [pool.submit(one, n) for n in range(len(subjects))]:
+            try: results.append(fut.result())
+            except audit.AuditError as e: error = str(e)  # an add-on: a failed recheck does not discard the research
+    if error:
+        ctx["anchor_recheck"] = {"status": f"The anchor recheck could not be completed: {error[:200]}", "rows": []}
+        return {"rechecked": True, "jobs": [], "rnd": 1, "recheck_changed": False}
+    for n, keys, checked in results:
+        reviewed += len(keys); rows += _apply_recheck(subjects[n], checked, keys, by_id)
+    order = {s.name: n for n, s in enumerate(subjects)}
+    rows.sort(key=lambda r: (order[r["subject"]], IND_IDS.index(r["indicator"])))
+    ctx["anchor_recheck"] = {"status": "done", "model": cfg.RECHECK_MODEL or cfg.MODEL, "scores": list(cfg.RECHECK_SCORES), "reviewed": reviewed, "rows": rows}
+    jobs = []
+    co = subjects[0]
+    if any(r["subject"] == co.name for r in rows):  # the company's dimension texts were written for the first scores
+        co.recon_note = ("An anchor recheck has set these final indicator scores: "
+                         + "; ".join(f"{r['indicator']} {r['name']}: {r['final']}" for r in rows if r["subject"] == co.name)
+                         + ". Keep every score as stated. Revise assessment_text and limitations for the affected dimensions (and any summary or rationale that "
+                           "still reads as the old score) so they match the final scores. Do not mention a recheck or an earlier score.")
+        jobs = fix_jobs([co], {})
+    prog(79, f"Anchor recheck: {len(rows)} of {reviewed} score(s) changed")
+    return {"rechecked": True, "jobs": jobs, "rnd": 1, "recheck_changed": bool(rows)}
 
 
 def synthesis(state: OutsideInState):
@@ -265,8 +395,9 @@ def final_check(state: OutsideInState):
     problems, graded = grade_run(_assemble_oi(ctx, subjects, sess.syn))
     sess.known = set(graded["evidence"])
     if not problems: return {"graded": graded, "done": True, "jobs": [], "rest": []}
-    if rnd == cfg.MAX_FIX_ROUNDS:
-        raise ResearchInvalid(f"The assessment still breaks {len(problems)} rule(s) after {cfg.MAX_FIX_ROUNDS} fix rounds.", problems)
+    if rnd == cfg.MAX_FIX_ROUNDS:  # as above: finish with the problems recorded rather than discard the run
+        ctx["unresolved"] = problems
+        return {"graded": graded, "done": True, "jobs": [], "rest": []}
     by, rest = _route(problems, subjects)
     return {"graded": graded, "jobs": fix_jobs(subjects, by), "rest": rest, "rnd": rnd + 1}
 

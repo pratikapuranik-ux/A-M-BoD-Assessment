@@ -466,3 +466,19 @@ def test_action_edit_add_delete(client):
     while len(repo.read_run(cid, "outside_in")["actions"]) < 5: assert client.post(u, json={"heading": "x"}).status_code == 200
     assert client.post(u, json={"heading": "sixth"}).status_code == 409
     assert client.put("/api/companies/nope/actions/1", json={"heading": "x"}).status_code == 404
+
+
+def test_documents_are_prepared_beside_the_research(client, mocked):
+    """With a research module that accepts later documents, the job hands it a future, the research does not wait for it, and the job records what was supplied."""
+    got = {}
+    def run_outside_in(company, ticker, peers, period, m, progress, documents=None, findings=None):
+        got["is_future"] = hasattr(documents, "result"); progress(30, "researching")  # the research moves on; the documents are collected when the scorer needs them
+        got["docs"], got["findings"] = documents.result(); r = renamed(load("outside_in_run.json"), company, ticker); r["run"]["period"] = period; return r
+    mocked(mock_research(run_outside_in=run_outside_in, run_inside_out=None, SUPPORTS_LATER_DOCS=True))
+    body = {"company": "Overlapco plc", "ticker": "OVL", "peers": [{"name": "A"}, {"name": "B"}], "period": "2026-Q4"}
+    r = client.post("/api/research", json=dict(body, documents=[{"name": "notes.txt", "data_b64": base64.b64encode(b"Board met twice.").decode()}]))
+    j = wait_job(client, r.json()["job_id"]); assert j["status"] == "done", j
+    assert got["is_future"] and [(d["name"], d["text"]) for d in got["docs"]] == [("notes.txt", "Board met twice.")]
+    assert any("while your 1 file(s) are read" in line for line in j["log"])
+    cid = j["result"]["company_id"]
+    assert client.delete(f"/api/companies/{cid}").status_code == 200

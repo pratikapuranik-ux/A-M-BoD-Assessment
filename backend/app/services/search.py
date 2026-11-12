@@ -67,6 +67,7 @@ class Index:
 
     def __init__(self, docs: list[dict]):
         self.docs = [d for d in docs if (d.get("text") or "").strip()]
+        self.alias = {(d["ident"]["cite_as"] or "").lower(): d.get("name") or "document" for d in self.docs if d.get("ident")}  # a label may stand for the file in the tools
         self.items: list[dict] = []
         for d in self.docs: self.items += passages(d.get("name") or "document", d["text"])
         self.pages: dict[tuple[str, int], str] = {}
@@ -80,7 +81,7 @@ class Index:
         self.idf = {w: math.log(1 + (n - c + 0.5) / (c + 0.5)) for w, c in df.items()}
 
     def search(self, query: str, file: str = "", k: int = RESULTS) -> list[dict]:
-        q = words(query)
+        q = words(query); file = self.alias.get((file or "").strip().lower(), file)
         if not q or not self.items: return []
         scored = []
         for i, t in enumerate(self.tf):
@@ -102,6 +103,7 @@ class Index:
 
     def page(self, file: str, n: int) -> str:
         """One page exactly as extracted (the source for checking a figure)."""
+        file = self.alias.get((file or "").strip().lower(), file)
         hit = [(k, t) for k, t in self.pages.items() if k[1] == n and file.lower() in k[0].lower()]
         if not hit: return f"No page {n} found in a file matching '{file}'. Check the file name and the page from a search result."
         if len(hit) > 1: return "More than one file matches; give more of the file name: " + "; ".join(k[0] for k, _ in hit[:8])
@@ -111,6 +113,8 @@ class Index:
 
     def summary(self) -> str:
         """One line per document for the prompt (names and sizes only)."""
-        shown = [f"- {d.get('name')} ({d.get('pages') or '?'} pages)" for d in self.docs[:60]]
+        shown = [f"- {d['ident']['cite_as']}: {d.get('name')} ({d.get('pages') or '?'} pages; {d['ident'].get('what') or d['ident'].get('category')}"
+                 f"{', ' + d['ident']['period'] if d['ident'].get('period') else ''}{', ' + d['ident']['date'] if d['ident'].get('date') else ''})" if d.get("ident")
+                 else f"- {d.get('name')} ({d.get('pages') or '?'} pages)" for d in self.docs[:60]]
         more = f"\n- and {len(self.docs) - 60} more" if len(self.docs) > 60 else ""
         return "\n".join(shown) + more

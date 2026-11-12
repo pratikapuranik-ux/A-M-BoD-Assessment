@@ -235,12 +235,14 @@ def test_grade_fix_loop_feeds_blocking_problems_back(fake):
     assert_progress(events)
 
 
-def test_grade_fix_loop_gives_up_after_three_rounds(fake):
+def test_grade_fix_loop_that_runs_out_keeps_the_research_and_leaves_the_problems_to_be_stored_for_review(fake):
+    """After three fix rounds the run is not thrown away (it is paid for): it is returned, and grading it still reports the problem, so the job stores it for review."""
+    from app.agents.grading import grade_run
     broken = broken_for_grade(subject_submission("E"))
     fake(make_model(company_first=broken, company_fix=lambda t: {**empty_patch(), "indicators": [c for c in broken["indicators"] if c["id"] == "5.1"]}))
-    with pytest.raises(C.ResearchInvalid) as e:
-        G.run_outside_in(COMPANY["name"], "CVX", PEER_ARGS, "2026-Q4", "director_request", None)
-    assert any(w.startswith("3.4/5.1") for _, w, _ in e.value.problems)
+    run = G.run_outside_in(COMPANY["name"], "CVX", PEER_ARGS, "2026-Q4", "director_request", None)
+    problems, _ = grade_run(run)
+    assert any(w.startswith("3.4/5.1") for _, w, _ in problems)
 
 
 def test_json_validation_retries_are_bounded(fake):

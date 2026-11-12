@@ -52,14 +52,14 @@ def built(request, tmp_path):
 
 def test_reference_strings(built):
     stage, html, _ = built
-    for s in ["open to read", "Improves:", "Strongest:", "Weakest:", "Executive summary", ">Actions<", "Peer comparison",
+    for s in ["Open to Read", "View Details", "Improves:", "Strongest:", "Weakest:", "Executive summary", ">Potential actions<", "Peer comparison",
               "Grades by dimension", "Dimension grades against the peer set", "What the board could do next",
               "Peers are assessed on public information with the same retrieval set and rubric. Select a row to see every company",
               "Coverage: ", "indicators assessed.", "non public board documents will help at a more accurate grade",
               "Where this grade is limited:", "Rounded average of dimension letters (midpoints round down).", "Coverage and limitations", "Documents available",
               "Where the two runs differed", "DRAFT ONLY"]:
         assert s in html, s
-    assert html.index("Executive summary") < html.index("Peer comparison") < html.index(">Actions<")
+    assert html.index("Executive summary") < html.index("Peer comparison") < html.index(">Potential actions<")
     assert "__RUN__" not in html and "__FW__" not in html and "__TITLE__" not in html
 
 
@@ -87,18 +87,19 @@ def test_page_script_runs_in_jsdom(built):
     r = _dom(path)
     assert r["errors"] == []
     k = r["kickers"]
-    order = ["Executive summary", "Scorecard", "Peer comparison", "Reconciliation", "Actions"]
+    order = ["Executive summary", "Scorecard", "Peer comparison", "Reconciliation", "Potential actions"]
     idx = [next(i for i, x in enumerate(k) if x.startswith(o)) for o in order]
     assert idx == sorted(idx)
     assert r["execOpen"] is False
     assert r["dimRows"] == 6 and r["peerTable"] and r["peerRows"] == 6
     assert "(company)" in r["peerHeader"][1]
     assert r["reconRows"] == 2 and "agreed on 20 of 22" in r["reconText"] and "Run A's score stands" in r["reconText"]
-    assert "open to read" in r["execText"] and "Improves:" in r["actionsText"]
+    assert "Open to Read" in r["execText"] and "Improves:" in r["actionsText"]
     assert r["coverageLine"].startswith("Coverage: 22 of 22 indicators assessed.")
     assert r["bareCodes"] == [] and r["chips"] > 20
     assert r["panelOpen"] and r["panelRows"] == 4
-    assert ("Strongest:" in r["panelText"] and "Weakest:" in r["panelText"]) or "indicators score" in r["panelText"]
+    comp = next(x for x in _load(stage)["subjects"] if x["role"] == "company"); at = (comp.get("assessment_text") or {}).get("1") or ""
+    assert (at and at[:40] in r["panelText"]) or ("Strongest:" in r["panelText"] and "Weakest:" in r["panelText"]) or "indicators score" in r["panelText"]  # the run's own text opens the panel, as in the reference
     assert r["modalOpen"] and r["defModal"] and r["peerDetailOpen"]
     if stage == "inside_out":
         assert "inside-out update" in r["h1"]
@@ -143,7 +144,7 @@ def test_dom_sections_anonymity_and_movement(built):
     assert not any(x in r["pageText"] or x in r.get("saModal", "") for x in _sa_excerpts(run))
     assert "Consistency run" not in r["pageText"] and "Outside-in score" not in r["scorecardText"] and "Post inside-out score" not in r["scorecardText"]
     assert "Documents available" in r["coverageText"] and "rule-limited" in r["coverageText"]
-    assert "Coverage and limitations" in r["kickers"] and r["coverageText"]
+    assert "Coverage" in r["kickers"] and "Coverage and limitations" in r["coverageText"]
     if stage == "inside_out":
         assert "Director responses are synthesised, not quoted." in r["saModal"]
         assert "Appendix" in r["kickers"] and "Director self-assessment: themes" in r["sectionTitles"]

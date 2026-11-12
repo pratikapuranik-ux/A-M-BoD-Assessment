@@ -24,7 +24,7 @@ from fastapi import APIRouter, Request
 
 from app.api.errors import ApiError
 from app.log import get_logger
-from app.services import documents, library, storage, subjects
+from app.services import documents, library, register, storage, subjects
 
 log = get_logger(__name__)
 router = APIRouter()
@@ -94,7 +94,7 @@ def _staged_path(d: dict) -> Path:
 
 class Extracted(list):
     """The extracted documents, plus `notes`: things skipped inside zips, for the user to see."""
-    def __init__(self): super().__init__(); self.notes: list[str] = []
+    def __init__(self): super().__init__(); self.notes: list[str] = []; self.ignored: list[dict] = []; self.gaps: list[dict] = []  # set aside by the register logic; what the upload lacks
 
 
 _JUNK = {".ds_store", "thumbs.db", "desktop.ini"}
@@ -130,6 +130,8 @@ class Opts:
 
 def _read_one(name: str, raw: bytes, slot: int, mime, subject: int | None, o: Opts) -> dict:
     """Extract one file, or take what was read from the same bytes before; tag it with its subject."""
+    if o.as_text and name.lower().endswith(".xlsx") and (rows := register.from_xlsx(raw)):  # the A&M document register: it says what each file is
+        return {"name": name, "slot": slot, "text": "", "pdf_b64": None, "pdf_big": False, "pages": 0, "size": len(raw), "register": rows, "subject": 0}
     key = library.sha(raw) if o.scope else None
     hit = library.get(o.scope, key) if key else None
     if hit:

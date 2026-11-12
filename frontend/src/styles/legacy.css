@@ -9,8 +9,8 @@
 --s1:#A6192E;--s2:#CF7F00;--s3:#5E8AB4;--s4:#0085CA;--s5:#00677F;
 --r:10px;--shadow:0 1px 2px rgba(0,43,73,.04),0 4px 14px rgba(0,43,73,.05);--hdr:76px;color-scheme:light}
 *{box-sizing:border-box}
-html{scroll-padding-top:calc(var(--hdr) + 20px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{font-size:106.25%;scroll-padding-top:calc(var(--hdr) + 20px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 svg.ic{flex:none}
 p{margin:0 0 12px}
 

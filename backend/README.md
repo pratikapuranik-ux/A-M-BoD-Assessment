@@ -66,7 +66,19 @@ nothing is stored. Stored scores are exactly what the model returned plus the de
 | `BOARD_REVIEW_ROUNDS` | `2` | maximum retrieval-review rounds per subject (`0` = off) |
 | `BOARD_EFFORT` | `high` | reasoning effort (both runs) |
 | `BOARD_WEB_TOOLS` | `latest` (`basic` on Foundry) | web tool version; `latest` overrides the Foundry default |
-| `BOARD_SEARCH_USES` | `90` | max web searches per subject |
+| `BOARD_SEARCH_USES` | `90` | max web searches per subject (`BOARD_PIPELINE=single` only) |
+| `BOARD_PIPELINE` | `tasks` | `tasks`: retrieval as short independent tasks (one per retrieval item, the registers, each event-sweep query), the engine writes the Rule 16 log, one scoring conversation scores from the evidence ledger; `single`: one long conversation per subject (the v1.3 first port) |
+| `BOARD_TASK_SEARCHES` / `BOARD_TASK_FETCHES` | `8` / `8` | ceilings for one retrieval task |
+| `BOARD_SCORER_SEARCHES` / `BOARD_SCORER_FETCHES` | `12` / `8` | ceilings for the scoring conversation (it closes gaps only) |
+| `BOARD_TASK_CALLS` | `12` | retrieval tasks running at once, across all subjects |
+| `BOARD_TASK_MODEL` / `BOARD_TASK_EFFORT` | unset | model and effort for retrieval tasks; unset = the subject's own model and `BOARD_EFFORT` (no downgrade) |
+| `BOARD_FACTSHEET_CATEGORIES` | `Proxy / circular,Annual / ESG report,Transcript` | document categories that get a fact sheet (`all` = every file; the rest are searched in full); `BOARD_FACTSHEET_PARALLEL` (16) sections at once |
+| `BOARD_MIN_DOC_CITES` | `3` | supplied documents a subject's scores must cite (as `provided: <Cite as label>`); `0` turns the check off |
+| `BOARD_DOC_ANALYSIS` | `all` | fact sheets (with fields and red flags, every section read, coverage recorded): `all` documents, `company` only, `off` |
+| `BOARD_FACTSHEET_MAX_TOKENS` | `0` | cap on document text read for fact sheets per run; 0 = read all of it |
+| `BOARD_ANCHOR_RECHECK` | `on` | after grading, every score in `BOARD_RECHECK_SCORES` is read again, strictly, against the anchors; where the second reading differs it replaces the first score and the change is listed in a table at the end of the report (an addition to the skill) |
+| `BOARD_RECHECK_SCORES` | `2,4,5` | the scores the recheck reads again: not 1 (Rule 3 already guards it) and not 3 (the landing point for mixed facts) |
+| `BOARD_RECHECK_MODEL` | unset | model for the recheck; unset = `BOARD_MODEL` |
 | `BOARD_FETCH_USES` | `60` | max page fetches per subject |
 | `BOARD_FETCH_TOKENS` | `30000` | token budget per fetched page |
 | `BOARD_SKILL_DIR` | `<root>/skill` | location of the skill references |
@@ -81,3 +93,10 @@ The skill is on v1.3 (`skill/references/changelog.md`). Each subject's research 
 `app/config.py log.py db.py models.py schemas.py main.py` core; `app/api/` routes (`assessments`, `survey`, `reference`,
 `uploads`, `errors`); `app/services/repo.py` persistence (replaces `server/store.py`), `jobs.py`, `storage.py`,
 `runs.py` (grade, history, build deliverables, job bodies; replaces `server/pipeline.py`).
+
+
+## How uploaded documents are identified
+
+No register is needed. Each file is identified from its cover page (`app/services/register.py`): category, what it really is, period, date, and the label it is cited by (for example `CBRE FY2025 10-K`). The file name is only a fallback, so a code name or a wrong name does not matter. A file the cover rules cannot place is compared with what the app has learned from earlier document registers (`app/services/doclearn.py`), and if nothing learned fits, a model is shown the cover page and the closest lessons and asked. Files filed under the wrong company and duplicate copies are set aside; gaps (no annual filing, fewer than three proxies, fewer than four call transcripts) are listed. If an A&M register (Excel) is among the uploaded files it overrides all of this and the app learns from it. Teach it ahead of time with `python scripts/learn_register.py <register.xlsx> <zips or folders>`; the store is `storage/learned/documents.json` (word lists from cover pages only).
+
+Documents and research run side by side: the files are read, identified and summarised in a background thread while the web research runs, and the scoring step waits for them only if they are not ready. If preparing them fails, the run stops at scoring with the reason; the research is saved (see `BOARD_TASK_CACHE`), so a rerun does not pay for it again.

@@ -128,23 +128,36 @@ def test_job_messages_are_written_to_a_log_file(client):
     assert j.id in text and "Extracting key facts: 3 of 9 sections done" in text and "Done" in text
 
 
-def test_only_the_companys_documents_get_fact_sheets_by_default(monkeypatch):
+def test_every_document_gets_a_fact_sheet_and_a_coverage_record_by_default(monkeypatch):
     from app.services import runs
     long = "[page 1]\n" + "Revenue 12 billion. " * 3000
     docs = [{"name": "co.pdf", "text": long, "subject": 0}, {"name": "peer.pdf", "text": long, "subject": 1}]
     seen = []
     def ask(prompt, label, max_tokens=0, say=None):
-        seen.append(label); return "- fact"
+        seen.append(prompt); return "- fact"
     monkeypatch.setattr(factsheet, "ask_text", ask)
     job = types.SimpleNamespace(update=lambda *a, **k: None)
     monkeypatch.delenv("BOARD_DOC_ANALYSIS", raising=False)
     runs.analyse_documents(job, docs, ["Chevron", "Shell"], "2026-Q4", "CVX")
-    assert docs[0].get("facts") and "facts" not in docs[1] and not any("peer.pdf" in s for s in seen)
-    monkeypatch.setenv("BOARD_DOC_ANALYSIS", "all"); docs[0].pop("facts")
+    assert docs[0].get("facts") and docs[1].get("facts")  # peers' documents are read too
+    assert all(d["coverage"]["mode"] == "all sections read" and d["coverage"]["read"] == d["coverage"]["sections"] >= 1 for d in docs)
+    assert any("Red flags" in p and "1.1." in p or "1.1:" in p for p in seen)  # the section prompt asks for the red flags and the indicator fields
+    monkeypatch.setenv("BOARD_DOC_ANALYSIS", "company"); docs[0].pop("facts"); docs[1].pop("facts")
     runs.analyse_documents(job, docs, ["Chevron", "Shell"], "2026-Q4", "CVX")
-    assert docs[0].get("facts") and docs[1].get("facts")
-    monkeypatch.setenv("BOARD_DOC_ANALYSIS", "off"); docs[0].pop("facts"); docs[1].pop("facts")
+    assert docs[0].get("facts") and "facts" not in docs[1]
+    monkeypatch.setenv("BOARD_DOC_ANALYSIS", "off"); docs[0].pop("facts")
     assert runs.analyse_documents(job, docs, ["Chevron", "Shell"], "2026-Q4", "CVX") == {} and "facts" not in docs[0]
+
+
+def test_a_failed_section_is_retried_and_then_recorded_in_the_coverage(monkeypatch):
+    calls = []
+    def ask(prompt, label):
+        calls.append(label)
+        raise factsheet.FactError("boom")
+    long = "[page 1]\n" + "Revenue 12 billion. " * 3000
+    d = {"name": "co.pdf", "text": long, "subject": 0}
+    notes = factsheet.build_sheets([d], ask=ask)
+    assert len(calls) == 2 and not d.get("facts") and d["coverage"]["mode"].startswith("0 of 1 sections read") and "co.pdf" in notes[0]
 
 
 def test_reads_of_supplied_documents_count_for_the_retrieval_review(monkeypatch):

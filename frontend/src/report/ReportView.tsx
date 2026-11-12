@@ -504,6 +504,60 @@ function Reconciliation() {
   );
 }
 
+function AnchorRecheckTable() {
+  const { view } = useReport();
+  const r = view.anchor_recheck;
+  if (!r) return null;
+  return (
+    <Section id="anchor-recheck">
+      <Eb>Score changes after the anchor recheck</Eb>
+      <H2>Scores moved by a second reading against the anchors</H2>
+      {r.status !== 'done' ? (
+        <Muted>{r.status}</Muted>
+      ) : (
+        <>
+          <Muted>
+            After scoring, every indicator score of {(r.scores ?? []).length > 1 ? `${(r.scores ?? []).slice(0, -1).join(', ')} or ${(r.scores ?? []).slice(-1)[0]}` : (r.scores ?? []).join('')} ({r.reviewed} in all) was read again, strictly, against the written anchors. {r.rows.length} score
+            {r.rows.length === 1 ? '' : 's'} changed. The report shows the final scores; each change is listed here with the reason.
+          </Muted>
+          {r.rows.length ? (
+            <DTable caption="Indicator scores the anchor recheck changed, with the first-pass score, the final score and the reason">
+              <thead>
+                <tr>
+                  <th scope="col" className={th}>Cell</th>
+                  <th scope="col" className={th}>First pass</th>
+                  <th scope="col" className={th}>Final score</th>
+                  <th scope="col" className={th}>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {r.rows.map((x, k) => (
+                  <tr key={k}>
+                    <td className={td}>
+                      <b>{typo(x.subject)}</b>
+                      <br />
+                      {x.indicator} {typo(x.name)}
+                    </td>
+                    <td className={`${td} whitespace-nowrap`}>
+                      {x.first} ({x.final < x.first ? 'lowered' : 'raised'})
+                    </td>
+                    <ScoreCell score={x.final} />
+                    <td className={td}>
+                      <ReasonText text={x.reason} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </DTable>
+          ) : (
+            <Muted>The second reading kept every score; nothing changed.</Muted>
+          )}
+        </>
+      )}
+    </Section>
+  );
+}
+
 function ActionsSection() {
   const { view, io, actions, priorActions } = useReport();
   const behind = priorActions.filter((a) => a.status === 'behind' || a.status === 'not_started');
@@ -582,6 +636,7 @@ function ReportBody() {
       <PeersAppendix />
       <SourcesAppendix />
       <MethodAppendix />
+      <AnchorRecheckTable />
       <ThemesAndGuardrails />
       <CoverageAccordion />
     </>

@@ -279,6 +279,10 @@ def to_view(oi_run: dict, io_run: dict | None = None, prior_run: dict | None = N
     D["self_assessment_themes"] = list((io_run or {}).get("self_assessment_themes") or [])
     D["self_assessment_responses"] = (io_run or {}).get("self_assessment_responses")  # director response count; None = unknown, 0 = documents-only run
     D["guardrails"], D["guardrails_intro"] = _guardrails(bool(oi_run.get("reconciliation")))
-    D["documents_provided"] = {k: list((r.get("run") or {}).get("documents_provided") or []) for k, r in (("oi", oi_run), ("io", io_run or {}))}  # names the user supplied, per stage
+    names = [s.get("name", "") for s in oi_run.get("subjects") or []]
+    D["documents_provided"] = {k: [dict(d, company=names[d["subject"]] if isinstance(d.get("subject"), int) and 0 <= d["subject"] < len(names) else "") for d in (r.get("run") or {}).get("documents_provided") or []]
+                               for k, r in (("oi", oi_run), ("io", io_run or {}))}  # the files the user supplied, per stage, with what each really is (category, period, cite as, use, flag)
+    D["document_gaps"] = list((oi_run.get("run") or {}).get("document_gaps") or [])  # what the skill looks for and the upload lacks
     if oi_run.get("reconciliation"): D["reconciliation"] = oi_run["reconciliation"]  # Run A / Run B reconciliation, shown in the reports
+    if oi_run.get("anchor_recheck"): D["anchor_recheck"] = oi_run["anchor_recheck"]  # scores moved by the anchor recheck, listed at the end of the reports
     return D

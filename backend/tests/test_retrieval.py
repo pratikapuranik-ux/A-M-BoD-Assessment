@@ -149,3 +149,14 @@ def test_document_counts_are_worded_by_kind():
     assert out.startswith("3 documents, all board minutes, packs and papers")
     out = D.doc_summary(["10K 2025.pdf", "chevron-proxy-statement-2026.pdf", "2026_2q_earnings_release.pdf"])
     assert "mainly" in out and "news" not in out and out.endswith("Dated 2025 to 2026.")
+
+
+def test_evidence_problems_are_routed_to_the_subject_that_owns_the_code():
+    from types import SimpleNamespace as NS
+    from app.agents.checks import _route
+    subs = [NS(name="Chevron", prefix="E"), NS(name="Exxon", prefix="X"), NS(name="BP", prefix="B")]
+    probs = [("sources", "evidence E72", "a"), ("sources", "evidence X36", "b"), ("sources", "evidence B78", "c"),
+             ("run", "run.extra_registers", "d"), ("Chevron", "1.1", "e"), ("sources", "evidence Z01", "f")]
+    by, rest = _route(probs, subs)
+    assert [p[2] for p in by["Chevron"]] == ["a", "d", "e"] and [p[2] for p in by["Exxon"]] == ["b"] and [p[2] for p in by["BP"]] == ["c"]
+    assert [p[2] for p in rest] == ["f"]

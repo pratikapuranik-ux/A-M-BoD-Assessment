@@ -109,7 +109,7 @@ def _pdf(data: bytes, name: str) -> tuple[int, str]:
     empty = {k for k, t in enumerate(texts, 1) if not t}
     # Empty pages are usually charts or scans, which the slower reader cannot read either: retry them only when most of the
     # document came back empty (a font problem), and for a bounded number of pages, so a long report does not take minutes.
-    empty = set(sorted(empty)[:40]) if len(empty) * 10 > len(texts) * 6 else set()
+    empty = set(sorted(empty)[:40]) if len(texts) > len(empty) and len(empty) * 10 > len(texts) * 6 else set()  # a document with no text on any page is a scan: the slower reader fails too, so it goes straight to OCR
     for k, t in _pdf_plumber_pages(data, empty).items(): texts[k - 1] = t
     return len(texts), "\n\n".join(f"[page {k}]\n{t}" for k, t in enumerate(texts, 1))
 

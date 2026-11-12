@@ -113,6 +113,33 @@ def checklist(name: str, as_of: dt.date, sector: str) -> str:
     return "\n".join(lines)
 
 
+def fact_fields() -> str:
+    """The must-extract fields of the fact sheet, one line per indicator."""
+    return "\n".join(f"  {iid}: " + "; ".join(f"{f} ({h})" for f, h in SPEC["fact_sheet"][iid]) for iid in IND_IDS)
+
+
+def task_plan(name: str, as_of: dt.date, sector: str) -> list[dict]:
+    """The Rule 16 work of one subject as independent research tasks: one per retrieval item (R6, the sector registers, is one task with the
+    registers), and one per event-sweep query. The engine, not the model, writes the log entry's dates and query text from these."""
+    pack = pack_of(sector); es_from = months_before(as_of, SPEC["event_sweep_months"]); r4_from = months_before(as_of, 36); tasks = []
+    for it in SPEC["retrieval_items"]:
+        if it["id"] == "R6": continue
+        t = {"key": it["id"], "kind": "item", "items": [it["id"]], "title": it["name"], "indicators": it["indicators"], "text": f"{it['id']}: {it['name']}"}
+        if it["id"] == "R4": t.update(frm=str(r4_from), to=str(as_of), text=t["text"] + f". Sweep from {r4_from} to {as_of}; give filings_reviewed (how many filings or announcements you looked at) and feed (the feed you used).")
+        if it.get("needs_years"): t["text"] += f". List the fiscal years you covered in years (five are needed)."
+        if it.get("min_count"): t["text"] += f". List each document in documents (at least {it['min_count']})."
+        if it.get("may_be_not_applicable"): t["text"] += ". If there is no pending transaction, status not_applicable with a reason."
+        tasks.append(t)
+    regs = [{"id": r["id"], "name": r["name"], "applies_if": r.get("applies_if"), "query": r["query"].replace("{company}", name)} for r in pack["registers"]]
+    tasks.append({"key": "REG", "kind": "registers", "items": ["R6"], "registers": regs, "need_extra": pack.get("requires_extra_registers") or 0,
+                  "title": "Sector customer-harm registers (1.3)", "indicators": ["1.3"], "date": str(as_of),
+                  "text": "R6: " + next(i["name"] for i in SPEC["retrieval_items"] if i["id"] == "R6")})
+    for q in SPEC["event_sweep"]:
+        tasks.append({"key": q["id"], "kind": "sweep", "items": [], "sweep": q["id"], "query": q["query"].replace("{company}", name), "frm": str(es_from),
+                      "to": str(as_of), "title": f"Event sweep {q['id']}", "indicators": q["indicators"], "text": ""})
+    return tasks
+
+
 # ---------------------------------------------------------------- Rule 17: source eligibility, windows, the recent flag
 
 def check_sources(run: dict, problems: list, warnings: list) -> None:
@@ -141,7 +168,7 @@ def check_sources(run: dict, problems: list, warnings: list) -> None:
         if rule_type == "trade_press":
             ok = e.get("outlet") in trade or (h and _dom_match(h, trade_doms))
             if not ok and (trade or trade_doms):
-                problems.append(("sources", where, f"{e.get('outlet') or h!r} is not recognised trade press for this sector; re-type it as 'other' (indirect)"))
+                problems.append(("sources", where, f"{e.get('outlet') or h!r} is not recognised trade press for this sector; re-type it as 'other' (indirect), or, if it is recognised trade press for this sector, list its name in extra_trade_press"))
 
 
 def check_windows_and_recent(run: dict, problems: list, warnings: list) -> None:

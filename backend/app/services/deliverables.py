@@ -186,6 +186,11 @@ def section(doc, kick, head, size=13): kicker(doc, kick); headline(doc, head, si
 def grade_cell(cell, grade, size=10):
     set_cell(cell, grade or "n/a", size=size, bold=True, color="FFFFFF", align="center"); shade(cell, GRADE_FILL.get(grade))
 
+def _or_list(xs):
+    xs = [str(x) for x in xs]
+    return ", ".join(xs[:-1]) + " or " + xs[-1] if len(xs) > 1 else "".join(xs)
+
+
 def score_cell(cell, score, size=9):
     if score is None: set_cell(cell, "n/a", size=7, color=GREY, align="center"); shade(cell, LIGHT)
     else: set_cell(cell, score, size=size, bold=True, color="FFFFFF", align="center"); shade(cell, SCORE_FILL[score])
@@ -614,6 +619,23 @@ def build_docx(run: dict, out_path: str) -> str:
     for g in groups:
         kicker(doc, g["group"])
         for x in g["items"]: para(doc, "• " + x, size=8, after=2)
+    rc = run.get("anchor_recheck")
+    if rc:
+        app_title("Score changes after the anchor recheck")
+        rows_ = rc.get("rows") or []
+        if rc.get("status") != "done": para(doc, rc.get("status") or "The anchor recheck was not completed.", size=8.5, italic=True, color=GREY)
+        else:
+            para(doc, f"After scoring, every indicator score of {_or_list(rc.get('scores') or [])} ({rc.get('reviewed')} in all) was read again, strictly, against the written anchors. "
+                      f"{len(rows_)} score{'s' if len(rows_) != 1 else ''} changed. The report shows the final scores; each change is listed here with the reason for it.", size=8.5, after=4)
+            if not rows_: para(doc, "The second reading kept every score; nothing changed.", size=8.5, italic=True, color=GREY)
+            else:
+                tr_ = table(doc, ["Cell", "First pass", "Final score", "Reason"], [5.0, 2.0, 2.2, 8.2])
+                for r_ in rows_:
+                    row = new_row(tr_); set_cell(row[0], f"{r_.get('indicator', '')} {r_.get('name', '')}".strip(), bold=True, color=NAVY)
+                    if r_.get("role") == "peer" and r_.get("subject"): para(row[0], str(r_["subject"]), size=6.5, color=GREY, after=0)
+                    set_cell(row[1], f"{r_.get('first')} ({'lowered' if (r_.get('final') or 0) < (r_.get('first') or 0) else 'raised'})", size=8.5, align="center")
+                    score_cell(row[2], r_.get("final"), 9)
+                    set_cell(row[3], r_.get("reason", ""), size=7.5)
     # sources with bookmarks
     app_title("Sources consulted"); para(doc, "Each entry is referenced from the tables by its code. Verbatim excerpts from public and board documents are kept under 15 words; director self-assessment answers are never reproduced, because that would defeat their anonymity.", size=7.5, italic=True, color=GREY)
     used = {}

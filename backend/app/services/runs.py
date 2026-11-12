@@ -134,7 +134,18 @@ def read_documents(job, docs: list[dict], *, max_slot: int | None = None, search
     except ApiError as e: raise jobs.JobError(e.error) from e
     if probs: raise jobs.JobError("some documents could not be read", probs)
     for note in out.notes: job.update(2, note)  # skipped files inside zips go to the job's log
-    if search: return out  # searched, so the size of the upload does not matter (see analyse_documents)
+    if search:  # searched, so the size of the upload does not matter (see analyse_documents)
+        from app.services import register
+        rows = [r for d in out if d.get("register") for r in d["register"]] or None
+        files = [d for d in out if not d.get("register")]
+        from app.services import factsheet
+        kept, ignored, notes = register.apply(files, search["company"], search["peers"], rows, ask=lambda p, l: factsheet.ask_text(p, l, max_tokens=300))
+        if rows: job.update(2, f"Document register read: {len(rows)} files described; they are read as the register says, not by their file names")
+        for n in notes: job.update(2, n)
+        res = type(out)(); res.notes = list(out.notes) + notes; res.extend(kept); res.ignored = ignored
+        res.gaps = register.gaps(kept, [search["company"]["name"]] + [p["name"] for p in search["peers"]])
+        for g in res.gaps: job.update(2, f"Gap: {g['subject']}: {g['gap']}")
+        return res
     from app.services import digest
     try: notes = digest.fit(out, lambda m: job.update(3, m))  # one request holds about a million tokens: condense what does not fit
     except digest.DigestError as e: raise jobs.JobError(f"the documents are too large to research: {e}") from e
@@ -147,7 +158,7 @@ def analyse_documents(job, docs: list[dict], names: list[str], period: str, tick
     never stops the run: the documents can still be searched."""
     import os
     from app.services import factsheet, library
-    mode = (os.environ.get("BOARD_DOC_ANALYSIS") or "company").strip().lower()  # company: only the company's own documents; all: peers too; off: search only
+    mode = (os.environ.get("BOARD_DOC_ANALYSIS") or "all").strip().lower()  # all (default): every document, peers' too; company: only the company's own; off: search only
     if not docs or mode == "off": return {}
     if mode != "all":  # peers' documents are searched, not summarised: the company is the subject of the assessment
         docs = [d for d in docs if int(d.get("subject") or 0) == 0]; names = names[:1]
@@ -177,16 +188,43 @@ def research_work(company: str, ticker: str, peers: list[dict], period: str, mod
         mod = research_module()
         if mod is None: raise jobs.JobError("the research module (app.agents.graph) is not available")
         from app.agents import tools as agent_tools
+        if hasattr(mod, "preflight"):
+            job.update(2, "Checking the model key")
+            try: mod.preflight()
+            except research_errors(mod) as e: raise job_error(e) from e
         job.update(2, "Scoring ruling for 1.4 (quality means product and service quality): " + ("on" if agent_tools.ruling_1_4_on() else "off, so 1.4 is read as before"))
-        provided = read_documents(job, docs, search={"company": {"name": company, "ticker": ticker}, "peers": peers, "period": period})
-        findings = analyse_documents(job, provided, [company] + [p["name"] for p in peers], period, ticker)
-        job.update(6, f"Researching {company} and {len(peers)} peers" + (f", with {len(provided)} document(s) you supplied" if provided else ""))
-        kw = {"documents": provided, "findings": findings} if provided else {}
-        try: run = mod.run_outside_in(company, ticker, peers, period, mode, lambda pct, msg="": job.update(2 + int(pct * 0.8), msg), **kw)
-        except research_errors(mod) as e: raise job_error(e) from e
+        names = [company] + [p["name"] for p in peers]
+        if docs and getattr(mod, "SUPPORTS_LATER_DOCS", False):
+            # The documents are read, identified and summarised in a second thread while the web research runs; the scoring step waits for them only if they are not ready.
+            from app.services.usage import Pool
+
+            class Notes:  # the preparation reports what it is doing without moving the progress bar, which belongs to the research
+                def update(self, pct=None, msg=None): job.update(None, msg)
+
+            def prepare_docs():
+                got = read_documents(Notes(), docs, search={"company": {"name": company, "ticker": ticker}, "peers": peers, "period": period})
+                return got, analyse_documents(Notes(), got, names, period, ticker)
+            pool = Pool(max_workers=1); later = pool.submit(prepare_docs)
+            job.update(6, f"Researching {company} and {len(peers)} peers while your {len(docs)} file(s) are read and summarised")
+            try: run = mod.run_outside_in(company, ticker, peers, period, mode, lambda pct, msg="": job.update(2 + int(pct * 0.8), msg), documents=later)
+            except research_errors(mod) as e: raise job_error(e) from e
+            finally: pool.shutdown(wait=False)
+            provided = later.result()[0]
+        else:
+            provided = read_documents(job, docs, search={"company": {"name": company, "ticker": ticker}, "peers": peers, "period": period})
+            findings = analyse_documents(job, provided, names, period, ticker)
+            job.update(6, f"Researching {company} and {len(peers)} peers" + (f", with {len(provided)} document(s) you supplied" if provided else ""))
+            kw = {"documents": provided, "findings": findings} if provided else {}
+            try: run = mod.run_outside_in(company, ticker, peers, period, mode, lambda pct, msg="": job.update(2 + int(pct * 0.8), msg), **kw)
+            except research_errors(mod) as e: raise job_error(e) from e
         if not isinstance(run, dict) or not isinstance(run.get("subjects"), list): raise jobs.JobError("research returned no run file")
         run.setdefault("run", {}).setdefault("mode", mode); run["run"].setdefault("period", period); run["run"].setdefault("stage", "outside_in")
-        run["run"]["documents_provided"] = [{"name": d.get("name", ""), "slot": 0, "subject": d.get("subject", 0)} for d in provided]  # names only, so the inputs can be shown again later
+        def entry(d, use=None):  # names and identities only, so the inputs can be shown again later
+            i = d.get("ident") or {}
+            return {"name": d.get("name", ""), "slot": 0, "subject": d.get("subject", 0), "coverage": d.get("coverage"), "cite_as": i.get("cite_as", ""), "category": i.get("category", ""),
+                    "what": i.get("what", ""), "period": i.get("period", ""), "date": i.get("date", ""), "use": use or i.get("use", "Use"), "flag": "; ".join(i.get("flag") or []), "note": i.get("note", ""), "identified_from": i.get("source", "")}
+        run["run"]["documents_provided"] = [entry(d) for d in provided] + [entry(d) for d in getattr(provided, "ignored", [])]
+        run["run"]["document_gaps"] = list(getattr(provided, "gaps", []))
         comp = convert.company_of(run); backup = None
         try:
             # Every research run is a fresh, standalone assessment: nothing saved for the same company (earlier quarters, inside-out

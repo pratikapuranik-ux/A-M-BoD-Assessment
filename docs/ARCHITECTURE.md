@@ -36,6 +36,3 @@ model scores each of the 22 indicators against the anchors. Nothing is replayed 
 assessments or demo data (test fixtures live in `backend/tests/fixtures` only). Every research run is a fresh, standalone assessment (`BOARD_REUSE_HISTORY=1` opts back
 in to attaching earlier quarters). Only the Rule 6/7 arithmetic is code (`app/domain/engine.py`). See `backend/README.md`
 for the research settings. For Postgres, set `BOARD_DATABASE_URL` and add a driver; migrations are dialect-neutral.
-
-**Legacy prototype.** `index.html`, `js/`, `css/` and `tests/engine.test.js` are the earlier static version. Its
-`js/data/chevron.js` and `js/data/downloads.js` are not in this folder, so it no longer runs as-is.

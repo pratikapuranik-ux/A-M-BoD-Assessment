@@ -58,10 +58,29 @@ DOC_TOOL_TOKENS = _int_env("BOARD_DOC_TOOL_TOKENS", 300000, lo=20000)  # text on
 KEEP_RECENT_DOCS = _int_env("BOARD_CONTEXT_KEEP_RECENT_DOCS", 10, lo=0)  # newest search and page results kept in view; older ones are cut like fetched web pages
 # Retrieval review: a subject that has read fewer pages than this floor (or still lists Rule 14 documents as unavailable) is sent
 # back to read more before its scores are accepted. REVIEW_ROUNDS=0 switches the review off.
-MIN_FETCHES, MIN_FETCHES_PEER = _int_env("BOARD_MIN_FETCHES", 20), _int_env("BOARD_MIN_FETCHES_PEER", 12)
+# Supplied documents a subject's scores must cite (as 'provided: <file>' evidence): the lower of this and the number of readable files supplied on it
+MIN_DOC_CITES = _int_env("BOARD_MIN_DOC_CITES", 3)
+MIN_FETCHES, MIN_FETCHES_PEER =_int_env("BOARD_MIN_FETCHES", 20), _int_env("BOARD_MIN_FETCHES_PEER", 12)
 REVIEW_ROUNDS = _int_env("BOARD_REVIEW_ROUNDS", 1, lo=0)  # one retrieval review: a second round cost minutes and rarely changed a score
 # Rule 18: every outside-in assessment is run this many times on the same rule version and the runs are compared (1 = no test)
 CONSISTENCY_RUNS = 2 if (os.environ.get("BOARD_CONSISTENCY_RUNS") or "1").strip() == "2" else 1  # 2: Run A / Run B in parallel, then reconciled (graph._run_two)
+# Research pipeline. "tasks" (default): the Rule 16 retrieval work is split into short independent tasks (one per retrieval item, one for the
+# registers, one per event-sweep query), each in its own small conversation; the engine writes the retrieval log from them, and one scoring
+# conversation scores from the evidence they found plus the supplied documents. "single": one long conversation per subject does it all.
+# Anchor recheck: after the scores pass the engine's checks, every score in RECHECK_SCORES is read again, strictly, against the written
+# anchors (services/audit.py). Where the second reading differs, its score replaces the first and the change is listed in the report. RECHECK_MODEL
+# unset = BOARD_MODEL. An addition to the skill, disclosed in the report.
+# A finished retrieval task is kept on disk (same subject, task, day, model, limits): a crash or a rerun pays only for what was not finished.
+TASK_CACHE = (os.environ.get("BOARD_TASK_CACHE") or "on").strip().lower() not in ("off", "0", "false", "no")
+RECHECK = (os.environ.get("BOARD_ANCHOR_RECHECK") or "on").strip().lower() not in ("off", "0", "false", "no")
+# Scores read again: 4 and 5 (the generous end), and 2. Not 1 (Rule 3 already requires two documents or a strong item) and not 3 (the landing point for mixed facts).
+RECHECK_SCORES = tuple(sorted({int(x) for x in (os.environ.get("BOARD_RECHECK_SCORES") or "2,4,5").replace(" ", "").split(",") if x.isdigit() and 1 <= int(x) <= 5}))
+RECHECK_MODEL = os.environ.get("BOARD_RECHECK_MODEL") or None
+PIPELINE = "single" if (os.environ.get("BOARD_PIPELINE") or "tasks").strip().lower() == "single" else "tasks"
+TASK_SEARCHES, TASK_FETCHES = _int_env("BOARD_TASK_SEARCHES", 8), _int_env("BOARD_TASK_FETCHES", 8)  # ceilings for one retrieval task
+SCORER_SEARCHES, SCORER_FETCHES = _int_env("BOARD_SCORER_SEARCHES", 12), _int_env("BOARD_SCORER_FETCHES", 8)  # to close gaps while scoring
+TASK_MODEL, TASK_EFFORT = os.environ.get("BOARD_TASK_MODEL") or None, os.environ.get("BOARD_TASK_EFFORT") or None  # unset: the subject's own model and BOARD_EFFORT, as for scoring
+TASK_CALLS = _int_env("BOARD_TASK_CALLS", 12)  # retrieval tasks running at once, across all subjects
 MAX_CONTINUATIONS, MAX_JSON_RETRIES, MAX_FIX_ROUNDS, SUBJECT_WORKERS = 8, 2, 3, 6  # company and up to five peers at once
 MODEL_CALL_SLOTS = _int_env("BOARD_MODEL_CALLS", 8)  # subjects researching at once across both consistency runs (2 runs x 4 subjects = 8)
 CACHE = {"type": "ephemeral", "ttl": "1h"}

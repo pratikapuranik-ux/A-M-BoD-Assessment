@@ -236,6 +236,7 @@ def _assemble_oi(ctx, subjects, syn):
         "coverage": {"documents_unavailable": unavailable, "consistency_result": ctx.get("consistency_result") or "Outside-in run 1",
                      "notes": ctx.get("notes") or _retrieval_notes(subjects)},
         **({"reconciliation": ctx["reconciliation"]} if ctx.get("reconciliation") else {}),
+        **({"anchor_recheck": ctx["anchor_recheck"]} if ctx.get("anchor_recheck") else {}),
         "overall_summary": {"board": syn.get("overall_summary", "")}, "what_moved": syn.get("what_moved", ""),
         "headline_findings": syn.get("headline_findings", []), "key_metrics": syn.get("key_metrics", []),
         "peer_position": syn.get("peer_position", ""), "peer_summary_lines": syn.get("peer_summary_lines", []),
@@ -264,9 +265,14 @@ def _digest(graded, subjects):
 
 
 def _route(problems, subjects):
-    by = {s.name: [] for s in subjects}; rest = []
+    """Sends each problem to the subject that caused it. A problem on one evidence item is named 'sources' and belongs to the subject
+    whose code prefix it carries (E for the company, X, B, ... for peers); run-level problems go to the company."""
+    by = {s.name: [] for s in subjects}; rest = []; prefix = {s.prefix: s.name for s in subjects}
     for pr in problems:
-        (by[pr[0]] if pr[0] in by else rest).append(pr)
+        who = pr[0]
+        if who not in by and pr[1].startswith("evidence "): who = prefix.get(pr[1][9:10], who)
+        if who == "run" and subjects: who = subjects[0].name
+        (by[who] if who in by else rest).append(pr)
     return by, rest
 
 
@@ -278,11 +284,15 @@ def _provided(subjects, documents, findings=None):
     (or are PDFs sent as pages) gets them whole. Otherwise it gets the cross-document review and as many fact sheets as fit, plus
     tools to search the full text and read a page exactly, so any figure can be checked against the source."""
     from app.services.search import Index
+    from app.services import register
     from .budget import doc_tokens
     blocks, indexes = {}, {}
     room = doc_tokens()
-    cite = ("Where one bears on an indicator, cite it as an evidence item like any other source, with doc_type 'provided document' and url "
-            "'provided: <file name>' (the file name exactly as listed); the excerpt rule (under 15 words verbatim) applies. They do not replace the web research. ")
+    cite = ("Each document is listed with its label (Cite as), what it really is, its period and its date; trust those over the file name, which can be wrong "
+            "(a file called 10-Q can be the 10-K, a code name can be a proxy). Where one bears on an indicator, cite it as an evidence item like any other source: "
+            "document = '<Cite as label>, <section or table> p.<page>' (for example 'CBRE FY2025 10-K, cash flow statement p.61'), doc_type = what it is (10-K, 10-Q, proxy, "
+            "transcript, press release, presentation, supplement), date = its document or event date, and url 'provided: <Cite as label>' (the label exactly as listed). "
+            "The excerpt rule (under 15 words verbatim) applies. They do not replace the web research. ")
     for i, s in enumerate(subjects):
         docs = [d for d in documents if int(d.get("subject") or 0) == i and (d.get("text") or d.get("pdf_b64"))]
         if not docs: continue
@@ -294,10 +304,10 @@ def _provided(subjects, documents, findings=None):
             for d in docs:
                 fname = d.get("name") or "document"
                 if d.get("pdf_b64"):
-                    b += [{"type": "text", "text": f"Provided document: {fname}"},
+                    b += [{"type": "text", "text": f"Provided document: {register.label(d)}"},
                           {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": d["pdf_b64"]}, "title": fname}]
                 else:
-                    b.append({"type": "text", "text": f'<provided_document file="{fname}">\n{d["text"]}\n</provided_document>'})
+                    b.append({"type": "text", "text": f'<provided_document file="{fname}" cite_as="{(d.get("ident") or {}).get("cite_as", fname)}">\n{d["text"]}\n</provided_document>'})
             blocks[i] = b
             continue
         ix = Index(docs); indexes[i] = ix
@@ -310,7 +320,7 @@ def _provided(subjects, documents, findings=None):
         for d in sorted(docs, key=lambda d: d.get("name") or ""):  # fact sheets while they fit; a short document goes whole
             body = d.get("facts") or (d["text"] if len(d["text"]) / 3.2 <= 4000 else "")
             if body and len(body) / 3.2 <= left:
-                sheets.append(f'<fact_sheet file="{d.get("name")}">\n{body}\n</fact_sheet>'); left -= len(body) / 3.2
+                sheets.append(f'{register.sheet_tag(d)}\n{body}\n</fact_sheet>'); left -= len(body) / 3.2
         if sheets: parts.append("Key facts from each document:\n" + "\n".join(sheets))
         blocks[i] = [{"type": "text", "text": (
             f"The A&M team has also supplied {len(docs)} document(s) on {s.name} (about {who}, not other companies). They are too long to paste, so you have "

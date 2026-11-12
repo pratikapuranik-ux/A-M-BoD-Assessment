@@ -10,6 +10,9 @@ TMP = tempfile.mkdtemp(prefix="nx_")
 os.environ["BOARD_SKIP_DOTENV"] = "1"
 os.environ["BOARD_DATABASE_URL"] = "sqlite:///" + os.path.join(TMP, "test.db").replace("\\", "/")
 os.environ["BOARD_STORAGE_DIR"] = os.path.join(TMP, "storage")
+os.environ["BOARD_PIPELINE"] = "single"  # the scripted fake-client tests describe one conversation per subject; tests/test_tasks.py turns the task pipeline on
+os.environ["BOARD_ANCHOR_RECHECK"] = "off"  # the scripted fake clients know no recheck call; tests/test_recheck.py turns it on
+os.environ["BOARD_TASK_CACHE"] = "off"  # tests that exercise the task cache turn it on
 os.environ["BOARD_MIN_RESPONSES"] = "3"  # test the real guardrail, whatever .env says for demos
 os.environ.pop("BOARD_PUBLIC_URL", None)
 os.environ.pop("BOARD_PUBLIC_URL", None)

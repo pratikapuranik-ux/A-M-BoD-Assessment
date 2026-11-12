@@ -248,3 +248,34 @@ def test_no_page_breaks_inside_appendices(stage_name, tmp_path):
     before = sum(1 for p in paras[:start] for br in p._p.iter(W("w:br")) if br.get(W("w:type")) == "page")
     assert before == 3  # after the cover, after the executive summary, before Appendix 1
     assert all(p.paragraph_format.keep_with_next for p in paras[start:start + 2])
+
+
+# ---------------------------------------------------------------- anchor recheck table (at the end of the report)
+RECHECK = {"status": "done", "model": "claude-opus-5", "scores": [2, 4, 5], "reviewed": 30,
+           "rows": [{"subject": "Chevron", "role": "company", "indicator": "1.4", "name": "Customer-linked accountability", "first": 5, "final": 3, "reason": "The facts match the 3 anchor as written."},
+                    {"subject": "BP", "role": "peer", "indicator": "2.1", "name": "Decision speed", "first": 3, "final": 4, "reason": "Two anchors are partly met."}]}
+
+
+def _recheck_table(d):
+    return next((t for t in d.tables if [c.text for c in t.rows[0].cells] == ["Cell", "First pass", "Final score", "Reason"]), None)
+
+
+def test_anchor_recheck_table_lists_changes_and_sits_before_the_sources(tmp_path):
+    r = load("outside_in"); r["anchor_recheck"] = RECHECK
+    d = Document(D.build_docx(r, str(tmp_path / "c.docx")))
+    t = _recheck_table(d)
+    assert t is not None and len(t.rows) == 3
+    assert t.rows[1].cells[0].text.startswith("1.4 Customer-linked accountability") and t.rows[1].cells[1].text == "5 (lowered)" and t.rows[1].cells[2].text == "3"
+    assert t.rows[2].cells[1].text == "3 (raised)" and "BP" in t.rows[2].cells[0].text and t.rows[1].cells[3].text.startswith("The facts match")
+    heads = [p.text for p in d.paragraphs]
+    assert "2 scores changed" in "\n".join(heads) and heads.index("Score changes after the anchor recheck") < heads.index("Sources consulted")
+
+
+def test_anchor_recheck_empty_failed_and_absent(tmp_path):
+    for block, expect in (({**RECHECK, "rows": []}, "The second reading kept every score; nothing changed."),
+                          ({"status": "The anchor recheck could not be completed: service down", "rows": []}, "could not be completed")):
+        r = load("outside_in"); r["anchor_recheck"] = block
+        d = Document(D.build_docx(r, str(tmp_path / "e.docx")))
+        assert expect in "\n".join(p.text for p in d.paragraphs) and _recheck_table(d) is None
+    d = Document(D.build_docx(load("outside_in"), str(tmp_path / "a.docx")))
+    assert "Score changes after the anchor recheck" not in "\n".join(p.text for p in d.paragraphs)

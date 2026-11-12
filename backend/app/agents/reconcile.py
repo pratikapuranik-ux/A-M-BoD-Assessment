@@ -8,7 +8,7 @@ evidence list under fresh codes (an item Run A already holds is reused). The ret
 from __future__ import annotations
 
 import re
-from concurrent.futures import ThreadPoolExecutor
+from app.services.usage import Pool
 
 import structlog
 
@@ -175,7 +175,7 @@ def reconcile(subjects_a, subjects_b, ctx) -> dict:
     jobs = [(a, b, ids) for a, b in zip(subjects_a, subjects_b) if (ids := disputes(a, b))]
     rows: list[dict] = []
     if jobs:
-        with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
+        with Pool(max_workers=len(jobs)) as pool:
             for r in pool.map(lambda j: _adjudicate(j[0], j[1], j[2], ctx), jobs): rows += r
     order = {s.short: n for n, s in enumerate(subjects_a)}
     rows.sort(key=lambda r: (order.get(r["subject"], 99), IND_IDS.index(r["indicator"])))

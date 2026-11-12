@@ -355,10 +355,13 @@ function Acc({ items }: { items: { k: string; title: ReactNode; body: ReactNode 
 export function CoverageAccordion() {
   const { view, io } = useReport();
   const cv = (view as unknown as { coverage?: { docs_available?: string[]; docs_unavailable?: string[] } }).coverage || {}; // the backend nests them under coverage
-  const sup = (view.documents_provided?.[io ? 'io' : 'oi'] || []).map((d) => `Supplied by you: ${d.name}`);
+  const provided = view.documents_provided?.[io ? 'io' : 'oi'] || [];
+  const known = provided.filter((d) => d.cite_as);
+  const sup = provided.filter((d) => !d.cite_as).map((d) => `Supplied by you: ${d.name}`);
+  const gaps = view.document_gaps || [];
   const have = [...sup, ...(cv.docs_available || view.docs_available || [])];
   const lack = cv.docs_unavailable || view.docs_unavailable || [];
-  if (!view.coverage_note && !have.length && !lack.length) return null;
+  if (!view.coverage_note && !have.length && !lack.length && !known.length) return null;
   const list = (t: string, a: string[]) => (a.length ? (
     <>
       <b>{t}</b>
@@ -375,6 +378,30 @@ export function CoverageAccordion() {
         <>
           {view.coverage_note ? <p className="mb-2"><i>{typo(view.coverage_note)}</i></p> : null}
           {list('Documents available', have)}
+          {known.length ? (
+            <>
+              <b>Documents supplied, as identified ({known.length})</b>
+              <div className="mb-2 overflow-x-auto">
+                <table className="w-full border-collapse text-[0.85rem]">
+                  <thead>
+                    <tr className="text-left text-[#002B49]">
+                      {['Company', 'Category', 'What it really is', 'Period', 'Document date', 'Cite as', 'Use', 'Flag and note'].map((h) => <th key={h} className="border-b border-[#ECECEC] px-2 py-1">{h}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {known.map((d, k) => (
+                      <tr key={k} className={d.use && !d.use.toLowerCase().startsWith('use') ? 'text-[#6b6b6b]' : ''}>
+                        <td className="px-2 py-1">{d.company}</td><td className="px-2 py-1">{d.category}</td><td className="px-2 py-1">{d.what}</td><td className="px-2 py-1">{d.period}</td>
+                        <td className="px-2 py-1">{d.date}</td><td className="px-2 py-1 font-bold" title={d.name}>{d.cite_as}</td><td className="px-2 py-1">{d.use}</td>
+                        <td className="px-2 py-1">{[d.flag, d.note].filter(Boolean).join(': ')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
+          {list('Gaps in what was supplied', gaps.map((g) => `${g.subject}: ${g.gap}. ${g.why}`))}
           {list('Documents not available', lack)}
         </>
       ) }]} />

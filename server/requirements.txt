@@ -1,6 +1,0 @@
-fastapi
-uvicorn
-pypdf
-python-docx
-openpyxl
-anthropic>=2.3

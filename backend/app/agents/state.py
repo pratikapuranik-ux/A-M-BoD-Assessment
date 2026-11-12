@@ -32,6 +32,8 @@ class OutsideInState(TypedDict, total=False):
     rest: list              # blocking problems not attributable to a subject (go to the synthesis)
     graded: dict
     calibrated: bool        # the calibration/fix loop has finished
+    rechecked: bool         # the anchor recheck has run (once)
+    recheck_changed: bool   # it moved at least one score
     done: bool              # the final rule check passed
     synth: Any              # nodes.SynthSession
     # output

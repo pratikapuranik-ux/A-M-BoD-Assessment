@@ -79,10 +79,29 @@ RECON_TOOL = _tool("submit_reconciliation",
     "Submit your recommendation for every indicator on which the two runs gave different scores: which run's score and rationale stands, "
     "and why. Call it once with one item per disputed indicator.",
     _obj(items=_arr(_obj(indicator=_enum(*IND_IDS), choice=_enum("A", "B"), reason=S))))
-WEB_TOOLS = [{"type": "web_search_20260209" if cfg.LATEST_WEB else "web_search_20250305", "name": "web_search",
-              "max_uses": cfg.SEARCH_USES, "blocked_domains": cfg.BLOCKED},
-             {"type": "web_fetch_20260209" if cfg.LATEST_WEB else "web_fetch_20250910", "name": "web_fetch", "max_uses": cfg.FETCH_USES,
-              "max_content_tokens": cfg.FETCH_TOKENS, "blocked_domains": cfg.BLOCKED}]
+def web_tools(searches, fetches):
+    """The server-side search and fetch tools with their per-conversation ceilings."""
+    return [{"type": "web_search_20260209" if cfg.LATEST_WEB else "web_search_20250305", "name": "web_search",
+             "max_uses": searches, "blocked_domains": cfg.BLOCKED},
+            {"type": "web_fetch_20260209" if cfg.LATEST_WEB else "web_fetch_20250910", "name": "web_fetch", "max_uses": fetches,
+             "max_content_tokens": cfg.FETCH_TOKENS, "blocked_domains": cfg.BLOCKED}]
+
+
+WEB_TOOLS = web_tools(cfg.SEARCH_USES, cfg.FETCH_USES)
+# One retrieval task (cfg.PIPELINE "tasks"): evidence under local refs, and the log entries of this task only. The engine numbers the evidence
+# and fills the log's dates, query text and result counts itself.
+TASK_EVIDENCE = _obj(ref=S, document=S, doc_type=S, date=S, event_date=S, url=S, excerpt=S, evidence_class=_enum(*OI_CLASSES), search_log=S,
+                     source_type=_enum(*SOURCE_TYPES), outlet=S, underlying_source_type=S)
+TASK_TOOL = _tool("submit_task_result",
+    "Submit the result of this one retrieval task: the evidence items you found (each with a short local ref such as a1, a2) and the log entries "
+    "the task asks for. Hits refer to your evidence refs. When asked to fix something, call it again with the corrected entries only.",
+    _obj(evidence=_arr(TASK_EVIDENCE),
+         retrieval_items=_arr(_obj(id=_enum(*[i["id"] for i in RSPEC["retrieval_items"]]), status=_enum("found", "searched_none", "unavailable", "not_applicable"),
+                                   documents=_arr(S), queries=_arr(S), years=_arr(INT), filings_reviewed=INT, feed=S, reason=S)),
+         registers=_arr(_obj(id=S, status=_enum("searched", "not_applicable"), hits=_arr(S), reason=S)),
+         event_sweep=_arr(_obj(id=_enum(*[q["id"] for q in RSPEC["event_sweep"]]), hits=_arr(S))),
+         extra_registers=_arr(EXTRA_REGISTER), extra_trade_press=_arr(S), documents_unavailable=_arr(S)))
+TASK_KEYS = {"evidence": "ref", "retrieval_items": "id", "registers": "id", "event_sweep": "id", "extra_registers": "id"}
 SUBJECT_KEYS = {"indicators": "id", "evidence": "code", "dimensions": "dimension", "comparables": "metric", "retrieval_items": "id", "registers": "id",
                 "event_sweep": "id", "facts": "_k", "extra_registers": "id"}  # facts carry a composite key, added when they are received
 SYNTH_KEYS = {"scorecard_headline": "key", "peer_row_summary": "dimension", "peer_summaries": "ticker"}
@@ -115,6 +134,26 @@ def system_blocks():
                  'and the harness runs the Rule 16-17 checks when it grades. Two runs are reconciled by the harness (step 1.4b), not by the user.'
                  f'\n\n{skill}\n</reference>')
     return [{"type": "text", "text": "\n\n".join(parts), "cache_control": cfg.CACHE}]
+
+
+def scoring_prompt(**kw):
+    """subject.md with its research steps (1 to 1d) replaced by the scoring-only intro: the retrieval is done by tasks (agents/tasks.py)."""
+    text = (cfg.PROMPTS / "subject.md").read_text(encoding="utf-8")
+    a, b = text.index("1. Retrieve the Rule 14"), text.index("2. Score each indicator")
+    text = text[:a] + (cfg.PROMPTS / "scoring_intro.md").read_text(encoding="utf-8") + text[b:]
+    out = []
+    for line in text.split("\n"):
+        if line.startswith("- retrieval_items, registers, event_sweep and facts follow"):
+            line = ("- retrieval_items, registers, event_sweep, extra_registers and extra_trade_press are already recorded from the retrieval tasks: send empty lists for them "
+                    "(resend an entry only when asked to fix it). facts follows step 1c: one entry for every field listed there.")
+        elif line.startswith("- extra_registers lists any sector register"):
+            continue
+        elif line.startswith("Evidence code prefix:"):
+            line = "Evidence code prefix: ${prefix}. The ledger below holds ${prefix}01 to ${prefix}$ledger_n; number any item you add from ${prefix}$next_n and use no other codes."
+        elif line.startswith("Task: research and score"):
+            line = "Task: score this subject's board on all 22 indicators, exactly as the methodology requires. Peers are scored as fully as the company."
+        out.append(line)
+    return Template("\n".join(out)).substitute(**kw)
 
 
 def render_prompt(file, **kw):

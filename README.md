@@ -84,8 +84,7 @@ documents and invite directors to the anonymous self-assessment. Grades re-score
 | `backend/app/api/` | FastAPI routers; `backend/alembic/` migrations |
 | `frontend/src/` | React app: `pages/` (landing, home, Briefcase, journey), `report/` (report views and charts), `api/`, `store/` |
 | `skill/` | The skill: scripts (source of truth for scoring rules), references, `framework.json`, example run files |
-| `docs/` | `ARCHITECTURE.md`, `SPEC_COVERAGE.md`, `SHARING.md` |
-| `index.html`, `js/`, `css/`, `tests/`, `tools/` | **Legacy** static prototype, kept for reference until the React app is signed off |
+| `docs/` | `ARCHITECTURE.md`, `SHARING.md` |
 
 ## Data in this app
 Nothing is simulated, replayed or pre-loaded. Every assessment is researched live by Claude from public sources (and from

@@ -8,10 +8,10 @@ drops boilerplate. Runs inside the job, with progress.
 from __future__ import annotations
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
 from app.log import get_logger
+from app.services.usage import Pool, record
 
 log = get_logger(__name__)
 Progress = Callable[[str], None]
@@ -56,6 +56,7 @@ def _ask(text: str, name: str, i: int, n: int, label: str) -> str:
         sdk = getattr(C, "anthropic", None)
         if sdk is not None and isinstance(e, sdk.AnthropicError): raise DigestError(str(C.api_error(e, label))) from e
         raise DigestError(f"{type(e).__name__}: {e}") from e
+    record(label, cfg.OCR_MODEL, getattr(resp, "usage", None))
     return "".join(getattr(b, "text", "") for b in resp.content if getattr(b, "type", "") == "text").strip()
 
 
@@ -75,7 +76,7 @@ def _sections(text: str) -> list[str]:
 def condense(d: dict, progress: Progress | None = None) -> None:
     name = d["name"]; parts = _sections(d["text"]); n = len(parts)
     if progress: progress(f"Condensing {name} ({n} section{'s' if n != 1 else ''})")
-    with ThreadPoolExecutor(max_workers=min(PARALLEL, n)) as pool:
+    with Pool(max_workers=min(PARALLEL, n)) as pool:
         got = list(pool.map(lambda ip: _ask(ip[1], name, ip[0], n, f"condensing {name}"), enumerate(parts, 1)))
     text = "\n\n".join(g for g in got if g).strip()
     if not text: raise DigestError(f"{name}: nothing came back when condensing it")

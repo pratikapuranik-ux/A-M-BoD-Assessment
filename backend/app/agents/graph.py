@@ -14,6 +14,8 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from . import nodes, settings as cfg
+
+SUPPORTS_LATER_DOCS = True  # run_outside_in accepts a Future for `documents` (services/runs.py prepares them while the research runs)
 from .client import PROVIDER, ResearchError, ResearchInvalid, ResearchRefused, research_enabled  # noqa: F401  (public API)
 from .progress import Progress
 from .state import InsideOutState, OutsideInState
@@ -34,8 +36,13 @@ def _fan_out(node):
 
 
 def _after_calibrate(state: OutsideInState):
-    if state.get("calibrated"): return "synthesis"
+    if state.get("calibrated"): return "synthesis" if state.get("rechecked") or not cfg.RECHECK else "anchor_recheck"
     return _fan_out("fix_subject")(state) if state.get("jobs") else "calibrate_and_grade"
+
+
+def _after_recheck(state: OutsideInState):
+    if state.get("jobs"): return _fan_out("fix_subject")(state)
+    return "calibrate_and_grade" if state.get("recheck_changed") else "synthesis"
 
 
 def _after_final_check(state: OutsideInState):
@@ -57,7 +64,9 @@ def build_outside_in():
     g.add_edge(START, "plan")
     g.add_conditional_edges("plan", _fan_out_research, ["research_subject"])
     g.add_edge("research_subject", "calibrate_and_grade")
-    g.add_conditional_edges("calibrate_and_grade", _after_calibrate, ["fix_subject", "calibrate_and_grade", "synthesis"])
+    g.add_node("anchor_recheck", nodes.anchor_recheck)
+    g.add_conditional_edges("calibrate_and_grade", _after_calibrate, ["fix_subject", "calibrate_and_grade", "synthesis", "anchor_recheck"])
+    g.add_conditional_edges("anchor_recheck", _after_recheck, ["fix_subject", "calibrate_and_grade", "synthesis"])
     g.add_edge("fix_subject", "calibrate_and_grade")
     g.add_edge("synthesis", "final_check")
     g.add_conditional_edges("final_check", _after_final_check, ["refix_subject", "revise_synthesis", "finalize"])
@@ -134,7 +143,9 @@ def build_finish():
     g.add_node("revise_synthesis", nodes.revise_synthesis)
     g.add_node("finalize", nodes.finalize)
     g.add_edge(START, "calibrate_and_grade")
-    g.add_conditional_edges("calibrate_and_grade", _after_calibrate, ["fix_subject", "calibrate_and_grade", "synthesis"])
+    g.add_node("anchor_recheck", nodes.anchor_recheck)
+    g.add_conditional_edges("calibrate_and_grade", _after_calibrate, ["fix_subject", "calibrate_and_grade", "synthesis", "anchor_recheck"])
+    g.add_conditional_edges("anchor_recheck", _after_recheck, ["fix_subject", "calibrate_and_grade", "synthesis"])
     g.add_edge("fix_subject", "calibrate_and_grade")
     g.add_edge("synthesis", "final_check")
     g.add_conditional_edges("final_check", _after_final_check, ["refix_subject", "revise_synthesis", "finalize"])
@@ -193,8 +204,8 @@ def _run_two(company, ticker, peers, period, mode, progress, documents, findings
                 if progress: progress(int(2 + (sum(pcts) / 2) / 72 * 58), last[0])
         return cb
 
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    from app.services.usage import Pool
+    with Pool(max_workers=2) as pool:
         fa = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(0, "Run A"), documents, cfg.MODEL, findings)
         fb = pool.submit(_research_once, company, ticker, peers, period, mode, reporter(1, "Run B"), documents, cfg.MODEL_B, findings)
         errors = []
@@ -239,3 +250,9 @@ def run_inside_out(oi_run: dict, documents: list[dict], answers: dict[str, str],
     out = _graph("inside_out", build_inside_out).invoke(
         {"oi_run": oi_run, "documents": documents, "answers": answers, "ratings": ratings, "progress": progress}, _config())
     return out["result"]
+
+
+def preflight() -> None:
+    """Checked when a research job starts (see services/runs.py): the key and the endpoint work."""
+    from . import client
+    client.ping()

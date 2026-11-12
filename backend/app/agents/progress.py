@@ -23,6 +23,17 @@ class Band:
 
     def __init__(self, prog, lo, hi, n): self.prog, self.lo, self.hi, self.f, self.lock = prog, lo, hi, [0.0] * n, threading.Lock()
 
+    def note(self, i, msg):
+        """A message without moving the bar."""
+        with self.lock: pct = self.lo + (self.hi - self.lo) * sum(self.f) / len(self.f)
+        self.prog(pct, msg)
+
+    def set(self, i, frac, msg):
+        """Moves subject i's share of the bar to at least `frac` (never back)."""
+        with self.lock:
+            self.f[i] = max(self.f[i], min(0.95, frac)); pct = self.lo + (self.hi - self.lo) * sum(self.f) / len(self.f)
+        self.prog(pct, msg)
+
     def tick(self, i, msg, done=False):
         with self.lock:
             self.f[i] = 1.0 if done else min(0.95, self.f[i] + (1 - self.f[i]) * 0.12)

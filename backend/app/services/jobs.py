@@ -89,6 +89,8 @@ def submit(kind: str, fn: Callable[[Job], Any], keys: Iterable[str] = ()) -> Job
 
     def run():
         job.status = "running"; job.update(1, "Started")
+        from app.services import usage
+        usage.scope(job.id)
         try:
             res = fn(job)
             with _lock: job.result = res; job.status = "done"; job.progress = 100

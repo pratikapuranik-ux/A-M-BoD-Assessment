@@ -12,6 +12,7 @@ import os
 from typing import Callable
 
 from app.log import get_logger
+from app.services.usage import record
 
 log = get_logger(__name__)
 Progress = Callable[[str], None]
@@ -76,6 +77,7 @@ def _ask(images: list[bytes], name: str, first_page: int, label: str) -> str:
         sdk = getattr(C, "anthropic", None)
         if sdk is not None and isinstance(e, sdk.AnthropicError): raise OcrError(str(C.api_error(e, label))) from e
         raise OcrError(f"{type(e).__name__}: {e}") from e
+    record(label, cfg.OCR_MODEL, getattr(resp, "usage", None))
     return "".join(getattr(b, "text", "") for b in resp.content if getattr(b, "type", "") == "text").strip()
 
 

@@ -120,3 +120,14 @@ def call_with_retry(fn: Callable, label: str, stop: threading.Event | None = Non
     retrying = Retrying(stop=stop_after_attempt(len(waits) + 1), wait=wait, sleep=sleep, before_sleep=before_sleep,
                         retry=retry_if_exception(is_busy), reraise=True)
     return retrying(fn)
+
+
+def ping() -> None:
+    """A one-token request, made before a run starts: a rejected key, an unreachable endpoint or a missing model fails in a second, with the message the user needs,
+    instead of after the documents have been read. Raises ResearchError."""
+    try:
+        get_client().messages.create(model=cfg.OCR_MODEL, max_tokens=1, messages=[{"role": "user", "content": "ok"}])
+    except ResearchError: raise
+    except Exception as e:  # noqa: BLE001
+        if anthropic is not None and isinstance(e, anthropic.AnthropicError) and not is_busy(e): raise api_error(e, "the key check") from e
+        # busy / network: not a reason to refuse the run; the real calls retry

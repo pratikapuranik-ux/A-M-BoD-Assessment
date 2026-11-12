@@ -239,6 +239,24 @@ export interface Reconciliation {
   rows: ReconciliationRow[];
 }
 
+export interface AnchorRecheckRow {
+  subject: string;
+  role: 'company' | 'peer';
+  indicator: string;
+  name: string;
+  first: number;
+  final: number;
+  reason: string;
+}
+/** Scores moved by the strict second reading against the anchors (the scores listed in `scores`). */
+export interface AnchorRecheck {
+  status: string;
+  model?: string;
+  scores?: number[];
+  reviewed?: number;
+  rows: AnchorRecheckRow[];
+}
+
 /** a synthesised theme across the director self-assessment; never a per-respondent answer */
 export interface SaTheme {
   dimension: string;
@@ -252,6 +270,7 @@ export interface GuardrailGroup {
 
 export interface View {
   reconciliation?: Reconciliation;
+  anchor_recheck?: AnchorRecheck;
   meta: Meta;
   headline: string;
   overall_line: string;
@@ -285,7 +304,9 @@ export interface View {
   self_assessment_themes?: SaTheme[];
   guardrails?: GuardrailGroup[];
   /** names of the files the user supplied for each stage (the files themselves are not kept) */
-  documents_provided?: { oi?: { name: string; slot: number; subject?: number }[]; io?: { name: string; slot: number; subject?: number }[] };
+  documents_provided?: { oi?: ProvidedDoc[]; io?: ProvidedDoc[] };
+  /** what the skill looks for and the upload lacks, per company */
+  document_gaps?: { subject: string; gap: string; why: string }[];
   q: [string, string, string][] | string[][];
   modes: Record<string, string>;
   scale: ScaleBand[];
@@ -314,4 +335,10 @@ export interface SurveyForm {
   responded: boolean;
   min: number;
   questions: SurveyQuestion[];
+}
+
+/** one supplied file with what it really is (the document register's columns); older runs carry only name, slot and subject */
+export interface ProvidedDoc {
+  name: string; slot: number; subject?: number; company?: string;
+  cite_as?: string; category?: string; what?: string; period?: string; date?: string; use?: string; flag?: string; note?: string; identified_from?: string;
 }

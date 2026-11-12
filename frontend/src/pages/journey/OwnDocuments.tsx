@@ -97,6 +97,10 @@ export default function OwnDocuments() {
     const k = isZip(f.name) ? '\u0000zip' : folderOf(f)
     groups.set(k, [...(groups.get(k) || []), f])
   }
+  // shown company first, then the peers in the order they were added above, then folders marked Not used, then zips (a stable sort: folders of
+  // one company keep the order the browser handed them over, which follows the file system and says nothing about the assessment)
+  const rank = ([k, fs]: [string, Picked[]]) => (k === '\u0000zip' ? 2e6 : (fs[0].subject ?? 0) < 0 ? 1e6 : (fs[0].subject ?? 0))
+  const ordered = [...groups.entries()].sort((a, b) => rank(a) - rank(b))
   const setGroup = (fs: Picked[], subject: number) => patch({ files: A.files.map((f) => (fs.includes(f) ? { ...f, subject, manual: true } : f)) })
   const removeAll = (fs: Picked[]) => patch({ files: A.files.filter((f) => !fs.includes(f)) })
   const used = new Set(A.files.filter((f) => !isZip(f.name)).map((f) => f.subject ?? 0))
@@ -120,7 +124,7 @@ export default function OwnDocuments() {
       {A.files.length > 0 && (
         <div className="docgroups">
           <p className="muted">{A.files.length} file{A.files.length === 1 ? '' : 's'} ({mb(A.files.reduce((n, f) => n + f.file.size, 0))}). Each folder is matched to the company or a peer by its name; change it if it is wrong. Files outside any matching folder go to the company; a folder named after some other company is marked Not used and is not sent.</p>
-          {[...groups.entries()].map(([k, fs]) => {
+          {ordered.map(([k, fs]) => {
             const zip = k === '\u0000zip'
             const cur = fs[0].subject ?? 0
             return (
